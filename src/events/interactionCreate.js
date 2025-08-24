@@ -67,7 +67,6 @@ module.exports = {
                     }
 
                     await interaction.editReply({
-                        content: '✅ Your embed has been created!',
                         embeds: [embed]
                     });
                 } catch (error) {
