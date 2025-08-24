@@ -1,0 +1,25 @@
+{
+  "name": "discord-embed-bot",
+  "version": "1.0.0",
+  "description": "A Discord bot that helps create beautiful embeds easily",
+  "main": "src/index.js",
+  "private": true,
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "build": "node -c src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "embeds",
+    "discord.js"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.22.1",
+    "dotenv": "^17.2.1"
+  }
+}
