@@ -1,12 +1,11 @@
-# Discord Embed Bot
+# Drugscord Multi Bot
 
-A powerful Discord bot that makes creating beautiful embeds incredibly easy! With intuitive slash commands, pre-built templates, and an interactive builder, you can create professional-looking embeds in seconds.
+# Stage 1 of Drugscord Multibot
 
 ## ✨ Features
 
 - **Quick Embed Creation**: Create embeds instantly with `/embed quick`
 - **Interactive Builder**: Step-by-step embed creation with `/embed create`
-- **Pre-built Templates**: 9+ ready-to-use templates for common scenarios
 - **Customizable**: Full control over colors, images, footers, and more
 - **User-friendly**: Intuitive commands with helpful descriptions
 - **Error Handling**: Robust error handling with clear feedback
@@ -24,18 +23,9 @@ A powerful Discord bot that makes creating beautiful embeds incredibly easy! Wit
 ### `/help`
 - Get detailed information about all commands and features
 
-## 📋 Available Templates
-
-1. **announcement** - Official announcements (🔔 Gold)
-2. **welcome** - Welcome new members (👋 Green)
-3. **poll** - Community polls/voting (📊 Sky Blue)
-4. **event** - Event announcements (🎉 Tomato)
-5. **rules** - Server rules (📋 Crimson)
-6. **info** - Information cards (ℹ️ Royal Blue)
-7. **success** - Success messages (✅ Lime Green)
-8. **error** - Error notifications (❌ Orange Red)
-9. **warning** - Warning messages (⚠️ Orange)
-
+### `/getembed`
+- Retrieve a embed code from elsewhere
+ 
 ## 🛠️ Setup Instructions
 
 ### Prerequisites
