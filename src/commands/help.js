@@ -37,12 +37,12 @@ module.exports = {
                     name: '💡 Tips',
                     value: '• Colors can be hex codes (#ff0000) or names (red)\n• Use valid URLs for images\n• Templates save you time for common embeds\n• All embeds include timestamps automatically',
                     inline: false
-                }
+                },
                 {
                     name: 'getembed',
                     value: 'Pull the embed code from any embedded message.',
                     inline: false
-                }
+                },
             )
             .setFooter({ 
                 text: 'Need more help? Check the documentation or ask an admin!',
