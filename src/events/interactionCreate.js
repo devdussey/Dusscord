@@ -46,7 +46,7 @@ module.exports = {
                 const description = interaction.fields.getTextInputValue('embedDescription');
                 const color = interaction.fields.getTextInputValue('embedColor') || '#0099ff';
                 const image = interaction.fields.getTextInputValue('embedImage');
-                const footer = interaction.fields.getTextInputValue('embedFooter');
+
 
                 try {
                     const embed = new EmbedBuilder()
@@ -55,16 +55,7 @@ module.exports = {
 
                     if (title) embed.setTitle(title);
                     if (description) embed.setDescription(description);
-                    if (image) embed.setImage(image);
-                    
-                    if (footer) {
-                        embed.setFooter({ text: footer });
-                    } else {
-                        embed.setFooter({ 
-                            text: `Created by ${interaction.user.displayName}`, 
-                            iconURL: interaction.user.displayAvatarURL() 
-                        });
-                    }
+                    if (image) embed.setImage(image);             
 
                     await interaction.editReply({
                         embeds: [embed]

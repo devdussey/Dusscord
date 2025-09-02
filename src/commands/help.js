@@ -3,14 +3,14 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('help')
-        .setDescription('Get help with the embed bot'),
+        .setDescription('Get help with the bot'),
 
     async execute(interaction) {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ ephemeral: false });
         
         const helpEmbed = new EmbedBuilder()
-            .setTitle('🤖 Embed Bot Help')
-            .setDescription('I help you create beautiful Discord embeds easily!')
+            .setTitle('🤖 Drugscord Bot Help')
+            .setDescription('Basic Command List')
             .setColor('#0099ff')
             .addFields(
                 {
@@ -24,31 +24,15 @@ module.exports = {
                     inline: false
                 },
                 {
-                    name: '📋 `/template list`',
-                    value: 'See all available pre-built embed templates.',
-                    inline: false
-                },
-                {
-                    name: '🎨 `/template use`',
-                    value: 'Use a pre-built template (announcement, welcome, poll, etc.).',
-                    inline: false
-                },
-                {
-                    name: '💡 Tips',
-                    value: '• Colors can be hex codes (#ff0000) or names (red)\n• Use valid URLs for images\n• Templates save you time for common embeds\n• All embeds include timestamps automatically',
-                    inline: false
-                },
-                {
-                    name: 'getembed',
+                    name: ' 📎 `/getembed',
                     value: 'Pull the embed code from any embedded message.',
                     inline: false
                 },
             )
             .setFooter({ 
-                text: 'Need more help? Check the documentation or ask an admin!',
+                text: 'Need more help? Ask JP',
                 iconURL: interaction.client.user.displayAvatarURL()
             })
-            .setTimestamp();
 
         await interaction.editReply({ embeds: [helpEmbed] });
     },

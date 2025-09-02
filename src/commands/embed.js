@@ -18,7 +18,7 @@ module.exports = {
                     option
                         .setName('title')
                         .setDescription('Embed title')
-                        .setRequired(true)
+                        .setRequired(false)
                 )
                 .addStringOption(option =>
                     option
@@ -68,7 +68,6 @@ module.exports = {
             const description = interaction.options.getString('description');
             const color = interaction.options.getString('color') || '#0099ff';
             const image = interaction.options.getString('image');
-            const thumbnail = interaction.options.getString('thumbnail');
             const targetChannel = interaction.options.getChannel('channel') || interaction.channel;
 
             try {
@@ -76,15 +75,8 @@ module.exports = {
                     .setTitle(title)
                     .setDescription(description)
                     .setColor(color)
-                    .setTimestamp()
-                    .setFooter({
-                        text: `Created by ${interaction.user.displayName || interaction.user.username}`,
-                        iconURL: interaction.user.displayAvatarURL()
-                    });
-
-                if (image) embed.setImage(image);
-                if (thumbnail) embed.setThumbnail(thumbnail);
-
+                    .setImage(image)
+                  
                 // Send the embed to the chosen channel
                 await targetChannel.send({ embeds: [embed] });
 
