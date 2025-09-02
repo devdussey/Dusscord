@@ -14,17 +14,18 @@ module.exports = {
             subcommand
                 .setName('quick')
                 .setDescription('Quickly create an embed')
-                .addStringOption(option =>
-                    option
-                        .setName('title')
-                        .setDescription('Embed title')
-                        .setRequired(false)
-                )
+                // Required options must come before non-required ones
                 .addStringOption(option =>
                     option
                         .setName('description')
                         .setDescription('Embed description')
                         .setRequired(true)
+                )
+                .addStringOption(option =>
+                    option
+                        .setName('title')
+                        .setDescription('Embed title')
+                        .setRequired(false)
                 )
                 .addStringOption(option =>
                     option

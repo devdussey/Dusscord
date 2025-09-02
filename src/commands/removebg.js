@@ -6,7 +6,12 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('removebg')
         .setDescription('Remove the background from an image')
-        .addStringOption(option =>
+        .addAttachmentOption(option =>
+            option.setName('image')
+                .setDescription('Attach an image to process')
+                .setRequired(false)
+        )
+         .addStringOption(option =>
             option.setName('image_url')
                 .setDescription('URL of the image to process')
                 .setRequired(false)
