@@ -19,6 +19,13 @@ module.exports = {
     } catch (e) {
       console.warn('Failed to set presence:', e?.message || e);
     }
+
+    // Install console.error relay to a Discord channel or owner DMs
+    try {
+      const relay = require('../utils/errorConsoleRelay');
+      relay.install(client);
+    } catch (e) {
+      console.warn('Failed to install error console relay:', e?.message || e);
+    }
   },
 };
-

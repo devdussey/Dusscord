@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, ChannelType, PermissionsBitField } = require('discord.js');
+const logger = require('../utils/securityLogger');
 
 // In-memory store for active isolations per guild+user
 // Key: `${guildId}:${userId}` -> { channelId, intervalId, stopAt }
@@ -27,7 +28,7 @@ module.exports = {
         .addStringOption(opt => opt.setName('message').setDescription('Custom message to send repeatedly').setRequired(true))
         // Optional options must come after required ones
         .addStringOption(opt => opt.setName('duration').setDescription('How long to spam (e.g., 2m, 10m, 1h). Max 15m').setRequired(false))
-        .addIntegerOption(opt => opt.setName('interval').setDescription('Seconds between messages (min 2, default 5)').setRequired(false).setMinValue(2).setMaxValue(60))
+        .addIntegerOption(opt => opt.setName('interval').setDescription('Seconds between messages (min 1, default 5)').setRequired(false).setMinValue(1).setMaxValue(60))
         .addIntegerOption(opt => opt.setName('max').setDescription('Max messages to send (default 120, max 500)').setRequired(false).setMinValue(5).setMaxValue(500))
         .addBooleanOption(opt => opt.setName('hide').setDescription('Temporarily hide all other channels from the member').setRequired(false))
     )
@@ -43,9 +44,13 @@ module.exports = {
       return interaction.reply({ content: 'Use this command in a server.', ephemeral: true });
     }
 
-    // Owner-only check
-    if (interaction.guild.ownerId !== interaction.user.id) {
-      return interaction.reply({ content: 'Only the server owner can use /wraith.', ephemeral: true });
+    // Bot owner-only check via BOT_OWNER_IDS
+    const raw = process.env.BOT_OWNER_IDS || '';
+    const owners = raw.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
+    const isOwner = owners.includes(String(interaction.user.id));
+    if (!isOwner) {
+      try { await logger.logPermissionDenied(interaction, 'wraith', 'User is not a bot owner'); } catch (_) {}
+      return interaction.reply({ content: 'This command is restricted to bot owners.', ephemeral: true });
     }
 
     const me = interaction.guild.members.me;
@@ -72,7 +77,7 @@ module.exports = {
       const hideOthers = interaction.options.getBoolean('hide') || false;
 
       // Safety caps
-      const intervalMs = Math.max(2, Math.min(60, intervalSec)) * 1000;
+      const intervalMs = Math.max(1, Math.min(60, intervalSec)) * 1000;
       const durationMsRaw = parseDuration(durationStr);
       const durationMs = durationMsRaw ? Math.min(durationMsRaw, 15 * 60 * 1000) : null; // cap 15m
       const maxMessages = Math.min(Math.max(5, maxMsgs), 500);
