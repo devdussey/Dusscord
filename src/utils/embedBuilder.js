@@ -24,7 +24,7 @@ function createEmbedModal() {
         .setLabel('Embed Color (hex code or color name)')
         .setStyle(TextInputStyle.Short)
         .setMaxLength(20)
-        .setPlaceholder('#0099ff or blue')
+        .setPlaceholder('#0000ff or blue')
         .setRequired(false);
 
     const imageInput = new TextInputBuilder()

@@ -67,7 +67,7 @@ module.exports = {
 
             const title = interaction.options.getString('title');
             const description = interaction.options.getString('description');
-            const color = interaction.options.getString('color') || '#0099ff';
+            const color = interaction.options.getString('color') || '#0000ff';
             const image = interaction.options.getString('image');
             const targetChannel = interaction.options.getChannel('channel') || interaction.channel;
 

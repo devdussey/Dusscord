@@ -14,17 +14,18 @@ module.exports = {
                   .setRequired(true)),
 
     async execute(interaction) {
+        await interaction.deferReply();
         const channelId = interaction.options.getString('channelid');
         const messageId = interaction.options.getString('messageid');
 
-        const channel = await interaction.client.channels.fetch(channelId);
-        if (!channel) return interaction.reply({ content: 'Channel not found.', ephemeral: true });
+        const channel = await interaction.client.channels.fetch(channelId).catch(() => null);
+        if (!channel) return interaction.editReply({ content: 'Channel not found.' });
 
-        const message = await channel.messages.fetch(messageId);
-        if (!message) return interaction.reply({ content: 'Message not found.', ephemeral: true });
+        const message = await channel.messages.fetch(messageId).catch(() => null);
+        if (!message) return interaction.editReply({ content: 'Message not found.' });
 
         if (message.embeds.length === 0) {
-            return interaction.reply({ content: 'No embeds found in that message.', ephemeral: true });
+            return interaction.editReply({ content: 'No embeds found in that message.' });
         }
 
         const embed = message.embeds[0]; // Get the first embed
@@ -40,6 +41,6 @@ module.exports = {
             thumbnail: embed.thumbnail ? embed.thumbnail.url : 'None',
         };
 
-        await interaction.reply({ content: `Embed data:\n\`\`\`json\n${JSON.stringify(embedData, null, 2)}\`\`\`` });
+        await interaction.editReply({ content: `Embed data:\n\`\`\`json\n${JSON.stringify(embedData, null, 2)}\`\`\`` });
     },
 };
