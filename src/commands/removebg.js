@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
-const fetch = require('node-fetch');
+// node-fetch v3 is ESM-only; use dynamic import in CommonJS
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const REMOVE_BG_API_KEY = 'YOUR_REMOVE_BG_API_KEY'; // Replace with your actual key
 
 module.exports = {

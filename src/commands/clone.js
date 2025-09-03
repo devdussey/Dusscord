@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
 const logger = require('../utils/securityLogger');
-const fetch = require('node-fetch');
+// node-fetch v3 is ESM-only; use dynamic import in CommonJS
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 function parseEmojiInput(input) {
     if (!input) return null;

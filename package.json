@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "build": "deploy-commands.js",
+    "build": "node deploy-commands.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -21,7 +21,6 @@
   "dependencies": {
     "discord.js": "^14.22.1",
     "dotenv": "^17.2.1",
-    "fetch": "^1.1.0",
     "node-fetch": "^3.3.2"
   }
 }
