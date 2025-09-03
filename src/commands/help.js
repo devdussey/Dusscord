@@ -1,58 +1,99 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
-module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('help')
-        .setDescription('Get help with the bot'),
-
-    async execute(interaction) {
-        const helpEmbed = new EmbedBuilder()
-            .setTitle('Bot Help')
-            .setDescription('Overview of available commands')
-            .setColor('#0099ff')
-            .addFields(
-                { name: '/embed create', value: 'Open a modal to build a custom embed interactively.', inline: false },
-                { name: '/embed quick', value: 'Quick embed with options: description, title, color, image, thumbnail, channel.', inline: false },
-                { name: '/getembed', value: 'Get embed data from a message by channel ID and message ID.', inline: false },
-                { name: '/clone emoji', value: 'Clone a custom emoji to this server by mention/ID/CDN URL. Requires Manage Emojis & Stickers.', inline: false },
-                { name: '/clone sticker', value: 'Clone a sticker by ID/URL or upload a file. Requires Manage Emojis & Stickers.', inline: false },
-                { name: '/enlarge emoji', value: 'Post a large version of a custom emoji at the chosen size.', inline: false },
-                { name: '/enlarge sticker', value: 'Post a sticker file from ID/URL/upload.', inline: false },
-                { name: '/autoroles add/remove/list/clear', value: 'Configure roles to auto-assign on member join. Requires Manage Roles.', inline: false },
-                { name: '/role add/remove', value: 'Add or remove a specific role from a member. Requires Manage Roles.', inline: false },
-                { name: '/mute', value: 'Timeout a member for a set duration (e.g., 10m, 1h) with a reason. Requires Moderate Members.', inline: false },
-                { name: '/kick', value: 'Kick a member with a required reason. Requires Kick Members.', inline: false },
-                { name: '/ban', value: 'Ban a user with a required reason; optional prune_days (0–7). Requires Ban Members.', inline: false },
-                { name: '/purge', value: 'Delete 1–100 recent messages in the current channel (can’t delete older than 14 days). Requires Manage Messages.', inline: false },
-                { name: '/removebg', value: 'Remove background from an image via API (requires configured API key).', inline: false },
-                { name: '/logchannels', value: 'logging', inline: false },
-                { name: '/botinfo', value: 'Show which bot instance responded and environment details.', inline: false },
-                { name: '/securitylog set/clear/show', value: 'Set a per‑guild channel for permission/hierarchy violation logs (falls back to DM owners).', inline: false },
-                { name: '/securityreport', value: 'See who has triggered denied/hierarchy/missing-command events in the last days.', inline: false },
-                { name: '/joins leaderboard', value: 'Show top joiners/leavers (supports lookback window).', inline: false },
-                { name: '/joins user', value: 'Show join/leave stats for a specific member.', inline: false },
-                { name: '/joins setlog', value: 'Link your existing join/leave log channel and keywords.', inline: false },
-                { name: '/joins backfill', value: 'Scan the linked channel and import historical join/leave events.', inline: false },
-                { name: '/dmdiag test', value: 'Tests the Bots Direct Message System and Blacklisted Roles', inline: false },
-                { name: '/dmdiag role', value: 'Tests the Bots Direct Message System and Blacklisted Roles', inline: false },
-                { name: '/adminlist', value: '\u200B', inline: false },
-            )
-            .setFooter({
-                text: `Requested by ${interaction.user.tag}`,
-                iconURL: interaction.client.user.displayAvatarURL()
-            });
-
-        try {
-            await interaction.reply({ embeds: [helpEmbed] });
-        } catch (err) {
-            // Fallback if the interaction has expired
-            try {
-                if (interaction.channel && interaction.channel.send) {
-                    await interaction.channel.send({ content: `Here you go, <@${interaction.user.id}>:`, embeds: [helpEmbed] });
-                }
-            } catch (_) {
-                // swallow
-            }
-        }
-    },
+const categories = {
+  'Moderation': [
+    ['/- mute', 'Timeout a member (10m, 1h, 2d). Requires Moderate Members.'],
+    ['/- kick', 'Kick a member. Requires Kick Members.'],
+    ['/- ban', 'Ban a user; optional prune_days (0–7). Requires Ban Members.'],
+    ['/- purge', 'Delete 1–100 recent messages here. Requires Manage Messages.'],
+  ],
+  'Roles & Config': [
+    ['/- autoroles add/remove/list/clear', 'Auto-assign roles on join. Requires Manage Roles.'],
+    ['/- role add/remove', 'Add or remove a specific role. Requires Manage Roles.'],
+    ['/- securitylog set/clear/show', 'Per‑guild channel for security logs (fallback to DM owners).'],
+  ],
+  'Emoji & Stickers': [
+    ['/- clone emoji', 'Clone a custom emoji by mention/ID/URL.'],
+    ['/- clone sticker', 'Clone a sticker by ID/URL or upload.'],
+    ['/- enlarge emoji', 'Post a large emoji (supports Unicode).'],
+    ['/- enlarge sticker', 'Post a sticker file as an image.'],
+  ],
+  'Join/Leave Stats': [
+    ['/- joins leaderboard', 'Top joiners/leavers (optionally by window).'],
+    ['/- joins user', 'Stats for a specific member.'],
+    ['/- joins setlog', 'Link your existing join/leave log channel + keywords.'],
+    ['/- joins backfill', 'Import historical join/leave events from linked channel.'],
+  ],
+  'Logging & Security': [
+    ['/- logchannels', 'logging'],
+    ['/- securityreport', 'Who triggered permission/hierarchy/missing‑command events.'],
+  ],
+  'Utilities': [
+    ['/- embed create', 'Open modal to build an embed.'],
+    ['/- embed quick', 'Quick embed (description, title, color, etc.).'],
+    ['/- getembed', 'Extract embed JSON from a message.'],
+    ['/- removebg', 'Remove image background (API key required).'],
+    ['/- botinfo', 'Show instance, mode, commands loaded, uptime.'],
+  ],
+  'Owner Only': [
+    ['/- adminlist', '\u200B'],
+    ['/- dmdiag test', 'Tests the Bots Direct Message System and Blacklisted Roles'],
+    ['/- dmdiag role', 'Tests the Bots Direct Message System and Blacklisted Roles'],
+  ],
 };
+
+function buildEmbed(categoryName, userTag, client) {
+  const embed = new EmbedBuilder()
+    .setTitle('Bot Help')
+    .setColor('#0099ff')
+    .setFooter({ text: `Requested by ${userTag}`, iconURL: client.user.displayAvatarURL() });
+
+  if (categoryName && categories[categoryName]) {
+    embed.setDescription(`${categoryName}`);
+    const fields = categories[categoryName].map(([name, value]) => ({ name: name.replace('/-', '/'), value, inline: false }));
+    embed.addFields(fields);
+    return embed;
+  }
+
+  embed.setDescription('Overview of available commands (grouped)');
+  for (const [cat, items] of Object.entries(categories)) {
+    const value = items.map(([name, value]) => `• ${name.replace('/-', '/')} — ${value}`).join('\n');
+    embed.addFields({ name: cat, value, inline: false });
+  }
+  return embed;
+}
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('help')
+    .setDescription('Get help with the bot')
+    .addStringOption(opt =>
+      opt.setName('category')
+        .setDescription('Filter by category')
+        .addChoices(
+          { name: 'Moderation', value: 'Moderation' },
+          { name: 'Roles & Config', value: 'Roles & Config' },
+          { name: 'Emoji & Stickers', value: 'Emoji & Stickers' },
+          { name: 'Join/Leave Stats', value: 'Join/Leave Stats' },
+          { name: 'Logging & Security', value: 'Logging & Security' },
+          { name: 'Utilities', value: 'Utilities' },
+          { name: 'Owner Only', value: 'Owner Only' },
+        )
+        .setRequired(false)
+    ),
+
+  async execute(interaction) {
+    const cat = interaction.options.getString('category');
+    const embed = buildEmbed(cat, interaction.user.tag, interaction.client);
+    try {
+      await interaction.reply({ embeds: [embed] });
+    } catch (err) {
+      try {
+        if (interaction.channel && interaction.channel.send) {
+          await interaction.channel.send({ content: `Here you go, <@${interaction.user.id}>:`, embeds: [embed] });
+        }
+      } catch (_) {}
+    }
+  },
+};
+
