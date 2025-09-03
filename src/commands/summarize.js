@@ -10,13 +10,13 @@ const MAX_INPUT_CHARS = 16000; // practical cap before sending to API
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('summarize')
-    .setDescription('Summarize the last N messages in this channel')
+    .setDescription('Summarize the last N messages in this channel (bullets + paragraph)')
     .addIntegerOption(opt =>
       opt.setName('count')
-        .setDescription('How many recent messages to analyze (max 100)')
+        .setDescription('How many recent messages to analyze (max 300)')
         .setRequired(false)
         .setMinValue(1)
-        .setMaxValue(100)
+        .setMaxValue(300)
     )
     .addStringOption(opt =>
       opt.setName('length')
@@ -27,21 +27,12 @@ module.exports = {
           { name: 'detailed', value: 'detailed' },
         )
         .setRequired(false)
-    )
-    .addStringOption(opt =>
-      opt.setName('style')
-        .setDescription('Output style')
-        .addChoices(
-          { name: 'bullets', value: 'bullets' },
-          { name: 'paragraph', value: 'paragraph' },
-        )
-        .setRequired(false)
     ),
 
   async execute(interaction) {
     // Try to defer; if another instance already acknowledged, quietly bail.
     try {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply();
     } catch (e) {
       const code = e?.code || e?.status;
       const msg = (e?.message || '').toLowerCase();
@@ -57,7 +48,6 @@ module.exports = {
 
     const count = interaction.options.getInteger('count') ?? 50;
     const lengthPref = interaction.options.getString('length') || 'short';
-    const style = interaction.options.getString('style') || 'paragraph';
 
     // Ensure we're in a text-capable channel
     const channel = interaction.channel;
@@ -70,20 +60,31 @@ module.exports = {
       return interaction.editReply('This command can only run in a text channel or thread.');
     }
 
-    // Fetch recent messages
-    let fetched;
+    // Fetch recent messages, up to 300 with pagination
+    const target = Math.min(300, Math.max(1, count));
+    let collected = [];
+    let before;
     try {
-      fetched = await channel.messages.fetch({ limit: Math.min(100, Math.max(1, count)) });
+      while (collected.length < target) {
+        const limit = Math.min(100, target - collected.length);
+        const batch = await channel.messages.fetch({ limit, ...(before ? { before } : {}) });
+        if (!batch || batch.size === 0) break;
+        const arr = [...batch.values()];
+        collected.push(...arr);
+        // Set cursor to the oldest message from this batch
+        const oldest = arr.reduce((acc, m) => (!acc || m.createdTimestamp < acc.createdTimestamp) ? m : acc, null);
+        before = oldest?.id;
+      }
     } catch (err) {
       return interaction.editReply(`Could not fetch recent messages: ${err.message}`);
     }
 
-    if (!fetched || fetched.size === 0) {
+    if (!collected.length) {
       return interaction.editReply('No recent messages found to summarize.');
     }
 
     // Build a plain-text transcript from oldest -> newest
-    const ordered = [...fetched.values()].sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+    const ordered = collected.sort((a, b) => a.createdTimestamp - b.createdTimestamp);
 
     const sanitize = (s) => {
       if (!s) return '';
@@ -117,10 +118,6 @@ module.exports = {
       truncatedNote = `\n\n(Note: Input truncated to ${MAX_INPUT_CHARS} characters for processing.)`;
     }
 
-    const styleHint = style === 'bullets'
-      ? 'Provide a concise bullet list. Use "- " for each bullet.'
-      : 'Provide a concise paragraph summary.';
-
     const lengthHint = (
       lengthPref === 'detailed' ? 'Aim for a detailed summary.' :
       lengthPref === 'medium' ? 'Aim for a medium-length summary.' :
@@ -134,7 +131,7 @@ module.exports = {
       },
       {
         role: 'user',
-        content: `${lengthHint} ${styleHint}\n\nSummarize the following chat transcript. Focus on key topics, decisions, action items, and sentiment. Do not include user IDs.\n\n${truncated}`
+        content: `${lengthHint} Provide TWO sections:\n\n1) Bulleted Summary: concise bullet points (start each with '- ').\n2) Paragraph Summary: one concise paragraph.\n\nSummarize the following chat transcript. Focus on key topics, decisions, action items, and sentiment. Do not include user IDs.\n\n${truncated}`
       }
     ];
 
@@ -171,14 +168,14 @@ module.exports = {
       await interaction.editReply('Summary is long; sending in parts below:');
       for (let i = 0; i < finalMsg.length; i += 2000) {
         const chunk = finalMsg.slice(i, i + 2000);
-        try { await interaction.followUp({ content: chunk, ephemeral: true }); } catch (_) {}
+        try { await interaction.followUp({ content: chunk }); } catch (_) {}
       }
     } catch (err) {
       const msg = err?.message || String(err);
       try {
         await interaction.editReply(`Failed to summarize: ${msg}`);
       } catch (_) {
-        try { await interaction.followUp({ content: `Failed to summarize: ${msg}`, ephemeral: true }); } catch (_) {}
+        try { await interaction.followUp({ content: `Failed to summarize: ${msg}` }); } catch (_) {}
       }
     }
   },
