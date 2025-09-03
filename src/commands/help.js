@@ -63,10 +63,13 @@ const categories = {
   ],
 };
 
-function buildEmbed(categoryName, includeOwner) {
+function buildEmbed(categoryName, includeOwner, guildId) {
   const embed = new EmbedBuilder()
-    .setTitle('Bot Help')
-    .setColor('#0099ff');
+    .setTitle('Bot Help');
+  try {
+    const { applyDefaultColour } = require('../utils/guildColourStore');
+    applyDefaultColour(embed, guildId);
+  } catch (_) {}
 
   if (categoryName && categories[categoryName]) {
     if (categoryName === 'Owner Only' && !includeOwner) {
@@ -117,7 +120,7 @@ module.exports = {
       return interaction.reply({ content: 'This category is only visible to bot owners.', ephemeral: true });
     }
 
-    const embed = buildEmbed(cat, owner);
+    const embed = buildEmbed(cat, owner, interaction.guildId);
     try {
       await interaction.reply({ embeds: [embed] });
     } catch (_) {

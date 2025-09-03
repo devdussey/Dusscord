@@ -95,8 +95,13 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setTitle(title)
-      .setDescription(description)
-      .setColor(0x2f3136);
+      .setDescription(description);
+    try {
+      const { applyDefaultColour } = require('../utils/guildColourStore');
+      applyDefaultColour(embed, interaction.guildId);
+    } catch (_) {
+      // fallback stays uncoloured if util import fails
+    }
 
     const menu = new StringSelectMenuBuilder()
       .setCustomId('rr:select')
