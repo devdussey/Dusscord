@@ -50,6 +50,7 @@ const categories = {
   ],
   'Media Tools': [
     ['/- removebg', 'Remove image background (API key required).'],
+    ['/- transcribe', 'Transcribe an attached audio file (OpenAI API).'],
   ],
   'System': [
     ['/- botinfo', 'Show instance, mode, commands loaded, uptime.'],
