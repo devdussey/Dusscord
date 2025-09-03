@@ -1,9 +1,11 @@
 const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
 
-function createEmbedModal() {
+function createEmbedModal(opts = {}) {
+    const customId = typeof opts.customId === 'string' && opts.customId.length ? opts.customId : 'embedBuilderModal';
+    const titleText = typeof opts.title === 'string' && opts.title.length ? opts.title : 'Embed Builder';
     const modal = new ModalBuilder()
-        .setCustomId('embedBuilderModal')
-        .setTitle('Embed Builder');
+        .setCustomId(customId)
+        .setTitle(titleText);
 
     const titleInput = new TextInputBuilder()
         .setCustomId('embedTitle')

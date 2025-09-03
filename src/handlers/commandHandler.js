@@ -10,10 +10,20 @@ function loadCommands(client) {
         return;
     }
 
-    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+    function getAllFiles(dir) {
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        const files = [];
+        for (const e of entries) {
+            const p = path.join(dir, e.name);
+            if (e.isDirectory()) files.push(...getAllFiles(p));
+            else if (e.isFile() && e.name.endsWith('.js')) files.push(p);
+        }
+        return files;
+    }
 
-    for (const file of commandFiles) {
-        const filePath = path.join(commandsPath, file);
+    const commandFiles = getAllFiles(commandsPath);
+
+    for (const filePath of commandFiles) {
         const command = require(filePath);
 
         if ('data' in command && 'execute' in command) {

@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const DEFAULT_EMBED_COLOUR = 0x2f3136; // discord dark grey used in existing embeds
+// Fallback default embed color (24-bit integer, no alpha)
+const DEFAULT_EMBED_COLOUR = 0xf10909;
 
 const dataDir = path.join(__dirname, '..', 'data');
 const STORE_FILE = path.join(dataDir, 'embed_colours.json');

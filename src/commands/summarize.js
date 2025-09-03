@@ -39,7 +39,17 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    // Try to defer; if another instance already acknowledged, quietly bail.
+    try {
+      await interaction.deferReply({ ephemeral: true });
+    } catch (e) {
+      const code = e?.code || e?.status;
+      const msg = (e?.message || '').toLowerCase();
+      if (code === 40060 || code === 10062 || msg.includes('already been acknowledged') || msg.includes('unknown interaction')) {
+        return; // another process handled this interaction
+      }
+      throw e;
+    }
 
     if (!OPENAI_API_KEY) {
       return interaction.editReply('OpenAI API key not configured. Set OPENAI_API_KEY in your environment.');

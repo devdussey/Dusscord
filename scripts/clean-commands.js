@@ -8,7 +8,10 @@ const { REST, Routes } = require('discord.js');
 require('dotenv').config();
 
 async function run() {
-  const scope = (process.argv[2] || 'global').toLowerCase();
+  const args = process.argv.slice(2);
+  const isDryRun = args.includes('--dry-run') || process.env.DRY_RUN === '1';
+  const scopeArg = args.find(a => !a.startsWith('-'));
+  const scope = (scopeArg || 'global').toLowerCase();
   const token = process.env.DISCORD_TOKEN;
   const clientId = process.env.CLIENT_ID;
   const guildId = process.env.GUILD_ID;
@@ -22,9 +25,13 @@ async function run() {
 
   try {
     if (scope === 'global' || scope === 'both') {
-      console.log('Clearing GLOBAL application commands...');
-      await rest.put(Routes.applicationCommands(clientId), { body: [] });
-      console.log('Global commands cleared.');
+      if (isDryRun) {
+        console.log('[DRY-RUN] Would clear GLOBAL application commands.');
+      } else {
+        console.log('Clearing GLOBAL application commands...');
+        await rest.put(Routes.applicationCommands(clientId), { body: [] });
+        console.log('Global commands cleared.');
+      }
     }
 
     if (scope === 'guild' || scope === 'both') {
@@ -32,12 +39,16 @@ async function run() {
         console.error('GUILD_ID is required to clear guild commands.');
         process.exit(1);
       }
-      console.log(`Clearing GUILD (${guildId}) application commands...`);
-      await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: [] });
-      console.log('Guild commands cleared.');
+      if (isDryRun) {
+        console.log(`[DRY-RUN] Would clear GUILD (${guildId}) application commands.`);
+      } else {
+        console.log(`Clearing GUILD (${guildId}) application commands...`);
+        await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: [] });
+        console.log('Guild commands cleared.');
+      }
     }
 
-    console.log('Done.');
+    console.log(isDryRun ? 'Dry-run complete.' : 'Done.');
   } catch (err) {
     console.error('Failed to clear commands:', err);
     process.exit(1);
@@ -45,4 +56,3 @@ async function run() {
 }
 
 run();
-

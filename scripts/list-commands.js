@@ -8,7 +8,9 @@ const { REST, Routes } = require('discord.js');
 require('dotenv').config();
 
 async function run() {
-  const scope = (process.argv[2] || 'global').toLowerCase();
+  const args = process.argv.slice(2);
+  const scopeArg = args.find(a => !a.startsWith('-'));
+  const scope = (scopeArg || 'global').toLowerCase();
   const token = process.env.DISCORD_TOKEN;
   const clientId = process.env.CLIENT_ID;
   const guildId = process.env.GUILD_ID;
@@ -47,4 +49,3 @@ async function run() {
 }
 
 run();
-

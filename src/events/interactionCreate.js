@@ -22,11 +22,19 @@ module.exports = {
             try {
                 await command.execute(interaction);
             } catch (error) {
+                const code = error?.code || error?.status;
+                const msg = (error?.message || '').toLowerCase();
+                // Ignore common race/expiry cases to prevent noisy logs and dupes
+                if (code === 40060 || code === 10062 || msg.includes('already been acknowledged') || msg.includes('unknown interaction')) {
+                    console.warn(`Interaction for /${interaction.commandName} expired or was handled elsewhere (code ${code}).`);
+                    return;
+                }
+
                 console.error(`Error executing ${interaction.commandName}:`, error);
 
                 const errorMessage = 'There was an error while executing this command!';
 
-                // Try to notify the user via the interaction first
+                // Try to notify the user via the interaction first (best-effort)
                 try {
                     if (interaction.replied) {
                         await interaction.followUp({ content: errorMessage, ephemeral: true });
@@ -36,23 +44,8 @@ module.exports = {
                         await interaction.reply({ content: errorMessage, ephemeral: true });
                     }
                 } catch (replyError) {
-                    const code = replyError?.code;
-                    if (code === 40060 || code === 10062 || code === 10008) {
-                        // 40060: Unknown interaction (ack timed out)
-                        // 10062: Unknown interaction (webhook invalid/expired)
-                        // 10008: Unknown message (@original missing/expired)
-                        // Fallback: send a normal message in the channel if possible
-                        try {
-                            if (interaction.channel && interaction.channel.send) {
-                                await interaction.channel.send(`Sorry <@${interaction.user.id}>, there was an error running /${interaction.commandName}.`);
-                            }
-                        } catch (fallbackErr) {
-                            console.error('Failed to send channel fallback message:', fallbackErr);
-                        }
-                    } else {
-                        console.error('Failed to send error message to user:', replyError);
-                    }
-                    // Continue without crashing
+                    const rcode = replyError?.code;
+                    console.warn('Failed to send error via interaction API:', rcode, replyError?.message);
                 }
             }
         }
@@ -189,6 +182,45 @@ module.exports = {
 
         // Handle modal submissions
         if (interaction.isModalSubmit()) {
+            // Welcome embed setup modal
+            if (typeof interaction.customId === 'string' && interaction.customId.startsWith('welcome:embed:')) {
+                if (!interaction.inGuild()) return;
+                const parts = interaction.customId.split(':');
+                const channelId = parts[2];
+                let channel = null;
+                try { channel = await interaction.guild.channels.fetch(channelId); } catch (_) {}
+                if (!channel) {
+                    try { await interaction.reply({ content: 'Saved channel not found. Re-run /welcome setup.', ephemeral: true }); } catch (_) {}
+                    return;
+                }
+
+                try {
+                    const { applyDefaultColour } = require('../utils/guildColourStore');
+                    const welcomeStore = require('../utils/welcomeStore');
+                    const embed = new EmbedBuilder();
+                    const title = interaction.fields.getTextInputValue('embedTitle');
+                    const description = interaction.fields.getTextInputValue('embedDescription');
+                    const color = interaction.fields.getTextInputValue('embedColor');
+                    const image = interaction.fields.getTextInputValue('embedImage');
+                    const footer = interaction.fields.getTextInputValue('embedFooter');
+
+                    if (title) embed.setTitle(title);
+                    if (description) embed.setDescription(description);
+                    if (image) embed.setImage(image);
+                    if (footer) embed.setFooter({ text: footer });
+                    try { applyDefaultColour(embed, interaction.guildId); } catch (_) {}
+                    if (color) { try { embed.setColor(color); } catch (_) {} }
+
+                    // Save configuration
+                    welcomeStore.set(interaction.guildId, { channelId, embed: embed.toJSON() });
+
+                    // Preview
+                    await channel.send({ content: `Welcome, <@${interaction.user.id}>!`, embeds: [embed] });
+                    return interaction.reply({ content: `Welcome message saved for ${channel}.`, ephemeral: true });
+                } catch (err) {
+                    return interaction.reply({ content: `Failed to save welcome: ${err.message}`, ephemeral: true });
+                }
+            }
             if (interaction.customId === 'verify:modal') {
                 if (!interaction.inGuild()) return;
                 const sess = verifySession.get(interaction.guild.id, interaction.user.id);

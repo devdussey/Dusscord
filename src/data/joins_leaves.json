@@ -39,9 +39,9 @@
         },
         "1412477269213053119": {
           "joins": 1,
-          "leaves": 0,
+          "leaves": 1,
           "lastJoinAt": 1756897506963,
-          "lastLeaveAt": null
+          "lastLeaveAt": 1756915060250
         },
         "963891726567743580": {
           "joins": 2,
@@ -100,6 +100,12 @@
           "userId": "410138706490425344",
           "type": "leave",
           "timestamp": 1756914545468,
+          "reason": "kick"
+        },
+        {
+          "userId": "1412477269213053119",
+          "type": "leave",
+          "timestamp": 1756915060250,
           "reason": "kick"
         }
       ]
