@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
 const logger = require('../utils/securityLogger');
+const modlog = require('../utils/modLogger');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -85,12 +86,22 @@ module.exports = {
           return interaction.editReply({ content: `${user.tag} already has ${role.toString()}.` });
         }
         await member.roles.add(role, reason);
+        try { await modlog.log(interaction, 'Role Added', [
+          { name: 'Member', value: `${user.tag} (${user.id})`, inline: false },
+          { name: 'Role', value: `${role} (${role.id})`, inline: false },
+          { name: 'Reason', value: reasonRaw, inline: false },
+        ]); } catch (_) {}
         return interaction.editReply({ content: `Added ${role.toString()} to ${user.tag}.` });
       } else if (sub === 'remove') {
         if (!member.roles.cache.has(role.id)) {
           return interaction.editReply({ content: `${user.tag} does not have ${role.toString()}.` });
         }
         await member.roles.remove(role, reason);
+        try { await modlog.log(interaction, 'Role Removed', [
+          { name: 'Member', value: `${user.tag} (${user.id})`, inline: false },
+          { name: 'Role', value: `${role} (${role.id})`, inline: false },
+          { name: 'Reason', value: reasonRaw, inline: false },
+        ]); } catch (_) {}
         return interaction.editReply({ content: `Removed ${role.toString()} from ${user.tag}.` });
       }
     } catch (err) {

@@ -1,14 +1,13 @@
 const { SlashCommandBuilder, PermissionsBitField, ChannelType } = require('discord.js');
-const store = require('../utils/securityLogStore');
+const store = require('../utils/modLogStore');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('securitylog')
-    .setDescription('Configure where permission/hierarchy violation logs are sent')
+    .setName('modlog')
+    .setDescription('Configure moderation action logging')
     .addSubcommand(sub =>
-      sub
-        .setName('set')
-        .setDescription('Set the security log channel for this server')
+      sub.setName('set')
+        .setDescription('Set the moderation log channel')
         .addChannelOption(opt =>
           opt.setName('channel')
             .setDescription('Target text or announcement channel')
@@ -17,9 +16,8 @@ module.exports = {
         )
     )
     .addSubcommand(sub =>
-      sub
-        .setName('mode')
-        .setDescription('Choose where logs are delivered')
+      sub.setName('mode')
+        .setDescription('Choose where moderation logs are delivered')
         .addStringOption(opt =>
           opt.setName('delivery')
             .setDescription('Log delivery mode')
@@ -32,63 +30,47 @@ module.exports = {
         )
     )
     .addSubcommand(sub =>
-      sub
-        .setName('clear')
-        .setDescription('Clear the configured security log channel')
-    )
-    .addSubcommand(sub =>
-      sub
-        .setName('toggle')
-        .setDescription('Enable or disable security logging as a whole')
+      sub.setName('toggle')
+        .setDescription('Enable or disable moderation logging')
         .addBooleanOption(opt =>
-          opt.setName('enabled')
-            .setDescription('Enable (true) or disable (false) logging')
-            .setRequired(true)
+          opt.setName('enabled').setDescription('Enable (true) or disable (false)').setRequired(true)
         )
     )
     .addSubcommand(sub =>
-      sub
-        .setName('show')
-        .setDescription('Show the current security log channel')
+      sub.setName('show')
+        .setDescription('Show the current configuration')
     ),
 
   async execute(interaction) {
     if (!interaction.inGuild()) return interaction.reply({ content: 'Use this in a server.', ephemeral: true });
-
     await interaction.deferReply({ ephemeral: true });
-
     if (!interaction.member.permissions?.has(PermissionsBitField.Flags.ManageGuild)) {
-      return interaction.editReply({ content: 'You need Manage Server to configure the security log.' });
+      return interaction.editReply({ content: 'You need Manage Server to configure moderation logging.' });
     }
-
     const sub = interaction.options.getSubcommand();
     if (sub === 'set') {
       const ch = interaction.options.getChannel('channel', true);
       store.set(interaction.guildId, ch.id);
-      return interaction.editReply({ content: `Security log channel set to ${ch}.` });
+      return interaction.editReply({ content: `Moderation log channel set to ${ch}.` });
     }
     if (sub === 'mode') {
       const mode = interaction.options.getString('delivery', true);
       store.setMode(interaction.guildId, mode);
-      return interaction.editReply({ content: `Security log delivery set to: ${mode}.` });
+      return interaction.editReply({ content: `Moderation log delivery set to: ${mode}.` });
     }
     if (sub === 'toggle') {
       const enabled = interaction.options.getBoolean('enabled', true);
       store.setEnabled(interaction.guildId, enabled);
-      return interaction.editReply({ content: `Security logging is now ${enabled ? 'enabled' : 'disabled'}.` });
-    }
-    if (sub === 'clear') {
-      store.clear(interaction.guildId);
-      return interaction.editReply({ content: 'Cleared security log channel (will DM owners as fallback).' });
+      return interaction.editReply({ content: `Moderation logging is now ${enabled ? 'enabled' : 'disabled'}.` });
     }
     if (sub === 'show') {
       const id = store.get(interaction.guildId);
       const mode = store.getMode(interaction.guildId);
       const enabled = store.getEnabled(interaction.guildId);
       const chText = id ? `<#${id}> (${id})` : 'not set';
-      return interaction.editReply({ content: `Security log settings:\n- channel: ${chText}\n- delivery: ${mode}\n- enabled: ${enabled}` });
+      return interaction.editReply({ content: `Moderation log settings:\n- channel: ${chText}\n- delivery: ${mode}\n- enabled: ${enabled}` });
     }
-
     return interaction.editReply({ content: 'Unknown subcommand.' });
   },
 };
+

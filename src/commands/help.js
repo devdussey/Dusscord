@@ -6,21 +6,25 @@ function isOwner(userId) {
   return ids.includes(String(userId));
 }
 
-// Reorganized sections
 const categories = {
   'Moderation': [
     ['/- mute', 'Timeout a member (10m, 1h, 2d). Requires Moderate Members.'],
     ['/- kick', 'Kick a member. Requires Kick Members.'],
     ['/- ban', 'Ban a user; optional prune_days (0–7). Requires Ban Members.'],
     ['/- purge', 'Delete 1–100 recent messages here. Requires Manage Messages.'],
+    ['/- jail config/add/remove/status', 'Jail system to restrict and restore members. Requires Manage Roles.'],
   ],
   'Roles': [
     ['/- autoroles add/remove/list/clear', 'Auto-assign roles on join. Requires Manage Roles.'],
     ['/- role add/remove', 'Add or remove a specific role. Requires Manage Roles.'],
+    ['/- createrole', 'Quickly create a role. Requires Manage Roles.'],
+    ['/- deleterole', 'Delete a role. Requires Manage Roles.'],
+    ['/- reactionrole create', 'Create an embed with a selectable role menu. Requires Manage Roles.'],
   ],
   'Emoji & Stickers': [
     ['/- clone emoji', 'Clone a custom emoji by mention/ID/URL.'],
     ['/- clone sticker', 'Clone a sticker by ID/URL or upload.'],
+    ['/- cloneall', 'Clone emojis from another server by ID.'],
     ['/- enlarge emoji', 'Post a large emoji (supports Unicode).'],
     ['/- enlarge sticker', 'Post a sticker file as an image.'],
   ],
@@ -36,9 +40,13 @@ const categories = {
     ['/- joins backfill', 'Import historical join/leave events from linked channel.'],
   ],
   'Security': [
-    ['/- securitylog set/clear/show', 'Per-guild channel for security logs (fallback to DM owners).'],
+    ['/- securitylog set/clear/show', 'Configure security log channel and view settings.'],
+    ['/- securitylog mode', 'Choose delivery: channel, owners, or both.'],
+    ['/- securitylog toggle', 'Enable or disable security logging as a whole.'],
+    ['/- modlog set/mode/toggle/show', 'Configure moderation action logging (bans, kicks, mutes, role changes).'],
     ['/- logchannels', 'Show configured log channels.'],
     ['/- securityreport', 'Who triggered permission/hierarchy/missing-command events.'],
+    ['/- channelsync', 'Sync channels to their category permissions. Requires Manage Channels.'],
   ],
   'Media Tools': [
     ['/- removebg', 'Remove image background (API key required).'],
@@ -53,11 +61,10 @@ const categories = {
   ],
 };
 
-function buildEmbed(categoryName, userTag, client, includeOwner) {
+function buildEmbed(categoryName, includeOwner) {
   const embed = new EmbedBuilder()
     .setTitle('Bot Help')
-    .setColor('#0099ff')
-    .setFooter({ text: `Requested by ${userTag}`, iconURL: client.user.displayAvatarURL() });
+    .setColor('#0099ff');
 
   if (categoryName && categories[categoryName]) {
     if (categoryName === 'Owner Only' && !includeOwner) {
@@ -108,13 +115,13 @@ module.exports = {
       return interaction.reply({ content: 'This category is only visible to bot owners.', ephemeral: true });
     }
 
-    const embed = buildEmbed(cat, interaction.user.tag, interaction.client, owner);
+    const embed = buildEmbed(cat, owner);
     try {
       await interaction.reply({ embeds: [embed] });
-    } catch (err) {
+    } catch (_) {
       try {
         if (interaction.channel && interaction.channel.send) {
-          await interaction.channel.send({ content: `Here you go, <@${interaction.user.id}>:`, embeds: [embed] });
+          await interaction.channel.send({ embeds: [embed] });
         }
       } catch (_) {}
     }

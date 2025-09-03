@@ -16,6 +16,48 @@
           "timestamp": 1756869272472
         }
       ]
+    },
+    "1373229681461170196": {
+      "users": {
+        "1154777872259629066": {
+          "joins": 0,
+          "leaves": 1,
+          "lastJoinAt": null,
+          "lastLeaveAt": 1756875891286
+        },
+        "445289277795074048": {
+          "joins": 0,
+          "leaves": 1,
+          "lastJoinAt": null,
+          "lastLeaveAt": 1756875918247
+        },
+        "1068868597398650971": {
+          "joins": 0,
+          "leaves": 1,
+          "lastJoinAt": null,
+          "lastLeaveAt": 1756877984066
+        }
+      },
+      "events": [
+        {
+          "userId": "1154777872259629066",
+          "type": "leave",
+          "timestamp": 1756875891286,
+          "reason": "kick"
+        },
+        {
+          "userId": "445289277795074048",
+          "type": "leave",
+          "timestamp": 1756875918247,
+          "reason": "kick"
+        },
+        {
+          "userId": "1068868597398650971",
+          "type": "leave",
+          "timestamp": 1756877984066,
+          "reason": "kick"
+        }
+      ]
     }
   }
 }

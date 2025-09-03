@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
 const logger = require('../utils/securityLogger');
+const modlog = require('../utils/modLogger');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -75,6 +76,10 @@ module.exports = {
       const auditReason = `By ${interaction.user.tag} (${interaction.user.id}) | ${reason}`.slice(0, 512);
       await memberToKick.kick(auditReason);
       await interaction.editReply({ content: `Kicked ${user.tag} for: ${reason}` });
+      try { await modlog.log(interaction, 'User Kicked', [
+        { name: 'Target', value: `${user.tag} (${user.id})`, inline: false },
+        { name: 'Reason', value: reason, inline: false },
+      ], 0xffa500); } catch (_) {}
     } catch (err) {
       await interaction.editReply({ content: `Failed to kick: ${err.message || 'Unknown error'}` });
     }

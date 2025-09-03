@@ -1,5 +1,4 @@
-const { Events } = require('discord.js');
-const { EmbedBuilder } = require('discord.js');
+const { Events, PermissionsBitField, EmbedBuilder } = require('discord.js');
 
 module.exports = {
     name: Events.InteractionCreate,
@@ -55,6 +54,50 @@ module.exports = {
             }
         }
         
+        // Handle role selection menus (reaction role)
+        if (interaction.isStringSelectMenu()) {
+            if (interaction.customId === 'rr:select') {
+                if (!interaction.inGuild()) return;
+                const me = interaction.guild.members.me;
+                if (!me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
+                    try { await interaction.reply({ content: 'I need Manage Roles to update your roles.', ephemeral: true }); } catch (_) {}
+                    return;
+                }
+                let member;
+                try { member = await interaction.guild.members.fetch(interaction.user.id); } catch (_) {}
+                if (!member) {
+                    try { await interaction.reply({ content: 'Could not fetch your member data.', ephemeral: true }); } catch (_) {}
+                    return;
+                }
+
+                // Determine which roles this menu manages (from the component options)
+                const menuRoles = interaction.component?.options?.map(o => o.value).filter(Boolean) || [];
+                const selected = interaction.values || [];
+
+                const toAdd = selected.filter(id => !member.roles.cache.has(id));
+                const toRemove = menuRoles.filter(id => !selected.includes(id) && member.roles.cache.has(id));
+
+                // Filter by hierarchy and non-managed
+                const safeAdd = toAdd.filter(id => {
+                    const role = interaction.guild.roles.cache.get(id);
+                    return role && !role.managed && me.roles.highest.comparePositionTo(role) > 0;
+                });
+                const safeRemove = toRemove.filter(id => {
+                    const role = interaction.guild.roles.cache.get(id);
+                    return role && !role.managed && me.roles.highest.comparePositionTo(role) > 0;
+                });
+
+                try {
+                    if (safeAdd.length) await member.roles.add(safeAdd, 'Reaction role selection');
+                    if (safeRemove.length) await member.roles.remove(safeRemove, 'Reaction role selection');
+                    await interaction.reply({ content: 'Your roles have been updated.', ephemeral: true });
+                } catch (err) {
+                    await interaction.reply({ content: `Failed to update roles: ${err.message}`, ephemeral: true });
+                }
+                return;
+            }
+        }
+        
         // Handle modal submissions
         if (interaction.isModalSubmit()) {
             if (interaction.customId === 'embedBuilderModal') {
@@ -69,7 +112,7 @@ module.exports = {
                 try {
                     const embed = new EmbedBuilder()
                         .setColor(color)
-                        .setTimestamp();
+                        ;
 
                     if (title) embed.setTitle(title);
                     if (description) embed.setDescription(description);

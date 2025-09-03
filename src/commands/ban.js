@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
 const logger = require('../utils/securityLogger');
+const modlog = require('../utils/modLogger');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -83,6 +84,11 @@ module.exports = {
         reason: auditReason,
       });
       await interaction.editReply({ content: `Banned ${user.tag} for: ${reason}${pruneDays ? ` (deleted ${pruneDays}d of messages)` : ''}` });
+      try { await modlog.log(interaction, 'User Banned', [
+        { name: 'Target', value: `${user.tag} (${user.id})`, inline: false },
+        { name: 'Reason', value: reason, inline: false },
+        { name: 'Prune days', value: String(pruneDays), inline: true },
+      ], 0xff0000); } catch (_) {}
     } catch (err) {
       await interaction.editReply({ content: `Failed to ban: ${err.message || 'Unknown error'}` });
     }

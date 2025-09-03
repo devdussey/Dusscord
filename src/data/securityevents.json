@@ -1,0 +1,13 @@
+{
+  "events": [
+    {
+      "type": "missing_cmd",
+      "guildId": "1373229681461170196",
+      "userId": "1388462776653189142",
+      "tag": "thejohnpaul.",
+      "action": "missing_command",
+      "reason": "channelsync",
+      "timestamp": 1756879337216
+    }
+  ]
+}

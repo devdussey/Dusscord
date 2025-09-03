@@ -14,20 +14,42 @@ async function sendToChannelOrOwners(interaction, embed) {
   let channelId = null;
   if (guild) channelId = logStore.get(guild.id);
   if (!channelId) channelId = process.env.SECURITY_LOG_CHANNEL_ID;
-  if (guild && channelId) {
+  const mode = guild ? logStore.getMode(guild.id) : 'channel';
+  if (guild && logStore.getEnabled(guild.id) === false) return false;
+
+  let sent = false;
+  const trySendChannel = async () => {
+    if (!guild || !channelId) return false;
     const ch = guild.channels.cache.get(channelId) || (await guild.channels.fetch(channelId).catch(() => null));
     if (ch && ch.isTextBased?.()) {
       try { await ch.send({ embeds: [embed] }); return true; } catch (_) {}
     }
+    return false;
+  };
+  const trySendOwners = async () => {
+    const owners = parseOwnerIds();
+    let ok = false;
+    for (const id of owners) {
+      try {
+        const user = await client.users.fetch(id);
+        await user.send({ embeds: [embed] });
+        ok = true;
+      } catch (_) {}
+    }
+    return ok;
+  };
+
+  if (mode === 'channel') {
+    sent = await trySendChannel();
+    if (!sent) sent = await trySendOwners(); // fallback
+  } else if (mode === 'owners') {
+    sent = await trySendOwners();
+  } else { // both
+    const a = await trySendChannel();
+    const b = await trySendOwners();
+    sent = a || b;
   }
-  const owners = parseOwnerIds();
-  for (const id of owners) {
-    try {
-      const user = await client.users.fetch(id);
-      await user.send({ embeds: [embed] });
-    } catch (_) {}
-  }
-  return false;
+  return sent;
 }
 
 function baseEmbed(interaction, title, color = 0xffaa00) {

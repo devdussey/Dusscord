@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionsBitField, ChannelType } = require('discord.js');
 const logger = require('../utils/securityLogger');
+const modlog = require('../utils/modLogger');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -53,6 +54,11 @@ module.exports = {
       const count = deleted?.size ?? 0;
       const note = count < amount ? ' (some messages may be older than 14 days and cannot be deleted)' : '';
       await interaction.editReply({ content: `Deleted ${count} message(s)${note}.` });
+      try { await modlog.log(interaction, 'Messages Purged', [
+        { name: 'Channel', value: `<#${channel.id}> (${channel.id})`, inline: true },
+        { name: 'Requested', value: String(amount), inline: true },
+        { name: 'Deleted', value: String(count), inline: true },
+      ], 0x2f3136); } catch (_) {}
     } catch (err) {
       await interaction.editReply({ content: `Failed to purge: ${err.message || 'Unknown error'}` });
     }

@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
 const logger = require('../utils/securityLogger');
+const modlog = require('../utils/modLogger');
 
 function parseDurationMs(input) {
   if (!input || typeof input !== 'string') return null;
@@ -100,6 +101,11 @@ module.exports = {
       const auditReason = `By ${interaction.user.tag} (${interaction.user.id}) | ${reason}`.slice(0, 512);
       await memberToMute.timeout(durationMs, auditReason);
       await interaction.editReply({ content: `Muted ${user.tag} for ${durationStr} | Reason: ${reason}` });
+      try { await modlog.log(interaction, 'Member Timed Out', [
+        { name: 'Target', value: `${user.tag} (${user.id})`, inline: false },
+        { name: 'Duration', value: durationStr, inline: true },
+        { name: 'Reason', value: reason, inline: false },
+      ], 0xffcc00); } catch (_) {}
     } catch (err) {
       await interaction.editReply({ content: `Failed to mute: ${err.message || 'Unknown error'}` });
     }

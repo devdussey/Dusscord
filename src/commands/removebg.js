@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
 // node-fetch v3 is ESM-only; use dynamic import in CommonJS
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-const REMOVE_BG_API_KEY = 'YOUR_REMOVE_BG_API_KEY'; // Replace with your actual key
+const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY;
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -20,6 +20,13 @@ module.exports = {
 
     async execute(interaction) {
         await interaction.deferReply();
+
+        try { console.log(`[removebg] invoked by ${interaction.user?.id} in ${interaction.guild?.id}`); } catch (_) {}
+
+        if (!REMOVE_BG_API_KEY) {
+            await interaction.editReply('RemoveBG API key is not configured. Set REMOVE_BG_API_KEY in your environment.');
+            return;
+        }
 
         let imageUrl = interaction.options.getString('image_url');
 
@@ -46,6 +53,7 @@ module.exports = {
         }
 
         try {
+            console.log(`[removebg] imageUrl=${imageUrl}`);
             const response = await fetch('https://api.remove.bg/v1.0/removebg', {
                 method: 'POST',
                 headers: {
@@ -58,15 +66,30 @@ module.exports = {
             });
 
             if (!response.ok) {
-                throw new Error('RemoveBG API error');
+                const text = await response.text().catch(() => '');
+                let msg = 'RemoveBG API error';
+                try {
+                    const data = JSON.parse(text);
+                    msg = data?.errors?.[0]?.title || data?.errors?.[0]?.detail || msg;
+                } catch (_) {}
+                console.log(`[removebg] error status=${response.status} body=${text?.slice(0,400)}`);
+                throw new Error(msg);
             }
 
             const buffer = await response.buffer();
             const attachment = new AttachmentBuilder(buffer, { name: 'no-bg.png' });
 
-            await interaction.editReply({ files: [attachment] });
+            try {
+                await interaction.editReply({ content: 'Background removed:', files: [attachment] });
+            } catch (e) {
+                try { await interaction.followUp({ content: 'Background removed:', files: [attachment] }); } catch (_) {}
+            }
         } catch (error) {
-            await interaction.editReply('Failed to remove background. Please check the image and try again.');
+            try {
+                await interaction.editReply(`Failed to remove background: ${error.message}`);
+            } catch (_) {
+                try { await interaction.followUp({ content: `Failed to remove background: ${error.message}` }); } catch (_) {}
+            }
         }
     },
 };

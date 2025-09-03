@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const dataDir = path.join(__dirname, '..', 'data');
-const dataFile = path.join(dataDir, 'securitylog.json');
+const dataFile = path.join(dataDir, 'modlog.json');
 
 let cache = null;
 
@@ -24,7 +24,6 @@ function ensureGuild(guildId) {
   ensureLoaded();
   const cur = cache[guildId];
   if (cur && typeof cur === 'object') return cur;
-  // Migrate string -> object
   const obj = { channelId: typeof cur === 'string' ? cur : null, mode: 'channel', enabled: true };
   cache[guildId] = obj;
   return obj;
@@ -35,49 +34,13 @@ function persist() {
   fs.writeFileSync(dataFile, JSON.stringify(cache, null, 2), 'utf8');
 }
 
-function get(guildId) {
-  ensureLoaded();
-  const g = ensureGuild(guildId);
-  return g.channelId || null;
-}
-
-function getMode(guildId) {
-  ensureLoaded();
-  const g = ensureGuild(guildId);
-  return g.mode || 'channel';
-}
-
-function set(guildId, channelId) {
-  ensureLoaded();
-  const g = ensureGuild(guildId);
-  g.channelId = channelId;
-  persist();
-}
-
-function setMode(guildId, mode) {
-  ensureLoaded();
-  const g = ensureGuild(guildId);
-  g.mode = mode;
-  persist();
-}
-
-function getEnabled(guildId) {
-  ensureLoaded();
-  const g = ensureGuild(guildId);
-  return typeof g.enabled === 'boolean' ? g.enabled : true;
-}
-
-function setEnabled(guildId, enabled) {
-  ensureLoaded();
-  const g = ensureGuild(guildId);
-  g.enabled = !!enabled;
-  persist();
-}
-
-function clear(guildId) {
-  ensureLoaded();
-  delete cache[guildId];
-  persist();
-}
+function get(guildId) { const g = ensureGuild(guildId); return g.channelId || null; }
+function set(guildId, channelId) { const g = ensureGuild(guildId); g.channelId = channelId; persist(); }
+function clear(guildId) { ensureLoaded(); delete cache[guildId]; persist(); }
+function getMode(guildId) { const g = ensureGuild(guildId); return g.mode || 'channel'; }
+function setMode(guildId, mode) { const g = ensureGuild(guildId); g.mode = mode; persist(); }
+function getEnabled(guildId) { const g = ensureGuild(guildId); return typeof g.enabled === 'boolean' ? g.enabled : true; }
+function setEnabled(guildId, enabled) { const g = ensureGuild(guildId); g.enabled = !!enabled; persist(); }
 
 module.exports = { get, set, clear, getMode, setMode, getEnabled, setEnabled };
+
