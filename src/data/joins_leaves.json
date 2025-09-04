@@ -54,6 +54,18 @@
           "leaves": 1,
           "lastJoinAt": null,
           "lastLeaveAt": 1756914545468
+        },
+        "1342632458012725308": {
+          "joins": 0,
+          "leaves": 1,
+          "lastJoinAt": null,
+          "lastLeaveAt": 1756941395943
+        },
+        "830134415803678751": {
+          "joins": 0,
+          "leaves": 1,
+          "lastJoinAt": null,
+          "lastLeaveAt": 1756941620140
         }
       },
       "events": [
@@ -107,6 +119,18 @@
           "type": "leave",
           "timestamp": 1756915060250,
           "reason": "kick"
+        },
+        {
+          "userId": "1342632458012725308",
+          "type": "leave",
+          "timestamp": 1756941395943,
+          "reason": "kick"
+        },
+        {
+          "userId": "830134415803678751",
+          "type": "leave",
+          "timestamp": 1756941620140,
+          "reason": "left"
         }
       ]
     },

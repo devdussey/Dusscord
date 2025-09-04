@@ -8,6 +8,33 @@
       "action": "missing_command",
       "reason": "channelsync",
       "timestamp": 1756879337216
+    },
+    {
+      "type": "perm_denied",
+      "guildId": "1396938626851406027",
+      "userId": "963891726567743580",
+      "tag": "its.giving.trash",
+      "action": "wraith",
+      "reason": "User is not a bot owner",
+      "timestamp": 1756941186903
+    },
+    {
+      "type": "perm_denied",
+      "guildId": "1373229681461170196",
+      "userId": "963891726567743580",
+      "tag": "its.giving.trash",
+      "action": "wraith",
+      "reason": "User is not a bot owner",
+      "timestamp": 1756941459361
+    },
+    {
+      "type": "perm_denied",
+      "guildId": "1396938626851406027",
+      "userId": "963891726567743580",
+      "tag": "its.giving.trash",
+      "action": "wraith",
+      "reason": "User is not a bot owner",
+      "timestamp": 1756941807117
     }
   ]
 }
