@@ -21,11 +21,19 @@ module.exports = {
     }
 
     // Install console.error relay to a Discord channel or owner DMs
+  try {
+    const relay = require('../utils/errorConsoleRelay');
+    relay.install(client);
+  } catch (e) {
+    console.warn('Failed to install error console relay:', e?.message || e);
+  }
+
+    // Start auto-post scheduler for any saved repeat jobs
     try {
-      const relay = require('../utils/errorConsoleRelay');
-      relay.install(client);
+      const scheduler = require('../utils/autoPostScheduler');
+      scheduler.startAll(client);
     } catch (e) {
-      console.warn('Failed to install error console relay:', e?.message || e);
+      console.warn('Failed to start auto-post scheduler:', e?.message || e);
     }
   },
 };
