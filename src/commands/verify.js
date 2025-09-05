@@ -72,7 +72,7 @@ module.exports = {
       try {
         const { applyDefaultColour } = require('../utils/guildColourStore');
         applyDefaultColour(embed, interaction.guildId);
-      } catch (_) {}
+      } catch (err) { console.error('src/commands/verify.js', err); }
 
       const button = new ButtonBuilder()
         .setCustomId('verify:go')
@@ -136,7 +136,7 @@ module.exports = {
       try {
         const { applyDefaultColour } = require('../utils/guildColourStore');
         applyDefaultColour(embed, interaction.guildId);
-      } catch (_) {}
+      } catch (err) { console.error('src/commands/verify.js', err); }
       const button = new ButtonBuilder()
         .setCustomId('verify:go')
         .setLabel(cfg.label || 'Verify')

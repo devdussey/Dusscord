@@ -21,7 +21,7 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
 
-        try { console.log(`[removebg] invoked by ${interaction.user?.id} in ${interaction.guild?.id}`); } catch (_) {}
+        try { console.log(`[removebg] invoked by ${interaction.user?.id} in ${interaction.guild?.id}`); } catch (err) { console.error('src/commands/removebg.js', err); }
 
         if (!REMOVE_BG_API_KEY) {
             await interaction.editReply('RemoveBG API key is not configured. Set REMOVE_BG_API_KEY in your environment.');
@@ -71,7 +71,7 @@ module.exports = {
                 try {
                     const data = JSON.parse(text);
                     msg = data?.errors?.[0]?.title || data?.errors?.[0]?.detail || msg;
-                } catch (_) {}
+                } catch (err) { console.error('src/commands/removebg.js', err); }
                 console.log(`[removebg] error status=${response.status} body=${text?.slice(0,400)}`);
                 throw new Error(msg);
             }
@@ -82,13 +82,13 @@ module.exports = {
             try {
                 await interaction.editReply({ content: 'Background removed:', files: [attachment] });
             } catch (e) {
-                try { await interaction.followUp({ content: 'Background removed:', files: [attachment] }); } catch (_) {}
+                try { await interaction.followUp({ content: 'Background removed:', files: [attachment] }); } catch (err) { console.error('src/commands/removebg.js', err); }
             }
         } catch (error) {
             try {
                 await interaction.editReply(`Failed to remove background: ${error.message}`);
-            } catch (_) {
-                try { await interaction.followUp({ content: `Failed to remove background: ${error.message}` }); } catch (_) {}
+            } catch (err) { console.error('src/commands/removebg.js', err);
+                try { await interaction.followUp({ content: `Failed to remove background: ${error.message}` }); } catch (err) { console.error('src/commands/removebg.js', err); }
             }
         }
     },

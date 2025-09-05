@@ -99,7 +99,7 @@ module.exports = {
     try {
       const { applyDefaultColour } = require('../utils/guildColourStore');
       applyDefaultColour(embed, interaction.guildId);
-    } catch (_) {
+    } catch (err) { console.error('src/commands/reactionrole.js', err);
       // fallback stays uncoloured if util import fails
     }
 

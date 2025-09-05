@@ -78,7 +78,7 @@ module.exports = {
         position = Math.max(1, Math.min(position, maxPosition));
         try {
           await role.setPosition(position);
-        } catch (_) {
+        } catch (err) { console.error('src/commands/createrole.js', err);
           // If setting position fails, keep role created and continue
         }
       }
@@ -88,7 +88,7 @@ module.exports = {
         { name: 'Color', value: String(color || 'default'), inline: true },
         { name: 'Hoist', value: String(hoist), inline: true },
         { name: 'Mentionable', value: String(mentionable), inline: true },
-      ]); } catch (_) {}
+      ]); } catch (err) { console.error('src/commands/createrole.js', err); }
       return interaction.reply({ content: `Created role ${role.toString()}${position ? ` at position ${role.position}` : ''}.`, ephemeral: true });
     } catch (err) {
       return interaction.reply({ content: `Failed to create role: ${err.message || 'Unknown error'}`, ephemeral: true });

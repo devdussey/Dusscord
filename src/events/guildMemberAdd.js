@@ -8,7 +8,7 @@ module.exports = {
     async execute(member) {
         try {
             // Record join
-            try { jlStore.addEvent(member.guild.id, member.id, 'join', Date.now()); } catch (_) {}
+            try { jlStore.addEvent(member.guild.id, member.id, 'join', Date.now()); } catch (err) { console.error('src/events/guildMemberAdd.js', err); }
 
             const roleIds = store.getGuildRoles(member.guild.id);
             if (!roleIds.length) return;

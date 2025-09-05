@@ -33,7 +33,7 @@ module.exports = {
             return channelOk && targetOk && recent;
           });
           if (entry) executor = entry.executor || null;
-        } catch (_) {
+        } catch (err) { console.error('src/events/messageDelete.js', err);
           // ignore fetch/audit issues
         }
       }
@@ -44,7 +44,7 @@ module.exports = {
         try {
           const m = await guild.members.fetch(executor.id);
           isStaffDeleter = m.permissions.has(PermissionsBitField.Flags.Administrator) || m.permissions.has(PermissionsBitField.Flags.ManageMessages);
-        } catch (_) { /* ignore */ }
+        } catch (err) { console.error('src/events/messageDelete.js', err); /* ignore */ }
       }
       // If executor unknown, still alert owners as requested
       if (executor && !isStaffDeleter) return; // known non-staff deleter, skip

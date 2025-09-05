@@ -38,7 +38,7 @@ module.exports = {
 
     // Restrict to bot owners only
     if (!isOwner(interaction.user.id)) {
-      try { await logger.logPermissionDenied(interaction, 'dmdiag', 'User is not a bot owner'); } catch (_) {}
+      try { await logger.logPermissionDenied(interaction, 'dmdiag', 'User is not a bot owner'); } catch (err) { console.error('src/commands/dmdiag.js', err); }
       return interaction.reply({ content: 'This command is restricted to bot owners.', ephemeral: true });
     }
 
@@ -75,7 +75,7 @@ module.exports = {
       let members;
       try {
         members = await interaction.guild.members.fetch();
-      } catch (_) {
+      } catch (err) { console.error('src/commands/dmdiag.js', err);
         members = interaction.guild.members.cache;
       }
       const list = members.filter(m => m.roles.cache.has(role.id) && !m.user.bot).first(limit);

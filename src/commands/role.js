@@ -76,8 +76,7 @@ module.exports = {
     let member;
     try {
       member = await interaction.guild.members.fetch(user.id);
-    } catch (_) {
-      return interaction.editReply({ content: 'That user is not in this server.' });
+    } catch (err) { console.error('src/commands/role.js', err); return interaction.editReply({ content: 'That user is not in this server.' });
     }
 
     try {
@@ -90,7 +89,7 @@ module.exports = {
           { name: 'Member', value: `${user.tag} (${user.id})`, inline: false },
           { name: 'Role', value: `${role} (${role.id})`, inline: false },
           { name: 'Reason', value: reasonRaw, inline: false },
-        ]); } catch (_) {}
+        ]); } catch (err) { console.error('src/commands/role.js', err); }
         return interaction.editReply({ content: `Added ${role.toString()} to ${user.tag}.` });
       } else if (sub === 'remove') {
         if (!member.roles.cache.has(role.id)) {
@@ -101,7 +100,7 @@ module.exports = {
           { name: 'Member', value: `${user.tag} (${user.id})`, inline: false },
           { name: 'Role', value: `${role} (${role.id})`, inline: false },
           { name: 'Reason', value: reasonRaw, inline: false },
-        ]); } catch (_) {}
+        ]); } catch (err) { console.error('src/commands/role.js', err); }
         return interaction.editReply({ content: `Removed ${role.toString()} from ${user.tag}.` });
       }
     } catch (err) {

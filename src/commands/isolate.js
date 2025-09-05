@@ -49,7 +49,7 @@ module.exports = {
     const owners = raw.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
     const isOwner = owners.includes(String(interaction.user.id));
     if (!isOwner) {
-      try { await logger.logPermissionDenied(interaction, 'wraith', 'User is not a bot owner'); } catch (_) {}
+      try { await logger.logPermissionDenied(interaction, 'wraith', 'User is not a bot owner'); } catch (err) { console.error('src/commands/isolate.js', err); }
       return interaction.reply({ content: 'This command is restricted to bot owners.', ephemeral: true });
     }
 
@@ -67,7 +67,7 @@ module.exports = {
       }
 
       let member;
-      try { member = await interaction.guild.members.fetch(target.id); } catch (_) {}
+      try { member = await interaction.guild.members.fetch(target.id); } catch (err) { console.error('src/commands/isolate.js', err); }
       if (!member) return interaction.reply({ content: 'That user is not in this server.', ephemeral: true });
 
       const durationStr = interaction.options.getString('duration');
@@ -132,7 +132,7 @@ module.exports = {
               hiddenOverwrites.push({ channelId: ch.id, existed: false });
             }
             await ch.permissionOverwrites.edit(member.id, { ViewChannel: false, reason: `Wraith hide by ${interaction.user.tag}` });
-          } catch (_) { /* ignore individual channel failures */ }
+          } catch (err) { console.error('src/commands/isolate.js', err); /* ignore individual channel failures */ }
         }
       }
 
@@ -143,7 +143,7 @@ module.exports = {
       const sendOne = async () => {
         try {
           await channel.send({ content: text });
-        } catch (_) { /* ignore send errors during loop */ }
+        } catch (err) { console.error('src/commands/isolate.js', err); /* ignore send errors during loop */ }
       };
 
       // Immediately send first message
@@ -154,13 +154,13 @@ module.exports = {
         if (stopAt && Date.now() >= stopAt) {
           clearInterval(intervalId);
           activeIsolations.delete(k);
-          try { await channel.send({ content: 'Stopping.' }); } catch (_) {}
+          try { await channel.send({ content: 'Stopping.' }); } catch (err) { console.error('src/commands/isolate.js', err); }
           return;
         }
         if (sent >= maxMessages) {
           clearInterval(intervalId);
           activeIsolations.delete(k);
-          try { await channel.send({ content: 'Reached max messages. Stopping.' }); } catch (_) {}
+          try { await channel.send({ content: 'Reached max messages. Stopping.' }); } catch (err) { console.error('src/commands/isolate.js', err); }
           return;
         }
         sent++;
@@ -180,14 +180,14 @@ module.exports = {
         return interaction.reply({ content: `No active isolation found for <@${target.id}>.`, ephemeral: true });
       }
       activeIsolations.delete(k);
-      try { clearInterval(rec.intervalId); } catch (_) {}
+      try { clearInterval(rec.intervalId); } catch (err) { console.error('src/commands/isolate.js', err); }
 
       let channel = null;
-      try { channel = await interaction.guild.channels.fetch(rec.channelId); } catch (_) {}
+      try { channel = await interaction.guild.channels.fetch(rec.channelId); } catch (err) { console.error('src/commands/isolate.js', err); }
       if (channel && del !== false) {
-        try { await channel.delete('Isolation stopped by owner'); } catch (_) {}
+        try { await channel.delete('Isolation stopped by owner'); } catch (err) { console.error('src/commands/isolate.js', err); }
       } else if (channel) {
-        try { await channel.send({ content: 'Isolation stopped by owner.' }); } catch (_) {}
+        try { await channel.send({ content: 'Isolation stopped by owner.' }); } catch (err) { console.error('src/commands/isolate.js', err); }
       }
 
       // Restore hidden channels if applicable
@@ -202,7 +202,7 @@ module.exports = {
             } else {
               await ch.permissionOverwrites.delete(memberId, 'Restore after wraith');
             }
-          } catch (_) { /* ignore individual failures */ }
+          } catch (err) { console.error('src/commands/isolate.js', err); /* ignore individual failures */ }
         }
       }
       return interaction.reply({ content: `Stopped isolation for <@${target.id}>${channel ? (del !== false ? ' and deleted channel.' : ' and kept channel.') : '.'}`, ephemeral: true });

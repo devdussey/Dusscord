@@ -60,7 +60,7 @@ module.exports = {
 
     // Try to fetch member for hierarchy checks if they are in the guild
     let targetMember = null;
-    try { targetMember = await interaction.guild.members.fetch(user.id); } catch (_) {}
+    try { targetMember = await interaction.guild.members.fetch(user.id); } catch (err) { console.error('src/commands/ban.js', err); }
 
     if (targetMember) {
       const meHigher = me.roles.highest.comparePositionTo(targetMember.roles.highest) > 0;
@@ -88,7 +88,7 @@ module.exports = {
         { name: 'Target', value: `${user.tag} (${user.id})`, inline: false },
         { name: 'Reason', value: reason, inline: false },
         { name: 'Prune days', value: String(pruneDays), inline: true },
-      ], 0xff0000); } catch (_) {}
+      ], 0xff0000); } catch (err) { console.error('src/commands/ban.js', err); }
     } catch (err) {
       await interaction.editReply({ content: `Failed to ban: ${err.message || 'Unknown error'}` });
     }

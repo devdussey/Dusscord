@@ -5,7 +5,7 @@ function formatArg(a) {
     if (a instanceof Error) return a.stack || `${a.name}: ${a.message}`;
     if (typeof a === 'object') return JSON.stringify(a, null, 2);
     return String(a);
-  } catch (_) {
+  } catch (err) { console.error('src/utils/errorConsoleRelay.js', err);
     try { return String(a); } catch { return '[Unprintable]'; }
   }
 }
@@ -64,13 +64,13 @@ function install(client) {
             await ch.send({ content });
             continue;
           }
-        } catch (_) { /* fall through to owners */ }
+        } catch (err) { console.error('src/utils/errorConsoleRelay.js', err); /* fall through to owners */ }
       }
       for (const id of owners) {
         try {
           const u = await client.users.fetch(id);
           await u.send({ content });
-        } catch (_) { /* ignore DM failures */ }
+        } catch (err) { console.error('src/utils/errorConsoleRelay.js', err); /* ignore DM failures */ }
       }
     }
   }
@@ -109,7 +109,7 @@ function install(client) {
         } else {
           scheduleFlush(level);
         }
-      } catch (_) {
+      } catch (err) { console.error('src/utils/errorConsoleRelay.js', err);
         try { originals.error('[errorConsoleRelay] failed to relay console.' + level); } catch {}
       }
     };

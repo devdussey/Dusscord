@@ -154,7 +154,7 @@ module.exports = {
             try {
               store.addEvent(interaction.guildId, id, isJoin ? 'join' : 'leave', msg.createdTimestamp || Date.now(), { messageId: msg.id, sourceChannelId: channel.id });
               if (isJoin) joins++; else leaves++;
-            } catch (_) {}
+            } catch (err) { console.error('src/commands/joins.js', err); }
           }
         }
         if (msgs.size < remaining) break; // no more messages

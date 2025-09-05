@@ -25,11 +25,11 @@ function startJob(client, guildId, job) {
       if (!guild) return;
       let channel = guild.channels.cache.get(job.channelId);
       if (!channel) {
-        try { channel = await guild.channels.fetch(job.channelId); } catch (_) { channel = null; }
+        try { channel = await guild.channels.fetch(job.channelId); } catch (err) { console.error('src/utils/autoPostScheduler.js', err); channel = null; }
       }
       if (!channel) return;
       await channel.send({ content: job.message, allowedMentions: { parse: [] } });
-    } catch (_) {}
+    } catch (err) { console.error('src/utils/autoPostScheduler.js', err); }
   }, interval);
   timers.set(k, handle);
 }

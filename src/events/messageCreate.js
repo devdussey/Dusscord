@@ -34,14 +34,14 @@ module.exports = {
             default:
               matched = hay.includes(needle);
           }
-        } catch (_) { matched = false; }
+        } catch (err) { console.error('src/events/messageCreate.js', err); matched = false; }
 
         if (matched) {
-          try { await message.reply({ content: String(rule.reply || '').slice(0, 2000) }); } catch (_) {}
+          try { await message.reply({ content: String(rule.reply || '').slice(0, 2000) }); } catch (err) { console.error('src/events/messageCreate.js', err); }
           // do not break; allow multiple rules to respond if applicable
         }
       }
-    } catch (_) { /* swallow */ }
+    } catch (err) { console.error('src/events/messageCreate.js', err); /* swallow */ }
   }
 };
 

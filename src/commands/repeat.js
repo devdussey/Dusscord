@@ -69,14 +69,14 @@ module.exports = {
         message,
         intervalMs: Math.max(60000, seconds * 1000),
       });
-      try { scheduler.startJob(interaction.client, guildId, job); } catch (_) {}
+      try { scheduler.startJob(interaction.client, guildId, job); } catch (err) { console.error('src/commands/repeat.js', err); }
       return interaction.editReply({ content: `Repeat job #${job.id} started in ${channel} every ${Math.max(60, seconds)} seconds.` });
     }
 
     if (sub === 'stop') {
       const id = interaction.options.getInteger('id', true);
       const ok = store.removeJob(guildId, id);
-      try { scheduler.stopJob(guildId, id); } catch (_) {}
+      try { scheduler.stopJob(guildId, id); } catch (err) { console.error('src/commands/repeat.js', err); }
       return interaction.editReply({ content: ok ? `Stopped and removed job #${id}.` : `Job #${id} not found.` });
     }
 

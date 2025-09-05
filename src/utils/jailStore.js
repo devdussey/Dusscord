@@ -5,9 +5,9 @@ const DATA_DIR = path.join(__dirname, '..', '..', 'data');
 const FILE = path.join(DATA_DIR, 'jail.json');
 
 function ensureFile() {
-  try { if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (_) {}
+  try { if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (err) { console.error('src/utils/jailStore.js', err); }
   if (!fs.existsSync(FILE)) {
-    try { fs.writeFileSync(FILE, JSON.stringify({ guilds: {} }, null, 2)); } catch (_) {}
+    try { fs.writeFileSync(FILE, JSON.stringify({ guilds: {} }, null, 2)); } catch (err) { console.error('src/utils/jailStore.js', err); }
   }
 }
 
@@ -18,14 +18,14 @@ function load() {
     const parsed = JSON.parse(raw || '{}');
     if (!parsed.guilds || typeof parsed.guilds !== 'object') parsed.guilds = {};
     return parsed;
-  } catch (_) {
+  } catch (err) { console.error('src/utils/jailStore.js', err);
     return { guilds: {} };
   }
 }
 
 function save(data) {
   ensureFile();
-  try { fs.writeFileSync(FILE, JSON.stringify(data, null, 2)); } catch (_) {}
+  try { fs.writeFileSync(FILE, JSON.stringify(data, null, 2)); } catch (err) { console.error('src/utils/jailStore.js', err); }
 }
 
 function getGuild(data, guildId) {

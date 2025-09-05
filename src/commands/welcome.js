@@ -15,9 +15,9 @@ function buildEmbedFromFields(fields, guildId) {
   if (image) embed.setImage(image);
   if (footer) embed.setFooter({ text: footer });
   // Prefer guild default colour; if user specified a colour string, try to apply it as fallback
-  try { applyDefaultColour(embed, guildId); } catch (_) {}
+  try { applyDefaultColour(embed, guildId); } catch (err) { console.error('src/commands/welcome.js', err); }
   if (color) {
-    try { embed.setColor(color); } catch (_) {}
+    try { embed.setColor(color); } catch (err) { console.error('src/commands/welcome.js', err); }
   }
   return embed;
 }
@@ -71,7 +71,7 @@ module.exports = {
       const channel = await interaction.guild.channels.fetch(cfg.channelId).catch(() => null);
       if (!channel) return interaction.reply({ content: 'Saved channel not found. Re-run setup.', ephemeral: true });
       const preview = EmbedBuilder.from(cfg.embed);
-      try { await channel.send({ content: `Welcome, ${interaction.user}!`, embeds: [preview] }); } catch (_) {}
+      try { await channel.send({ content: `Welcome, ${interaction.user}!`, embeds: [preview] }); } catch (err) { console.error('src/commands/welcome.js', err); }
       return interaction.reply({ content: `Sent a test welcome to ${channel}.`, ephemeral: true });
     }
 

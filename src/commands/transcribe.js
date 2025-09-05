@@ -7,7 +7,7 @@ try {
   if (typeof FormData !== 'undefined') {
     FormDataCtor = FormData;
   }
-} catch (_) {}
+} catch (err) { console.error('src/commands/transcribe.js', err); }
 if (!FormDataCtor) {
   try {
     // Fallback to form-data package (CommonJS)
@@ -59,14 +59,14 @@ module.exports = {
       if (typeof attachment.size === 'number' && attachment.size > MAX_BYTES) {
         return interaction.editReply(`File is too large (${Math.round(attachment.size / (1024*1024))}MB). Max allowed is ${MAX_BYTES / (1024*1024)}MB.`);
       }
-    } catch (_) {}
+    } catch (err) { console.error('src/commands/transcribe.js', err); }
 
     // Basic content-type filter (allow common audio types but don’t hard-block if missing)
     const ct = (attachment.contentType || '').toLowerCase();
     const allowed = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/ogg', 'audio/webm', 'audio/mp4', 'audio/m4a'];
     if (ct && !allowed.some(a => ct.includes(a.split('/')[1]) || ct === a)) {
       // Continue, but warn in logs
-      try { console.log(`[transcribe] Unrecognized content-type: ${ct}`); } catch (_) {}
+      try { console.log(`[transcribe] Unrecognized content-type: ${ct}`); } catch (err) { console.error('src/commands/transcribe.js', err); }
     }
 
     const prompt = interaction.options.getString('prompt') || undefined;
@@ -99,7 +99,7 @@ module.exports = {
         try {
           const { Blob } = require('buffer');
           blob = new Blob([audioBuffer], { type: mimeType });
-        } catch (_) {
+        } catch (err) { console.error('src/commands/transcribe.js', err);
           // Fallback: submit buffer directly; undici supports Buffer as body part
           blob = audioBuffer;
         }
@@ -122,12 +122,12 @@ module.exports = {
       const bodyText = await resp.text();
       if (!resp.ok) {
         let msg = bodyText;
-        try { msg = (JSON.parse(bodyText)?.error?.message) || msg; } catch (_) {}
+        try { msg = (JSON.parse(bodyText)?.error?.message) || msg; } catch (err) { console.error('src/commands/transcribe.js', err); }
         throw new Error(`OpenAI API error: ${resp.status} ${msg}`);
       }
 
       let data;
-      try { data = JSON.parse(bodyText); } catch (_) {
+      try { data = JSON.parse(bodyText); } catch (err) { console.error('src/commands/transcribe.js', err);
         // Some clients can request text responses; attempt soft parse
         data = { text: bodyText };
       }
@@ -149,14 +149,14 @@ module.exports = {
         const chunk = text.slice(i, i + MAX_DISCORD);
         // Follow-up to avoid editing the same message repeatedly
         // Try ephemeral followUp (works because initial reply was ephemeral)
-        try { await interaction.followUp({ content: chunk, ephemeral: true }); } catch (_) {}
+        try { await interaction.followUp({ content: chunk, ephemeral: true }); } catch (err) { console.error('src/commands/transcribe.js', err); }
       }
     } catch (err) {
       const msg = err?.message || String(err);
       try {
         await interaction.editReply(`Failed to transcribe audio: ${msg}`);
-      } catch (_) {
-        try { await interaction.followUp({ content: `Failed to transcribe audio: ${msg}`, ephemeral: true }); } catch (_) {}
+      } catch (err) { console.error('src/commands/transcribe.js', err);
+        try { await interaction.followUp({ content: `Failed to transcribe audio: ${msg}`, ephemeral: true }); } catch (err) { console.error('src/commands/transcribe.js', err); }
       }
     }
   },

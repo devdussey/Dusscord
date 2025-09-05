@@ -69,7 +69,7 @@ function buildEmbed(categoryName, includeOwner, guildId) {
   try {
     const { applyDefaultColour } = require('../utils/guildColourStore');
     applyDefaultColour(embed, guildId);
-  } catch (_) {}
+  } catch (err) { console.error('src/commands/help.js', err); }
 
   if (categoryName && categories[categoryName]) {
     if (categoryName === 'Owner Only' && !includeOwner) {
@@ -123,12 +123,12 @@ module.exports = {
     const embed = buildEmbed(cat, owner, interaction.guildId);
     try {
       await interaction.reply({ embeds: [embed] });
-    } catch (_) {
+    } catch (err) { console.error('src/commands/help.js', err);
       try {
         if (interaction.channel && interaction.channel.send) {
           await interaction.channel.send({ embeds: [embed] });
         }
-      } catch (_) {}
+      } catch (err) { console.error('src/commands/help.js', err); }
     }
   },
 };

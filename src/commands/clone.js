@@ -55,7 +55,7 @@ async function fetchStickerBufferByIdOrUrl(idOrUrl) {
                 const buf = await res.buffer();
                 if (buf && buf.length > 0) return { buffer: buf, sourceUrl: url };
             }
-        } catch (_) {
+        } catch (err) { console.error('src/commands/clone.js', err);
             // try next
         }
     }

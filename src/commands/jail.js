@@ -20,7 +20,7 @@ async function safeRemoveAllRoles(member, exceptIds = []) {
     try {
       await member.roles.remove(role, 'Jail: removing roles');
       removed.push(role.id);
-    } catch (_) {}
+    } catch (err) { console.error('src/commands/jail.js', err); }
   }
   return removed;
 }
@@ -114,13 +114,13 @@ module.exports = {
 
       let jailRole = interaction.guild.roles.cache.get(config.jailRoleId);
       if (!jailRole) {
-        try { jailRole = await interaction.guild.roles.fetch(config.jailRoleId); } catch (_) {}
+        try { jailRole = await interaction.guild.roles.fetch(config.jailRoleId); } catch (err) { console.error('src/commands/jail.js', err); }
       }
       if (!jailRole) return interaction.reply({ content: 'Configured jail role not found. Set it again with /jail config.', ephemeral });
       if (me.roles.highest.comparePositionTo(jailRole) <= 0) return interaction.reply({ content: 'My highest role must be above the jail role.', ephemeral });
 
       let member;
-      try { member = await interaction.guild.members.fetch(targetUser.id); } catch (_) {}
+      try { member = await interaction.guild.members.fetch(targetUser.id); } catch (err) { console.error('src/commands/jail.js', err); }
       if (!member) return interaction.reply({ content: 'That user is not in this server.', ephemeral });
       if (member.id === interaction.user.id) return interaction.reply({ content: 'You cannot jail yourself.', ephemeral });
       if (interaction.guild.ownerId !== interaction.user.id && interaction.member.roles.highest.comparePositionTo(member.roles.highest) <= 0) {
@@ -157,20 +157,20 @@ module.exports = {
       const config = store.getConfig(interaction.guild.id);
       if (!config.jailRoleId) return interaction.reply({ content: 'Set a jail role first with /jail config.', ephemeral });
       let member;
-      try { member = await interaction.guild.members.fetch(targetUser.id); } catch (_) {}
+      try { member = await interaction.guild.members.fetch(targetUser.id); } catch (err) { console.error('src/commands/jail.js', err); }
       if (!member) return interaction.reply({ content: 'That user is not in this server.', ephemeral });
       const rec = store.getJailed(interaction.guild.id, member.id);
       const prevRoles = rec?.roles || [];
 
       // Remove jail role
-      try { await member.roles.remove(config.jailRoleId, 'Unjail'); } catch (_) {}
+      try { await member.roles.remove(config.jailRoleId, 'Unjail'); } catch (err) { console.error('src/commands/jail.js', err); }
       // Restore previous roles that still exist and are below bot
       const meTop = me.roles.highest;
       for (const roleId of prevRoles) {
         const role = interaction.guild.roles.cache.get(roleId);
         if (!role || role.managed) continue;
         if (meTop.comparePositionTo(role) <= 0) continue;
-        try { await member.roles.add(role, 'Unjail: restoring previous roles'); } catch (_) {}
+        try { await member.roles.add(role, 'Unjail: restoring previous roles'); } catch (err) { console.error('src/commands/jail.js', err); }
       }
       store.removeJailed(interaction.guild.id, member.id);
       return interaction.reply({ content: `Unjailed ${member.user.tag}.`, ephemeral });

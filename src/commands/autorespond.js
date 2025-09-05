@@ -99,7 +99,7 @@ module.exports = {
       try {
         const cfg = store.getGuildConfig(guildId);
         if (!cfg.enabled) store.setEnabled(guildId, true);
-      } catch (_) {}
+      } catch (err) { console.error('src/commands/autorespond.js', err); }
       return interaction.editReply({ content: `Added rule #${rule.id}: when ${match}${caseSensitive ? ' (case)' : ''} '${trigger}'${rule.channelId ? ` in <#${rule.channelId}>` : ''} -> reply '${reply}'.` });
     }
 

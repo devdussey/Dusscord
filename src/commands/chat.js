@@ -69,7 +69,7 @@ module.exports = {
 
   async execute(interaction) {
     const isPrivate = !!interaction.options.getBoolean('private');
-    try { await interaction.deferReply({ ephemeral: isPrivate }); } catch (_) {}
+    try { await interaction.deferReply({ ephemeral: isPrivate }); } catch (err) { console.error('src/commands/chat.js', err); }
 
     if (!OPENAI_API_KEY) {
       return interaction.editReply('OpenAI API key not configured. Set OPENAI_API_KEY in your environment.');
@@ -99,7 +99,7 @@ module.exports = {
             const content = sanitize(m.content || '');
             if (content) messages.push({ role, content });
           }
-        } catch (_) {}
+        } catch (err) { console.error('src/commands/chat.js', err); }
       }
     }
 
@@ -122,7 +122,7 @@ module.exports = {
       const text = await resp.text();
       if (!resp.ok) {
         let msg = text;
-        try { msg = JSON.parse(text)?.error?.message || msg; } catch (_) {}
+        try { msg = JSON.parse(text)?.error?.message || msg; } catch (err) { console.error('src/commands/chat.js', err); }
         throw new Error(msg);
       }
 
@@ -137,14 +137,14 @@ module.exports = {
       await interaction.editReply(out.slice(0, 2000));
       for (let i = 2000; i < out.length; i += 2000) {
         const chunk = out.slice(i, i + 2000);
-        try { await interaction.followUp({ content: chunk, ephemeral: isPrivate }); } catch (_) {}
+        try { await interaction.followUp({ content: chunk, ephemeral: isPrivate }); } catch (err) { console.error('src/commands/chat.js', err); }
       }
     } catch (err) {
       const msg = err?.message || String(err);
       try {
         await interaction.editReply(`Chat failed: ${msg}`);
-      } catch (_) {
-        try { await interaction.followUp({ content: `Chat failed: ${msg}`, ephemeral: isPrivate }); } catch (_) {}
+      } catch (err) { console.error('src/commands/chat.js', err);
+        try { await interaction.followUp({ content: `Chat failed: ${msg}`, ephemeral: isPrivate }); } catch (err) { console.error('src/commands/chat.js', err); }
       }
     }
   },

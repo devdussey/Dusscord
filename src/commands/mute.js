@@ -79,7 +79,7 @@ module.exports = {
     let memberToMute;
     try {
       memberToMute = await interaction.guild.members.fetch(user.id);
-    } catch (_) {
+    } catch (err) { console.error('src/commands/mute.js', err);
       return interaction.editReply({ content: 'That user is not in this server.' });
     }
 
@@ -105,7 +105,7 @@ module.exports = {
         { name: 'Target', value: `${user.tag} (${user.id})`, inline: false },
         { name: 'Duration', value: durationStr, inline: true },
         { name: 'Reason', value: reason, inline: false },
-      ], 0xffcc00); } catch (_) {}
+      ], 0xffcc00); } catch (err) { console.error('src/commands/mute.js', err); }
     } catch (err) {
       await interaction.editReply({ content: `Failed to mute: ${err.message || 'Unknown error'}` });
     }

@@ -10,7 +10,7 @@ function ensure() {
   try {
     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
     if (!fs.existsSync(file)) fs.writeFileSync(file, JSON.stringify({}, null, 2), 'utf8');
-  } catch (_) {}
+  } catch (err) { console.error('src/utils/welcomeStore.js', err); }
 }
 
 function load() {

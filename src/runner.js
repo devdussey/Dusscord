@@ -34,7 +34,7 @@ function run(cmd, args, options = {}) {
       await run('git', ['fetch', '--all', '--prune']);
       if (gitBranch) {
         console.log(`[runner] git checkout ${gitBranch}`);
-        try { await run('git', ['checkout', gitBranch]); } catch (_) {}
+        try { await run('git', ['checkout', gitBranch]); } catch (err) { console.error('src/runner.js', err); }
       }
       console.log('[runner] git pull --ff-only');
       await run('git', ['pull', '--ff-only']);

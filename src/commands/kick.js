@@ -53,7 +53,7 @@ module.exports = {
     let memberToKick;
     try {
       memberToKick = await interaction.guild.members.fetch(user.id);
-    } catch (_) {
+    } catch (err) { console.error('src/commands/kick.js', err);
       return interaction.editReply({ content: 'That user is not in this server.' });
     }
 
@@ -79,7 +79,7 @@ module.exports = {
       try { await modlog.log(interaction, 'User Kicked', [
         { name: 'Target', value: `${user.tag} (${user.id})`, inline: false },
         { name: 'Reason', value: reason, inline: false },
-      ], 0xffa500); } catch (_) {}
+      ], 0xffa500); } catch (err) { console.error('src/commands/kick.js', err); }
     } catch (err) {
       await interaction.editReply({ content: `Failed to kick: ${err.message || 'Unknown error'}` });
     }

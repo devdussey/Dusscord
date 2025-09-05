@@ -13,7 +13,7 @@ function ensureStore() {
     if (!fs.existsSync(STORE_FILE)) {
       fs.writeFileSync(STORE_FILE, JSON.stringify({ guilds: {} }, null, 2), 'utf8');
     }
-  } catch (_) {
+  } catch (err) { console.error('src/utils/guildColourStore.js', err);
     // best-effort; read/write calls will handle errors
   }
 }

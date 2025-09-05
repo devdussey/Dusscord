@@ -18,7 +18,7 @@ module.exports = {
           const ban = recent.find(e => e.action === AuditLogEvent.MemberBanAdd && e.target?.id === member.id);
           if (kick) reason = 'kick';
           if (ban) reason = 'ban';
-        } catch (_) { /* ignore */ }
+        } catch (err) { console.error('src/events/guildMemberRemove.js', err); /* ignore */ }
       }
       jlStore.addEvent(guild.id, member.id, 'leave', Date.now(), { reason });
     } catch (e) {

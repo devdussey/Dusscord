@@ -15,7 +15,7 @@ module.exports = {
                 try {
                     const logger = require('../utils/securityLogger');
                     await logger.logMissingCommand(interaction);
-                } catch (_) {}
+                } catch (err) { console.error('src/events/interactionCreate.js', err); }
                 return;
             }
 
@@ -56,13 +56,13 @@ module.exports = {
                 if (!interaction.inGuild()) return;
                 const me = interaction.guild.members.me;
                 if (!me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
-                    try { await interaction.reply({ content: 'I need Manage Roles to update your roles.', ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: 'I need Manage Roles to update your roles.', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                     return;
                 }
                 let member;
-                try { member = await interaction.guild.members.fetch(interaction.user.id); } catch (_) {}
+                try { member = await interaction.guild.members.fetch(interaction.user.id); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                 if (!member) {
-                    try { await interaction.reply({ content: 'Could not fetch your member data.', ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: 'Could not fetch your member data.', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                     return;
                 }
 
@@ -101,31 +101,31 @@ module.exports = {
 
                 const cfg = verifyStore.get(interaction.guild.id);
                 if (!cfg) {
-                    try { await interaction.reply({ content: 'Verification is not configured on this server.', ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: 'Verification is not configured on this server.', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                     return;
                 }
 
                 let role = null;
-                try { role = await interaction.guild.roles.fetch(cfg.roleId); } catch (_) {}
+                try { role = await interaction.guild.roles.fetch(cfg.roleId); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                 if (!role) {
-                    try { await interaction.reply({ content: 'The verification role no longer exists. Please contact an admin.', ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: 'The verification role no longer exists. Please contact an admin.', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                     return;
                 }
 
                 const me = interaction.guild.members.me;
                 if (!me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
-                    try { await interaction.reply({ content: 'I am missing Manage Roles.', ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: 'I am missing Manage Roles.', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                     return;
                 }
                 if (role.managed || me.roles.highest.comparePositionTo(role) <= 0) {
-                    try { await interaction.reply({ content: 'I cannot assign the verification role due to role hierarchy.', ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: 'I cannot assign the verification role due to role hierarchy.', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                     return;
                 }
 
                 let member = null;
-                try { member = await interaction.guild.members.fetch(interaction.user.id); } catch (_) {}
+                try { member = await interaction.guild.members.fetch(interaction.user.id); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                 if (!member) {
-                    try { await interaction.reply({ content: 'Could not fetch your member data.', ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: 'Could not fetch your member data.', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                     return;
                 }
 
@@ -137,15 +137,15 @@ module.exports = {
                     if (acctDays < minDays) {
                         try {
                             await interaction.reply({ content: `Your account must be at least ${minDays} day(s) old to verify. Current: ${acctDays} day(s).`, ephemeral: true });
-                        } catch (_) {}
-                        try { await securityLogger.logPermissionDenied(interaction, 'verify', 'Account below minimum age'); } catch (_) {}
+                        } catch (err) { console.error('src/events/interactionCreate.js', err); }
+                        try { await securityLogger.logPermissionDenied(interaction, 'verify', 'Account below minimum age'); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                         return;
                     }
                 }
 
                 // Already verified
                 if (member.roles.cache.has(role.id)) {
-                    try { await interaction.reply({ content: 'You are already verified.', ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: 'You are already verified.', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                     return;
                 }
 
@@ -173,8 +173,8 @@ module.exports = {
                 modal.addComponents(row);
                 try {
                     await interaction.showModal(modal);
-                } catch (_) {
-                    try { await interaction.reply({ content: 'Could not open verification challenge. Try again.', ephemeral: true }); } catch (_) {}
+                } catch (err) { console.error('src/events/interactionCreate.js', err);
+                    try { await interaction.reply({ content: 'Could not open verification challenge. Try again.', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                 }
                 return;
             }
@@ -188,9 +188,9 @@ module.exports = {
                 const parts = interaction.customId.split(':');
                 const channelId = parts[2];
                 let channel = null;
-                try { channel = await interaction.guild.channels.fetch(channelId); } catch (_) {}
+                try { channel = await interaction.guild.channels.fetch(channelId); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                 if (!channel) {
-                    try { await interaction.reply({ content: 'Saved channel not found. Re-run /welcome setup.', ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: 'Saved channel not found. Re-run /welcome setup.', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                     return;
                 }
 
@@ -208,8 +208,8 @@ module.exports = {
                     if (description) embed.setDescription(description);
                     if (image) embed.setImage(image);
                     if (footer) embed.setFooter({ text: footer });
-                    try { applyDefaultColour(embed, interaction.guildId); } catch (_) {}
-                    if (color) { try { embed.setColor(color); } catch (_) {} }
+                    try { applyDefaultColour(embed, interaction.guildId); } catch (err) { console.error('src/events/interactionCreate.js', err); }
+                    if (color) { try { embed.setColor(color); } catch (err) { console.error('src/events/interactionCreate.js', err); } }
 
                     // Save configuration
                     welcomeStore.set(interaction.guildId, { channelId, embed: embed.toJSON() });
@@ -225,7 +225,7 @@ module.exports = {
                 if (!interaction.inGuild()) return;
                 const sess = verifySession.get(interaction.guild.id, interaction.user.id);
                 if (!sess) {
-                    try { await interaction.reply({ content: 'Verification session expired. Press Verify again.', ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: 'Verification session expired. Press Verify again.', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                     return;
                 }
                 const answer = (interaction.fields.getTextInputValue('verify:answer') || '').trim().toUpperCase();
@@ -234,10 +234,10 @@ module.exports = {
                 if (answer !== expect) {
                     const after = verifySession.consumeAttempt(interaction.guild.id, interaction.user.id);
                     if (!after || after.attempts <= 0) {
-                        try { await interaction.reply({ content: 'Incorrect code. Session ended. Press Verify to try again.', ephemeral: true }); } catch (_) {}
+                        try { await interaction.reply({ content: 'Incorrect code. Session ended. Press Verify to try again.', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                         return;
                     }
-                    try { await interaction.reply({ content: `Incorrect code. Attempts left: ${after.attempts}. Press Verify to try again.`, ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: `Incorrect code. Attempts left: ${after.attempts}. Press Verify to try again.`, ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                     return;
                 }
 
@@ -245,27 +245,27 @@ module.exports = {
                 verifySession.clear(interaction.guild.id, interaction.user.id);
 
                 let role = null;
-                try { role = await interaction.guild.roles.fetch(sess.roleId); } catch (_) {}
+                try { role = await interaction.guild.roles.fetch(sess.roleId); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                 if (!role) {
-                    try { await interaction.reply({ content: 'Verification role was removed. Contact an admin.', ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: 'Verification role was removed. Contact an admin.', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                     return;
                 }
                 let member = null;
-                try { member = await interaction.guild.members.fetch(interaction.user.id); } catch (_) {}
+                try { member = await interaction.guild.members.fetch(interaction.user.id); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                 if (!member) {
-                    try { await interaction.reply({ content: 'Could not fetch your member data.', ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: 'Could not fetch your member data.', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                     return;
                 }
                 const me = interaction.guild.members.me;
                 if (!me.permissions.has(PermissionsBitField.Flags.ManageRoles) || role.managed || me.roles.highest.comparePositionTo(role) <= 0) {
-                    try { await interaction.reply({ content: 'I cannot assign the verification role due to missing permission or role hierarchy.', ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: 'I cannot assign the verification role due to missing permission or role hierarchy.', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                     return;
                 }
                 try {
                     await member.roles.add(role, 'User verified via captcha');
-                    try { await interaction.reply({ content: 'Verification passed. Role assigned. Welcome!', ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: 'Verification passed. Role assigned. Welcome!', ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                 } catch (err) {
-                    try { await interaction.reply({ content: `Failed to assign role: ${err.message}`, ephemeral: true }); } catch (_) {}
+                    try { await interaction.reply({ content: `Failed to assign role: ${err.message}`, ephemeral: true }); } catch (err) { console.error('src/events/interactionCreate.js', err); }
                 }
                 return;
             }

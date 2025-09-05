@@ -152,7 +152,7 @@ module.exports = {
       const text = await resp.text();
       if (!resp.ok) {
         let msg = text;
-        try { msg = JSON.parse(text)?.error?.message || msg; } catch (_) {}
+        try { msg = JSON.parse(text)?.error?.message || msg; } catch (err) { console.error('src/commands/summarize.js', err); }
         throw new Error(msg);
       }
       const data = JSON.parse(text);
@@ -168,14 +168,14 @@ module.exports = {
       await interaction.editReply('Summary is long; sending in parts below:');
       for (let i = 0; i < finalMsg.length; i += 2000) {
         const chunk = finalMsg.slice(i, i + 2000);
-        try { await interaction.followUp({ content: chunk }); } catch (_) {}
+        try { await interaction.followUp({ content: chunk }); } catch (err) { console.error('src/commands/summarize.js', err); }
       }
     } catch (err) {
       const msg = err?.message || String(err);
       try {
         await interaction.editReply(`Failed to summarize: ${msg}`);
-      } catch (_) {
-        try { await interaction.followUp({ content: `Failed to summarize: ${msg}` }); } catch (_) {}
+      } catch (err) { console.error('src/commands/summarize.js', err);
+        try { await interaction.followUp({ content: `Failed to summarize: ${msg}` }); } catch (err) { console.error('src/commands/summarize.js', err); }
       }
     }
   },

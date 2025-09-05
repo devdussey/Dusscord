@@ -60,11 +60,11 @@ module.exports = {
 
     const me = interaction.guild.members.me;
     if (!me.permissions.has(PermissionsBitField.Flags.ManageGuildExpressions)) {
-      try { await logger.logPermissionDenied(interaction, 'cloneall', 'Bot missing Manage Emojis and Stickers'); } catch (_) {}
+      try { await logger.logPermissionDenied(interaction, 'cloneall', 'Bot missing Manage Emojis and Stickers'); } catch (err) { console.error('src/commands/cloneall.js', err); }
       return interaction.reply({ content: 'I need the Manage Emojis and Stickers permission.', ephemeral: true });
     }
     if (!interaction.member.permissions?.has(PermissionsBitField.Flags.ManageGuildExpressions)) {
-      try { await logger.logPermissionDenied(interaction, 'cloneall', 'User missing Manage Emojis and Stickers'); } catch (_) {}
+      try { await logger.logPermissionDenied(interaction, 'cloneall', 'User missing Manage Emojis and Stickers'); } catch (err) { console.error('src/commands/cloneall.js', err); }
       return interaction.reply({ content: 'You need Manage Emojis and Stickers to use this command.', ephemeral: true });
     }
 
@@ -80,7 +80,7 @@ module.exports = {
 
     let sourceGuild = interaction.client.guilds.cache.get(sourceId);
     if (!sourceGuild) {
-      try { sourceGuild = await interaction.client.guilds.fetch(sourceId); } catch (_) {}
+      try { sourceGuild = await interaction.client.guilds.fetch(sourceId); } catch (err) { console.error('src/commands/cloneall.js', err); }
     }
     if (!sourceGuild) {
       return interaction.editReply({ content: 'I am not in that server or the ID is invalid.' });

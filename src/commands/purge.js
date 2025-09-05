@@ -58,7 +58,7 @@ module.exports = {
         { name: 'Channel', value: `<#${channel.id}> (${channel.id})`, inline: true },
         { name: 'Requested', value: String(amount), inline: true },
         { name: 'Deleted', value: String(count), inline: true },
-      ], 0x2f3136); } catch (_) {}
+      ], 0x2f3136); } catch (err) { console.error('src/commands/purge.js', err); }
     } catch (err) {
       await interaction.editReply({ content: `Failed to purge: ${err.message || 'Unknown error'}` });
     }

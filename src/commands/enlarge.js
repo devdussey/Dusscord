@@ -121,7 +121,7 @@ async function fetchStickerBufferByIdOrUrl(idOrUrl) {
         const buf = await res.buffer();
         if (buf && buf.length > 0) return { buffer: buf, sourceUrl: url };
       }
-    } catch (_) {
+    } catch (err) { console.error('src/commands/enlarge.js', err);
       // continue
     }
   }
@@ -172,12 +172,12 @@ module.exports = {
     try {
       await interaction.reply({ content: 'Fetching media…' });
       acknowledged = true;
-    } catch (_) {
+    } catch (err) { console.error('src/commands/enlarge.js', err);
       try {
         if (interaction.channel?.send) {
           channelMsg = await interaction.channel.send('Fetching media…');
         }
-      } catch (_) {
+      } catch (err) { console.error('src/commands/enlarge.js', err);
         // ignore; we will try again later
       }
     }
