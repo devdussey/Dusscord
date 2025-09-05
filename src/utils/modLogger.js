@@ -10,9 +10,9 @@ async function send(interaction, embed) {
   const guild = interaction.guild;
   const client = interaction.client;
   if (!guild) return false;
-  if (store.getEnabled(guild.id) === false) return false;
-  const mode = store.getMode(guild.id) || 'channel';
-  const channelId = store.get(guild.id) || process.env.MOD_LOG_CHANNEL_ID;
+  if ((await store.getEnabled(guild.id)) === false) return false;
+  const mode = (await store.getMode(guild.id)) || 'channel';
+  const channelId = (await store.get(guild.id)) || process.env.MOD_LOG_CHANNEL_ID;
 
   const tryChannel = async () => {
     if (!channelId) return false;

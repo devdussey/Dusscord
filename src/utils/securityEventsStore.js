@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 
 const dataDir = path.join(__dirname, '..', 'data');
@@ -6,38 +6,39 @@ const dataFile = path.join(dataDir, 'securityevents.json');
 
 let cache = null;
 
-function load() {
+async function load() {
   if (cache) return cache;
   try {
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-    if (fs.existsSync(dataFile)) {
-      cache = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
-    } else {
-      cache = { events: [] };
-    }
+    await fs.mkdir(dataDir, { recursive: true });
+    const raw = await fs.readFile(dataFile, 'utf8');
+    cache = JSON.parse(raw);
   } catch {
     cache = { events: [] };
   }
   return cache;
 }
 
-function persist() {
-  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-  fs.writeFileSync(dataFile, JSON.stringify(cache, null, 2), 'utf8');
+async function persist() {
+  try {
+    await fs.mkdir(dataDir, { recursive: true });
+    await fs.writeFile(dataFile, JSON.stringify(cache, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Failed to write security events store:', err);
+  }
 }
 
-function addEvent(evt) {
-  const store = load();
+async function addEvent(evt) {
+  const store = await load();
   store.events.push(evt);
   // Bound file size: keep last 5000 events
   if (store.events.length > 5000) {
     store.events = store.events.slice(-5000);
   }
-  persist();
+  await persist();
 }
 
-function getSummary({ guildId, type, sinceMs = 7 * 24 * 60 * 60 * 1000 }) {
-  const store = load();
+async function getSummary({ guildId, type, sinceMs = 7 * 24 * 60 * 60 * 1000 }) {
+  const store = await load();
   const cutoff = Date.now() - sinceMs;
   const byUser = new Map();
   for (const e of store.events) {

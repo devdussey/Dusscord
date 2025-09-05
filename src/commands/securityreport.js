@@ -33,7 +33,7 @@ module.exports = {
     const type = interaction.options.getString('type') || 'any';
     const days = interaction.options.getInteger('days') ?? 7;
     const sinceMs = days * 24 * 60 * 60 * 1000;
-    const rows = eventsStore.getSummary({ guildId: interaction.guildId, type: type === 'any' ? null : type, sinceMs });
+    const rows = await eventsStore.getSummary({ guildId: interaction.guildId, type: type === 'any' ? null : type, sinceMs });
 
     if (!rows.length) {
       return interaction.editReply({ content: `No events found in the past ${days} day(s).` });

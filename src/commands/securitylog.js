@@ -64,27 +64,27 @@ module.exports = {
     const sub = interaction.options.getSubcommand();
     if (sub === 'set') {
       const ch = interaction.options.getChannel('channel', true);
-      store.set(interaction.guildId, ch.id);
+      await store.set(interaction.guildId, ch.id);
       return interaction.editReply({ content: `Security log channel set to ${ch}.` });
     }
     if (sub === 'mode') {
       const mode = interaction.options.getString('delivery', true);
-      store.setMode(interaction.guildId, mode);
+      await store.setMode(interaction.guildId, mode);
       return interaction.editReply({ content: `Security log delivery set to: ${mode}.` });
     }
     if (sub === 'toggle') {
       const enabled = interaction.options.getBoolean('enabled', true);
-      store.setEnabled(interaction.guildId, enabled);
+      await store.setEnabled(interaction.guildId, enabled);
       return interaction.editReply({ content: `Security logging is now ${enabled ? 'enabled' : 'disabled'}.` });
     }
     if (sub === 'clear') {
-      store.clear(interaction.guildId);
+      await store.clear(interaction.guildId);
       return interaction.editReply({ content: 'Cleared security log channel (will DM owners as fallback).' });
     }
     if (sub === 'show') {
-      const id = store.get(interaction.guildId);
-      const mode = store.getMode(interaction.guildId);
-      const enabled = store.getEnabled(interaction.guildId);
+      const id = await store.get(interaction.guildId);
+      const mode = await store.getMode(interaction.guildId);
+      const enabled = await store.getEnabled(interaction.guildId);
       const chText = id ? `<#${id}> (${id})` : 'not set';
       return interaction.editReply({ content: `Security log settings:\n- channel: ${chText}\n- delivery: ${mode}\n- enabled: ${enabled}` });
     }

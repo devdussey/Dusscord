@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 
 const dataDir = path.join(__dirname, '..', 'data');
@@ -6,22 +6,19 @@ const dataFile = path.join(dataDir, 'securitylog.json');
 
 let cache = null;
 
-function ensureLoaded() {
+async function ensureLoaded() {
   if (cache) return;
   try {
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-    if (fs.existsSync(dataFile)) {
-      cache = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
-    } else {
-      cache = {};
-    }
+    await fs.mkdir(dataDir, { recursive: true });
+    const raw = await fs.readFile(dataFile, 'utf8');
+    cache = JSON.parse(raw);
   } catch {
     cache = {};
   }
 }
 
-function ensureGuild(guildId) {
-  ensureLoaded();
+async function ensureGuild(guildId) {
+  await ensureLoaded();
   const cur = cache[guildId];
   if (cur && typeof cur === 'object') return cur;
   // Migrate string -> object
@@ -30,54 +27,52 @@ function ensureGuild(guildId) {
   return obj;
 }
 
-function persist() {
-  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-  fs.writeFileSync(dataFile, JSON.stringify(cache, null, 2), 'utf8');
+async function persist() {
+  try {
+    await fs.mkdir(dataDir, { recursive: true });
+    await fs.writeFile(dataFile, JSON.stringify(cache, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Failed to write security log store:', err);
+  }
 }
 
-function get(guildId) {
-  ensureLoaded();
-  const g = ensureGuild(guildId);
+async function get(guildId) {
+  const g = await ensureGuild(guildId);
   return g.channelId || null;
 }
 
-function getMode(guildId) {
-  ensureLoaded();
-  const g = ensureGuild(guildId);
+async function getMode(guildId) {
+  const g = await ensureGuild(guildId);
   return g.mode || 'channel';
 }
 
-function set(guildId, channelId) {
-  ensureLoaded();
-  const g = ensureGuild(guildId);
+async function set(guildId, channelId) {
+  const g = await ensureGuild(guildId);
   g.channelId = channelId;
-  persist();
+  await persist();
 }
 
-function setMode(guildId, mode) {
-  ensureLoaded();
-  const g = ensureGuild(guildId);
+async function setMode(guildId, mode) {
+  const g = await ensureGuild(guildId);
   g.mode = mode;
-  persist();
+  await persist();
 }
 
-function getEnabled(guildId) {
-  ensureLoaded();
-  const g = ensureGuild(guildId);
+async function getEnabled(guildId) {
+  const g = await ensureGuild(guildId);
   return typeof g.enabled === 'boolean' ? g.enabled : true;
 }
 
-function setEnabled(guildId, enabled) {
-  ensureLoaded();
-  const g = ensureGuild(guildId);
+async function setEnabled(guildId, enabled) {
+  const g = await ensureGuild(guildId);
   g.enabled = !!enabled;
-  persist();
+  await persist();
 }
 
-function clear(guildId) {
-  ensureLoaded();
+async function clear(guildId) {
+  await ensureLoaded();
   delete cache[guildId];
-  persist();
+  await persist();
 }
 
 module.exports = { get, set, clear, getMode, setMode, getEnabled, setEnabled };
