@@ -1,4 +1,7 @@
-### 1. Installation
+### Dusscord - Utility bot with tons of detailed logs.
+
+
+
 1. Clone this repository or download the files
 2. Install dependencies:
    ```bash
