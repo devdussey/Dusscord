@@ -45,9 +45,11 @@ async function send(interaction, embed) {
     return ok;
   };
 
+  const ownerFallbackOnChannelFail = String(process.env.OWNER_FALLBACK_ON_CHANNEL_FAIL || '').toLowerCase() === 'true';
+
   if (mode === 'channel') {
     let s = await tryChannel();
-    if (!s) s = await tryOwners();
+    if (!s && ownerFallbackOnChannelFail) s = await tryOwners();
     return s;
   } else if (mode === 'owners') {
     return await tryOwners();

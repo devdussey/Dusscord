@@ -56,3 +56,7 @@ This project is licensed under the MIT License.
 **Permission errors?**
 - Verify bot has `Send Messages` and `Use Slash Commands` permissions
 - Make sure the bot role is above any role restrictions
+
+### Environment Variables
+
+- `OWNER_FALLBACK_ON_CHANNEL_FAIL`: When set to `true`, if a guild’s log delivery mode is set to `channel` and sending to the configured channel fails (missing/not set/inaccessible), the bot will fall back to DMing bot owners. When unset or `false`, no owner-DM fallback occurs in `channel` mode. Applies to both moderation and security logs.

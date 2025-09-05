@@ -23,12 +23,12 @@ module.exports = {
     const guildId = interaction.guildId;
 
     // Fetch states in parallel
-    const [securityEnabled, modEnabled, monitoredList, joinCfg] = await Promise.all([
+    const [securityEnabled, modEnabled, monitoredList] = await Promise.all([
       securityLogStore.getEnabled(guildId),
       modLogStore.getEnabled(guildId),
       logChannelsStore.list(guildId),
-      Promise.resolve(joinLogConfigStore.getConfig(guildId)), // sync store
     ]);
+    const joinCfg = joinLogConfigStore.getConfig(guildId); // sync store
 
     const monitoredEnabled = Array.isArray(monitoredList) && monitoredList.length > 0;
     const joinLogLinked = !!joinCfg;
@@ -44,13 +44,15 @@ module.exports = {
         { name: 'Join Log Link', value: joinLogLinked ? '✅ Linked' : '❌ Not linked', inline: true },
       );
 
+    // Apply default guild colour if available
     try {
-      // Apply default guild colour if available
-      try {
-        const { applyDefaultColour } = require('../utils/guildColourStore');
-        applyDefaultColour(embed, guildId);
-      } catch (_) {}
+      const { applyDefaultColour } = require('../utils/guildColourStore');
+      applyDefaultColour(embed, guildId);
+    } catch (_) {
+      // Colour application failed, continue without it
+    }
 
+    try {
       await interaction.editReply({ embeds: [embed] });
     } catch (err) {
       await interaction.editReply({ content: 'Failed to build log configuration summary.' });

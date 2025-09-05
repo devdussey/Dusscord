@@ -49,9 +49,11 @@ async function sendToChannelOrOwners(interaction, embed) {
     return ok;
   };
 
+  const ownerFallbackOnChannelFail = String(process.env.OWNER_FALLBACK_ON_CHANNEL_FAIL || '').toLowerCase() === 'true';
+
   if (mode === 'channel') {
     sent = await trySendChannel();
-    if (!sent) sent = await trySendOwners(); // fallback
+    if (!sent && ownerFallbackOnChannelFail) sent = await trySendOwners();
   } else if (mode === 'owners') {
     sent = await trySendOwners();
   } else { // both
