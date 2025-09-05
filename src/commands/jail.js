@@ -69,7 +69,7 @@ module.exports = {
     if (!interaction.inGuild()) return interaction.reply({ content: 'Use this in a server.' });
 
     const isPublic = interaction.options.getBoolean('public');
-    const defaultPublic = store.getPublicDefault(interaction.guild.id);
+    const defaultPublic = await store.getPublicDefault(interaction.guild.id);
     const ephemeral = (isPublic === null) ? !defaultPublic : !isPublic; // default from config; public=false -> ephemeral
 
     const me = interaction.guild.members.me;
@@ -90,16 +90,16 @@ module.exports = {
       if (role) {
         if (role.managed) return interaction.reply({ content: 'Please choose a normal role, not a managed role.', ephemeral });
         if (me.roles.highest.comparePositionTo(role) <= 0) return interaction.reply({ content: 'My highest role must be above the jail role.', ephemeral });
-        store.setJailRole(interaction.guild.id, role.id);
+        await store.setJailRole(interaction.guild.id, role.id);
         changes.push(`jail role → ${role}`);
       }
       if (vis) {
         const pub = vis === 'public';
-        store.setPublicDefault(interaction.guild.id, pub);
+        await store.setPublicDefault(interaction.guild.id, pub);
         changes.push(`default visibility → ${pub ? 'public' : 'ephemeral'}`);
       }
       if (!changes.length) {
-        const cfg = store.getConfig(interaction.guild.id);
+        const cfg = await store.getConfig(interaction.guild.id);
         return interaction.reply({ content: `Current jail config:\n- role: ${cfg.jailRoleId ? `<@&${cfg.jailRoleId}>` : 'not set'}\n- default visibility: ${cfg.publicDefault ? 'public' : 'ephemeral'}`, ephemeral });
       }
       return interaction.reply({ content: `Updated: ${changes.join('; ')}`, ephemeral });
@@ -109,7 +109,7 @@ module.exports = {
       const targetUser = interaction.options.getUser('member', true);
       const durationStr = interaction.options.getString('duration');
       const reason = interaction.options.getString('reason') || 'No reason provided';
-      const config = store.getConfig(interaction.guild.id);
+      const config = await store.getConfig(interaction.guild.id);
       if (!config.jailRoleId) return interaction.reply({ content: 'Set a jail role first with /jail config role:<role>.', ephemeral });
 
       let jailRole = interaction.guild.roles.cache.get(config.jailRoleId);
@@ -137,7 +137,7 @@ module.exports = {
       const now = Date.now();
       const ms = parseDuration(durationStr);
       const until = ms ? now + ms : null;
-      store.setJailed(interaction.guild.id, member.id, { roles: removed, reason, at: now, until });
+      await store.setJailed(interaction.guild.id, member.id, { roles: removed, reason, at: now, until });
 
       const embed = new EmbedBuilder()
         .setTitle('Member Jailed')
@@ -154,12 +154,12 @@ module.exports = {
 
     if (sub === 'remove') {
       const targetUser = interaction.options.getUser('member', true);
-      const config = store.getConfig(interaction.guild.id);
+      const config = await store.getConfig(interaction.guild.id);
       if (!config.jailRoleId) return interaction.reply({ content: 'Set a jail role first with /jail config.', ephemeral });
       let member;
       try { member = await interaction.guild.members.fetch(targetUser.id); } catch (_) {}
       if (!member) return interaction.reply({ content: 'That user is not in this server.', ephemeral });
-      const rec = store.getJailed(interaction.guild.id, member.id);
+      const rec = await store.getJailed(interaction.guild.id, member.id);
       const prevRoles = rec?.roles || [];
 
       // Remove jail role
@@ -172,13 +172,13 @@ module.exports = {
         if (meTop.comparePositionTo(role) <= 0) continue;
         try { await member.roles.add(role, 'Unjail: restoring previous roles'); } catch (_) {}
       }
-      store.removeJailed(interaction.guild.id, member.id);
+      await store.removeJailed(interaction.guild.id, member.id);
       return interaction.reply({ content: `Unjailed ${member.user.tag}.`, ephemeral });
     }
 
     if (sub === 'status') {
       const user = interaction.options.getUser('member');
-      const list = user ? [store.getJailed(interaction.guild.id, user.id)].filter(Boolean) : store.listJailed(interaction.guild.id);
+      const list = user ? [await store.getJailed(interaction.guild.id, user.id)].filter(Boolean) : await store.listJailed(interaction.guild.id);
       if (!list.length) return interaction.reply({ content: 'No jailed members recorded.', ephemeral });
       const lines = list.map(info => {
         const left = info.until ? Math.max(0, info.until - Date.now()) : null;

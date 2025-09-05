@@ -64,7 +64,7 @@ module.exports = {
       const channel = interaction.options.getChannel('channel') || interaction.channel;
       const seconds = interaction.options.getInteger('seconds') || 60;
       // We always save with min 60s; allow_mentions is applied at send-time by Discord anyway via content
-      const job = store.addJob(guildId, {
+      const job = await store.addJob(guildId, {
         channelId: channel.id,
         message,
         intervalMs: Math.max(60000, seconds * 1000),
@@ -75,13 +75,13 @@ module.exports = {
 
     if (sub === 'stop') {
       const id = interaction.options.getInteger('id', true);
-      const ok = store.removeJob(guildId, id);
+      const ok = await store.removeJob(guildId, id);
       try { scheduler.stopJob(guildId, id); } catch (_) {}
       return interaction.editReply({ content: ok ? `Stopped and removed job #${id}.` : `Job #${id} not found.` });
     }
 
     if (sub === 'list') {
-      const jobs = store.listJobs(guildId);
+      const jobs = await store.listJobs(guildId);
       if (!jobs.length) return interaction.editReply({ content: 'No repeat jobs configured.' });
       const lines = jobs.map(j => `#${j.id} ${j.enabled ? '[ON]' : '[OFF]'} every ${Math.round((j.intervalMs||60000)/1000)}s in <#${j.channelId}>: ${j.message.slice(0, 60)}`);
       return interaction.editReply({ content: lines.join('\n') });

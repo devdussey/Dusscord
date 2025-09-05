@@ -34,7 +34,7 @@ function startJob(client, guildId, job) {
   timers.set(k, handle);
 }
 
-function reloadGuild(client, guildId) {
+async function reloadGuild(client, guildId) {
   // stop existing
   for (const k of Array.from(timers.keys())) {
     if (k.startsWith(`${guildId}:`)) {
@@ -43,13 +43,13 @@ function reloadGuild(client, guildId) {
     }
   }
   // start all enabled
-  const jobs = store.listJobs(guildId);
+  const jobs = await store.listJobs(guildId);
   for (const job of jobs) startJob(client, guildId, job);
 }
 
-function startAll(client) {
+async function startAll(client) {
   const guilds = Array.from(client.guilds.cache.keys());
-  for (const gid of guilds) reloadGuild(client, gid);
+  for (const gid of guilds) await reloadGuild(client, gid);
 }
 
 module.exports = { startAll, reloadGuild, startJob, stopJob };
