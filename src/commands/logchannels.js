@@ -46,16 +46,16 @@ module.exports = {
     const sub = interaction.options.getSubcommand();
     if (sub === 'add') {
       const ch = interaction.options.getChannel('channel', true);
-      store.add(interaction.guildId, ch.id);
+      await store.add(interaction.guildId, ch.id);
       return interaction.editReply({ content: `Added ${ch} to monitored log channels.` });
     }
     if (sub === 'remove') {
       const ch = interaction.options.getChannel('channel', true);
-      const removed = store.remove(interaction.guildId, ch.id);
+      const removed = await store.remove(interaction.guildId, ch.id);
       return interaction.editReply({ content: removed ? `Removed ${ch} from monitored log channels.` : `${ch} was not monitored.` });
     }
     if (sub === 'list') {
-      const ids = store.list(interaction.guildId);
+      const ids = await store.list(interaction.guildId);
       if (!ids.length) return interaction.editReply({ content: 'No monitored log channels set.' });
       const names = ids.map(id => interaction.guild.channels.cache.get(id) ? `<#${id}>` : `Unknown(${id})`);
       return interaction.editReply({ content: `Monitored channels: ${names.join(', ')}` });

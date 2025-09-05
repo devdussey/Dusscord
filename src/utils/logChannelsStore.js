@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 
 const dataDir = path.join(__dirname, '..', 'data');
@@ -6,46 +6,47 @@ const dataFile = path.join(dataDir, 'logchannels.json');
 
 let cache = null;
 
-function ensureLoaded() {
+async function ensureLoaded() {
   if (cache) return;
   try {
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-    if (fs.existsSync(dataFile)) {
-      cache = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
-    } else {
-      cache = {};
-    }
+    await fs.mkdir(dataDir, { recursive: true });
+    const raw = await fs.readFile(dataFile, 'utf8');
+    cache = JSON.parse(raw);
   } catch {
     cache = {};
   }
 }
 
-function persist() {
-  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-  fs.writeFileSync(dataFile, JSON.stringify(cache, null, 2), 'utf8');
+async function persist() {
+  try {
+    await fs.mkdir(dataDir, { recursive: true });
+    await fs.writeFile(dataFile, JSON.stringify(cache, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Failed to write log channels store:', err);
+  }
 }
 
-function list(guildId) {
-  ensureLoaded();
+async function list(guildId) {
+  await ensureLoaded();
   const arr = cache[guildId];
   return Array.isArray(arr) ? arr : [];
 }
 
-function add(guildId, channelId) {
-  ensureLoaded();
-  const set = new Set(list(guildId));
+async function add(guildId, channelId) {
+  await ensureLoaded();
+  const set = new Set(await list(guildId));
   set.add(channelId);
   cache[guildId] = Array.from(set);
-  persist();
+  await persist();
   return true;
 }
 
-function remove(guildId, channelId) {
-  ensureLoaded();
-  const before = list(guildId);
+async function remove(guildId, channelId) {
+  await ensureLoaded();
+  const before = await list(guildId);
   const after = before.filter(id => id !== channelId);
   cache[guildId] = after;
-  persist();
+  await persist();
   return after.length !== before.length;
 }
 

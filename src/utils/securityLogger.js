@@ -8,10 +8,10 @@ async function sendToChannelOrOwners(interaction, embed) {
   const client = interaction.client;
   // Prefer per-guild configured channel, fallback to env
   let channelId = null;
-  if (guild) channelId = logStore.get(guild.id);
+  if (guild) channelId = await logStore.get(guild.id);
   if (!channelId) channelId = process.env.SECURITY_LOG_CHANNEL_ID;
-  const mode = guild ? logStore.getMode(guild.id) : 'channel';
-  if (guild && logStore.getEnabled(guild.id) === false) return false;
+  const mode = guild ? await logStore.getMode(guild.id) : 'channel';
+  if (guild && (await logStore.getEnabled(guild.id)) === false) return false;
 
   let sent = false;
   const trySendChannel = async () => {
@@ -78,7 +78,7 @@ function baseEmbed(interaction, title, color = 0xffaa00) {
 
 async function logPermissionDenied(interaction, action, reason, extraFields = []) {
   try {
-    eventsStore.addEvent({
+    await eventsStore.addEvent({
       type: 'perm_denied',
       guildId: interaction.guildId || null,
       userId: interaction.user?.id || null,
@@ -101,7 +101,7 @@ async function logPermissionDenied(interaction, action, reason, extraFields = []
 
 async function logHierarchyViolation(interaction, action, target, reason, extraFields = []) {
   try {
-    eventsStore.addEvent({
+    await eventsStore.addEvent({
       type: 'hierarchy_block',
       guildId: interaction.guildId || null,
       userId: interaction.user?.id || null,
@@ -126,7 +126,7 @@ async function logHierarchyViolation(interaction, action, target, reason, extraF
 
 async function logMissingCommand(interaction) {
   try {
-    eventsStore.addEvent({
+    await eventsStore.addEvent({
       type: 'missing_cmd',
       guildId: interaction.guildId || null,
       userId: interaction.user?.id || null,

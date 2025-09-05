@@ -10,7 +10,7 @@ module.exports = {
       const guild = message.guild;
 
       // Only act if this channel is configured as a monitored log channel
-      const monitored = store.list(guild.id);
+      const monitored = await store.list(guild.id);
       if (!monitored.includes(message.channel.id)) return;
 
       const client = message.client;
