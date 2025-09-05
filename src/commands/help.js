@@ -45,6 +45,7 @@ const categories = {
     ['/- securitylog toggle', 'Enable or disable security logging as a whole.'],
     ['/- modlog set/mode/toggle/show', 'Configure moderation action logging (bans, kicks, mutes, role changes).'],
     ['/- logchannels', 'Show configured log channels.'],
+    ['/- logconfig', 'Show status of all logging categories.'],
     ['/- securityreport', 'Who triggered permission/hierarchy/missing-command events.'],
     ['/- channelsync', 'Sync channels to their category permissions. Requires Manage Channels.'],
   ],
