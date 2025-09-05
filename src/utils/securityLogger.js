@@ -20,9 +20,21 @@ async function sendToChannelOrOwners(interaction, embed) {
   let sent = false;
   const trySendChannel = async () => {
     if (!guild || !channelId) return false;
-    const ch = guild.channels.cache.get(channelId) || (await guild.channels.fetch(channelId).catch(() => null));
-    if (ch && ch.isTextBased?.()) {
-      try { await ch.send({ embeds: [embed] }); return true; } catch (_) {}
+    const ch = guild.channels.cache.get(channelId) || (await guild.channels.fetch(channelId).catch(err => {
+      console.error(`Failed to fetch security log channel ${channelId} in guild ${guild?.id}`, err);
+      return null;
+    }));
+    if (!ch) {
+      console.error(`Security log channel ${channelId} not found or inaccessible in guild ${guild?.id}`);
+      return false;
+    }
+    if (ch.isTextBased?.()) {
+      try {
+        await ch.send({ embeds: [embed] });
+        return true;
+      } catch (err) {
+        console.error(`Failed to send security log message to channel ${channelId} in guild ${guild?.id}`, err);
+      }
     }
     return false;
   };
@@ -34,7 +46,9 @@ async function sendToChannelOrOwners(interaction, embed) {
         const user = await client.users.fetch(id);
         await user.send({ embeds: [embed] });
         ok = true;
-      } catch (_) {}
+      } catch (err) {
+        console.error(`Failed to notify owner ${id} about security event`, err);
+      }
     }
     return ok;
   };
@@ -77,7 +91,9 @@ async function logPermissionDenied(interaction, action, reason, extraFields = []
       reason,
       timestamp: Date.now(),
     });
-  } catch (_) {}
+  } catch (err) {
+    console.error('Failed to record permission denied event', err);
+  }
   const embed = baseEmbed(interaction, `Permission denied: ${action}`)
     .addFields(
       { name: 'Command', value: `/${interaction.commandName}`, inline: true },
@@ -98,7 +114,9 @@ async function logHierarchyViolation(interaction, action, target, reason, extraF
       reason,
       timestamp: Date.now(),
     });
-  } catch (_) {}
+  } catch (err) {
+    console.error('Failed to record hierarchy violation event', err);
+  }
   const targetVal = target ? (target.user ? `${target.user.tag} (${target.user.id})` : `${target.tag || target.id} (${target.id || 'unknown'})`) : 'Unknown';
   const embed = baseEmbed(interaction, `Hierarchy blocked: ${action}`)
     .addFields(
@@ -121,7 +139,9 @@ async function logMissingCommand(interaction) {
       reason: interaction.commandName || 'unknown',
       timestamp: Date.now(),
     });
-  } catch (_) {}
+  } catch (err) {
+    console.error('Failed to record missing command event', err);
+  }
   const embed = baseEmbed(interaction, 'Unknown or missing command', 0xff4444)
     .addFields(
       { name: 'Name', value: `/${interaction.commandName}`, inline: true },

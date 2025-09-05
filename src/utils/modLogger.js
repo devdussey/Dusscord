@@ -16,9 +16,21 @@ async function send(interaction, embed) {
 
   const tryChannel = async () => {
     if (!channelId) return false;
-    const ch = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
-    if (ch && ch.isTextBased?.()) {
-      try { await ch.send({ embeds: [embed] }); return true; } catch (_) {}
+    const ch = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(err => {
+      console.error(`Failed to fetch mod log channel ${channelId} in guild ${guild.id}`, err);
+      return null;
+    });
+    if (!ch) {
+      console.error(`Mod log channel ${channelId} not found or inaccessible in guild ${guild.id}`);
+      return false;
+    }
+    if (ch.isTextBased?.()) {
+      try {
+        await ch.send({ embeds: [embed] });
+        return true;
+      } catch (err) {
+        console.error(`Failed to send mod log message to channel ${channelId} in guild ${guild.id}`, err);
+      }
     }
     return false;
   };
@@ -26,7 +38,13 @@ async function send(interaction, embed) {
     const owners = parseOwnerIds();
     let ok = false;
     for (const id of owners) {
-      try { const u = await client.users.fetch(id); await u.send({ embeds: [embed] }); ok = true; } catch (_) {}
+      try {
+        const u = await client.users.fetch(id);
+        await u.send({ embeds: [embed] });
+        ok = true;
+      } catch (err) {
+        console.error(`Failed to notify owner ${id} about mod event`, err);
+      }
     }
     return ok;
   };
