@@ -1,10 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
 const store = require('./modLogStore');
-
-function parseOwnerIds() {
-  const raw = process.env.BOT_OWNER_IDS || '';
-  return raw.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
-}
+const { parseOwnerIds } = require('./ownerIds');
 
 async function send(interaction, embed) {
   const guild = interaction.guild;

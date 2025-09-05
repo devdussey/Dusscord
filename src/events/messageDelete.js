@@ -1,10 +1,6 @@
 const { Events, AuditLogEvent, PermissionsBitField, EmbedBuilder } = require('discord.js');
 const store = require('../utils/logChannelsStore');
-
-function parseOwnerIds() {
-  const raw = process.env.BOT_OWNER_IDS || '';
-  return raw.split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
-}
+const { parseOwnerIds } = require('../utils/ownerIds');
 
 module.exports = {
   name: Events.MessageDelete,
