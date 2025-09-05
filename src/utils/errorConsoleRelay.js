@@ -1,3 +1,5 @@
+let installState = null;
+
 function parseOwnerIds() {
   const raw = process.env.BOT_OWNER_IDS || '';
   return raw.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
@@ -36,7 +38,19 @@ function enabledLevels() {
 // Controlled by env:
 //  - ERROR_LOG_CHANNEL_ID: destination channel
 //  - CONSOLE_RELAY_LEVELS: comma/space list: error,warn,log,all (default: error)
+function uninstall() {
+  if (!installState) return;
+  const { originals, timers } = installState;
+  console.error = originals.error;
+  console.warn = originals.warn;
+  console.log = originals.log;
+  for (const t of Object.values(timers)) if (t) clearTimeout(t);
+  installState = null;
+}
+
 function install(client) {
+  if (installState) uninstall();
+
   const channelId = process.env.ERROR_LOG_CHANNEL_ID;
   const owners = parseOwnerIds();
   if (!channelId && !owners.length) return; // nothing to send to
@@ -51,6 +65,7 @@ function install(client) {
   const buffers = { error: [], warn: [], log: [] };
   const timers = { error: null, warn: null, log: null };
   const sending = { error: false, warn: false, log: false };
+  installState = { originals, timers };
   const flushDelay = 2000; // batch messages for 2s
 
   async function sendLines(level, lines) {
@@ -60,20 +75,30 @@ function install(client) {
     const chunks = chunkString(text, 1800); // leave room for code fences
     for (const chunk of chunks) {
       const content = '```\n' + chunk + '\n```';
+      let delivered = false;
       if (channelId) {
         try {
           const ch = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
           if (ch && ch.isTextBased?.()) {
             await ch.send({ content });
+            delivered = true;
             continue;
           }
-        } catch (_) { /* fall through to owners */ }
+        } catch (e) {
+          originals.error('[errorConsoleRelay] channel send failed:', e);
+        }
       }
       for (const id of owners) {
         try {
           const u = await client.users.fetch(id);
           await u.send({ content });
-        } catch (_) { /* ignore DM failures */ }
+          delivered = true;
+        } catch (e) {
+          originals.error(`[errorConsoleRelay] DM to ${id} failed:`, e);
+        }
+      }
+      if (!delivered) {
+        originals.error('[errorConsoleRelay] dropped console.' + level + ' output');
       }
     }
   }
@@ -124,4 +149,4 @@ function install(client) {
   if (levels.has('log')) console.log = makeRelay('log');
 }
 
-module.exports = { install };
+module.exports = { install, uninstall };
