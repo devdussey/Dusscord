@@ -1,35 +1,51 @@
-const fs = require('fs');
+const fs = require('fs/promises');
 const path = require('path');
 
 const dataDir = path.join(__dirname, '..', 'data');
 const dataFile = path.join(dataDir, 'autopost.json');
 
 let cache = null;
+let loadPromise = null;
+let saveTimeout = null;
 
-function ensureLoaded() {
+async function ensureLoaded() {
   if (cache) return;
-  try {
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-    if (fs.existsSync(dataFile)) {
-      cache = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
-    } else {
+  if (loadPromise) return loadPromise;
+  loadPromise = (async () => {
+    try {
+      await fs.mkdir(dataDir, { recursive: true });
+      const raw = await fs.readFile(dataFile, 'utf8').catch(err => {
+        if (err.code === 'ENOENT') return '{}';
+        throw err;
+      });
+      cache = JSON.parse(raw || '{}');
+    } catch (err) {
+      console.error('Failed to load autopost store:', err);
       cache = {};
+    } finally {
+      loadPromise = null;
     }
-  } catch {
-    cache = {};
-  }
+  })();
+  await loadPromise;
 }
 
-function persist() {
-  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-  fs.writeFileSync(dataFile, JSON.stringify(cache, null, 2), 'utf8');
+function schedulePersist() {
+  if (saveTimeout) return;
+  saveTimeout = setTimeout(async () => {
+    saveTimeout = null;
+    try {
+      await fs.mkdir(dataDir, { recursive: true });
+      await fs.writeFile(dataFile, JSON.stringify(cache, null, 2), 'utf8');
+    } catch (err) {
+      console.error('Failed to persist autopost store:', err);
+    }
+  }, 100);
 }
 
-function getGuild(guildId) {
-  ensureLoaded();
+function getGuildSync(guildId) {
   if (!cache[guildId]) {
     cache[guildId] = { nextId: 1, jobs: [] };
-    persist();
+    schedulePersist();
   }
   const cfg = cache[guildId];
   if (!cfg.nextId || typeof cfg.nextId !== 'number') cfg.nextId = 1;
@@ -37,13 +53,18 @@ function getGuild(guildId) {
   return cfg;
 }
 
-function listJobs(guildId) {
-  const cfg = getGuild(guildId);
+async function getGuild(guildId) {
+  await ensureLoaded();
+  return getGuildSync(guildId);
+}
+
+async function listJobs(guildId) {
+  const cfg = await getGuild(guildId);
   return cfg.jobs.slice();
 }
 
-function addJob(guildId, { channelId, message, intervalMs }) {
-  const cfg = getGuild(guildId);
+async function addJob(guildId, { channelId, message, intervalMs }) {
+  const cfg = await getGuild(guildId);
   const id = cfg.nextId++;
   const job = {
     id,
@@ -53,25 +74,25 @@ function addJob(guildId, { channelId, message, intervalMs }) {
     enabled: true,
   };
   cfg.jobs.push(job);
-  persist();
+  schedulePersist();
   return job;
 }
 
-function removeJob(guildId, id) {
-  const cfg = getGuild(guildId);
+async function removeJob(guildId, id) {
+  const cfg = await getGuild(guildId);
   const before = cfg.jobs.length;
   cfg.jobs = cfg.jobs.filter(j => j.id !== Number(id));
   const removed = cfg.jobs.length !== before;
-  if (removed) persist();
+  if (removed) schedulePersist();
   return removed;
 }
 
-function setEnabled(guildId, id, enabled) {
-  const cfg = getGuild(guildId);
+async function setEnabled(guildId, id, enabled) {
+  const cfg = await getGuild(guildId);
   const job = cfg.jobs.find(j => j.id === Number(id));
   if (!job) return null;
   job.enabled = !!enabled;
-  persist();
+  schedulePersist();
   return job;
 }
 

@@ -1,31 +1,54 @@
-const fs = require('fs');
+const fs = require('fs/promises');
 const path = require('path');
 
 const DATA_DIR = path.join(__dirname, '..', '..', 'data');
 const FILE = path.join(DATA_DIR, 'jail.json');
 
-function ensureFile() {
-  try { if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (_) {}
-  if (!fs.existsSync(FILE)) {
-    try { fs.writeFileSync(FILE, JSON.stringify({ guilds: {} }, null, 2)); } catch (_) {}
+let cache = null;
+let saveTimeout = null;
+
+async function ensureFile() {
+  try {
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    await fs.access(FILE);
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      try {
+        await fs.writeFile(FILE, JSON.stringify({ guilds: {} }, null, 2));
+      } catch (e) {
+        console.error('Failed to create jail store file:', e);
+      }
+    } else {
+      console.error('Failed to access jail store:', err);
+    }
   }
 }
 
-function load() {
-  ensureFile();
+async function load() {
+  if (cache) return cache;
+  await ensureFile();
   try {
-    const raw = fs.readFileSync(FILE, 'utf8');
+    const raw = await fs.readFile(FILE, 'utf8');
     const parsed = JSON.parse(raw || '{}');
     if (!parsed.guilds || typeof parsed.guilds !== 'object') parsed.guilds = {};
-    return parsed;
-  } catch (_) {
-    return { guilds: {} };
+    cache = parsed;
+  } catch (err) {
+    console.error('Failed to load jail store:', err);
+    cache = { guilds: {} };
   }
+  return cache;
 }
 
-function save(data) {
-  ensureFile();
-  try { fs.writeFileSync(FILE, JSON.stringify(data, null, 2)); } catch (_) {}
+function scheduleSave() {
+  if (saveTimeout) return;
+  saveTimeout = setTimeout(async () => {
+    saveTimeout = null;
+    try {
+      await fs.writeFile(FILE, JSON.stringify(cache, null, 2));
+    } catch (err) {
+      console.error('Failed to save jail store:', err);
+    }
+  }, 100);
 }
 
 function getGuild(data, guildId) {
@@ -37,47 +60,47 @@ function getGuild(data, guildId) {
 }
 
 module.exports = {
-  getConfig(guildId) {
-    const data = load();
+  async getConfig(guildId) {
+    const data = await load();
     const g = getGuild(data, guildId);
     return { jailRoleId: g.jailRoleId || null, publicDefault: g.publicDefault };
   },
-  setJailRole(guildId, roleId) {
-    const data = load();
+  async setJailRole(guildId, roleId) {
+    const data = await load();
     const g = getGuild(data, guildId);
     g.jailRoleId = roleId;
-    save(data);
+    scheduleSave();
   },
-  getPublicDefault(guildId) {
-    const data = load();
+  async getPublicDefault(guildId) {
+    const data = await load();
     const g = getGuild(data, guildId);
     return g.publicDefault;
   },
-  setPublicDefault(guildId, isPublic) {
-    const data = load();
+  async setPublicDefault(guildId, isPublic) {
+    const data = await load();
     const g = getGuild(data, guildId);
     g.publicDefault = !!isPublic;
-    save(data);
+    scheduleSave();
   },
-  getJailed(guildId, userId) {
-    const data = load();
+  async getJailed(guildId, userId) {
+    const data = await load();
     const g = getGuild(data, guildId);
     return g.jailed[userId] || null;
   },
-  setJailed(guildId, userId, info) {
-    const data = load();
+  async setJailed(guildId, userId, info) {
+    const data = await load();
     const g = getGuild(data, guildId);
     g.jailed[userId] = info;
-    save(data);
+    scheduleSave();
   },
-  removeJailed(guildId, userId) {
-    const data = load();
+  async removeJailed(guildId, userId) {
+    const data = await load();
     const g = getGuild(data, guildId);
     delete g.jailed[userId];
-    save(data);
+    scheduleSave();
   },
-  listJailed(guildId) {
-    const data = load();
+  async listJailed(guildId) {
+    const data = await load();
     const g = getGuild(data, guildId);
     return Object.entries(g.jailed).map(([uid, info]) => ({ userId: uid, ...info }));
   }

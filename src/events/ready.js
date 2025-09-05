@@ -3,7 +3,7 @@ const { Events, ActivityType } = require('discord.js');
 module.exports = {
   name: Events.ClientReady,
   once: true,
-  execute(client) {
+  async execute(client) {
     console.log(`${client.user.tag} is online and ready!`);
     console.log(`Serving ${client.guilds.cache.size} guilds`);
 
@@ -31,7 +31,7 @@ module.exports = {
     // Start auto-post scheduler for any saved repeat jobs
     try {
       const scheduler = require('../utils/autoPostScheduler');
-      scheduler.startAll(client);
+      await scheduler.startAll(client);
     } catch (e) {
       console.warn('Failed to start auto-post scheduler:', e?.message || e);
     }
