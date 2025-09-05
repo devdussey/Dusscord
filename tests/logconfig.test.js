@@ -38,10 +38,10 @@ test('logconfig shows correct states for enabled and disabled', async () => {
     const interaction1 = createInteraction();
     await logconfig.execute(interaction1);
     const fields1 = interaction1.getReply().embeds[0].data.fields;
-    assert.strictEqual(fields1[0].value, '✅ Enabled');
-    assert.strictEqual(fields1[1].value, '✅ Enabled');
-    assert.strictEqual(fields1[2].value, '✅ Enabled (2)');
-    assert.strictEqual(fields1[3].value, '✅ Linked');
+    assert.strictEqual(fields1[0].value, 'On');
+    assert.strictEqual(fields1[1].value, 'On');
+    assert.strictEqual(fields1[2].value, 'On (2)');
+    assert.strictEqual(fields1[3].value, 'Linked');
 
     // Disabled scenario
     securityLogStore.getEnabled = async () => false;
@@ -52,10 +52,10 @@ test('logconfig shows correct states for enabled and disabled', async () => {
     const interaction2 = createInteraction();
     await logconfig.execute(interaction2);
     const fields2 = interaction2.getReply().embeds[0].data.fields;
-    assert.strictEqual(fields2[0].value, '❌ Disabled');
-    assert.strictEqual(fields2[1].value, '❌ Disabled');
-    assert.strictEqual(fields2[2].value, '❌ Disabled');
-    assert.strictEqual(fields2[3].value, '❌ Not linked');
+    assert.strictEqual(fields2[0].value, 'Off');
+    assert.strictEqual(fields2[1].value, 'Off');
+    assert.strictEqual(fields2[2].value, 'Off');
+    assert.strictEqual(fields2[3].value, 'Not linked');
   } finally {
     securityLogStore.getEnabled = origSec;
     modLogStore.getEnabled = origMod;

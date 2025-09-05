@@ -32,14 +32,14 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setTitle('Logging Configuration')
       .addFields(
-        { name: 'Security Log', value: securityEnabled ? '✅' : '❌', inline: true },
-        { name: 'Moderation Log', value: modEnabled ? '✅' : '❌', inline: true },
+        { name: 'Security Log', value: securityEnabled ? 'On' : 'Off', inline: true },
+        { name: 'Moderation Log', value: modEnabled ? 'On' : 'Off', inline: true },
         {
           name: 'Log Channels',
-          value: Array.isArray(channelList) && channelList.length > 0 ? '✅' : '❌',
+          value: Array.isArray(channelList) && channelList.length > 0 ? `On (${channelList.length})` : 'Off',
           inline: true,
         },
-        { name: 'Join Log Config', value: joinCfg ? '✅' : '❌', inline: true },
+        { name: 'Join Log Config', value: joinCfg ? 'Linked' : 'Not linked', inline: true },
       );
 
     try {
