@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "private": true,
   "scripts": {
+    "postinstall": "node deploy-commands.js",
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "build": "node deploy-commands.js",

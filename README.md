@@ -16,12 +16,7 @@
    NODE_ENV=production
    ```
 
-4. Deploy slash commands:
-   ```bash
-   node deploy-commands.js
-   ```
-
-5. Start the bot:
+4. Start the bot (commands deploy automatically after installation):
    ```bash
    npm start
    ```
@@ -30,7 +25,7 @@
 For faster command testing in a specific server:
 1. Set `NODE_ENV=development` in your `.env`
 2. Add your test server's `GUILD_ID`
-3. Run `node deploy-commands.js`
+3. Commands deploy automatically on install. Run `node deploy-commands.js` again after editing commands.
 
 
 ## 📄 License
@@ -44,7 +39,7 @@ This project is licensed under the MIT License.
 ### Troubleshooting
 
 **Commands not appearing?**
-- Make sure you ran `node deploy-commands.js`
+- Deployment runs automatically, but if commands are missing you can run `node deploy-commands.js`
 - Check that your bot has the required permissions
 - Global commands can take up to 1 hour to appear
 
