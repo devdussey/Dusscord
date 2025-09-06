@@ -24,7 +24,13 @@ function loadCommands(client) {
     const commandFiles = getAllFiles(commandsPath);
 
     for (const filePath of commandFiles) {
-        const command = require(filePath);
+        let command;
+        try {
+            command = require(filePath);
+        } catch (err) {
+            console.log(`⚠ Failed to load command at ${filePath}: ${err.message}`);
+            continue;
+        }
 
         if ('data' in command && 'execute' in command) {
             client.commands.set(command.data.name, command);
