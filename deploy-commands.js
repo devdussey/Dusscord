@@ -14,7 +14,7 @@ function getAllCommandFiles(dir) {
     return files;
 }
 
-const commandsDir = path.join(__dirname, 'src', 'commands');
+const commandsDir = process.env.COMMANDS_DIR || path.join(__dirname, 'src', 'commands');
 const commands = [];
 const files = getAllCommandFiles(commandsDir);
 const nameToFile = new Map();
