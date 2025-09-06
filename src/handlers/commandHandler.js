@@ -1,9 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-function loadCommands(client) {
-    const commandsPath = path.join(__dirname, '..', 'commands');
-    
+function loadCommands(client, commandsPath = path.join(__dirname, '..', 'commands')) {
     if (!fs.existsSync(commandsPath)) {
         console.log('Commands directory not found, creating...');
         fs.mkdirSync(commandsPath, { recursive: true });
