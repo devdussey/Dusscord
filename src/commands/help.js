@@ -1,10 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-
-function isOwner(userId) {
-  const raw = process.env.BOT_OWNER_IDS || '';
-  const ids = raw.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
-  return ids.includes(String(userId));
-}
+const { isOwner } = require('../utils/ownerIds');
 
 const categories = {
   'Moderation': [

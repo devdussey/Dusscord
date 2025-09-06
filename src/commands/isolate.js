@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, ChannelType, PermissionsBitField } = require('discord.js');
 const logger = require('../utils/securityLogger');
+const { isOwner } = require('../utils/ownerIds');
 
 // In-memory store for active isolations per guild+user
 // Key: `${guildId}:${userId}` -> { channelId, intervalId, stopAt }
@@ -44,11 +45,8 @@ module.exports = {
       return interaction.reply({ content: 'Use this command in a server.', ephemeral: true });
     }
 
-    // Bot owner-only check via BOT_OWNER_IDS
-    const raw = process.env.BOT_OWNER_IDS || '';
-    const owners = raw.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
-    const isOwner = owners.includes(String(interaction.user.id));
-    if (!isOwner) {
+    // Bot owner-only check
+    if (!isOwner(interaction.user.id)) {
       try { await logger.logPermissionDenied(interaction, 'wraith', 'User is not a bot owner'); } catch (_) {}
       return interaction.reply({ content: 'This command is restricted to bot owners.', ephemeral: true });
     }
