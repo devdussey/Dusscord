@@ -17,21 +17,23 @@ function getAllCommandFiles(dir) {
 const commandsDir = path.join(__dirname, 'src', 'commands');
 const commands = [];
 const files = getAllCommandFiles(commandsDir);
-const names = new Set();
+const nameToFile = new Map();
 for (const filePath of files) {
     const command = require(filePath);
     if ('data' in command && 'execute' in command) {
         const json = command.data.toJSON();
-        if (names.has(json.name)) {
-            console.log(`[WARNING] Duplicate slash command name '${json.name}' in ${filePath}; previous definition will be overwritten in Discord UI.`);
+        if (nameToFile.has(json.name)) {
+            const firstPath = nameToFile.get(json.name);
+            console.log(`[WARNING] Duplicate slash command name '${json.name}' in ${filePath}; skipping (already defined in ${firstPath}).`);
+            continue;
         }
-        names.add(json.name);
+        nameToFile.set(json.name, filePath);
         commands.push(json);
     } else {
         console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
     }
 }
-console.log('Commands to deploy:', Array.from(names).join(', ') || '(none)');
+console.log('Commands to deploy:', Array.from(nameToFile.keys()).join(', ') || '(none)');
 
 const args = process.argv.slice(2);
 const isDryRun = args.includes('--dry-run') || process.env.DRY_RUN === '1';
