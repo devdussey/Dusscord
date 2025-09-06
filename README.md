@@ -15,6 +15,8 @@
    # Comma-separated guild IDs for instant dev testing (optional)
    GUILD_IDS=your_guild_id_for_testing
    NODE_ENV=production
+   # BOT_OWNER_IDS=123456789012345678 234567890123456789
+   # BOT_OWNER_ID=123456789012345678
    ```
 
 4. Deploy slash commands:
@@ -64,3 +66,5 @@ This project is licensed under the MIT License.
 ### Environment Variables
 
 - `OWNER_FALLBACK_ON_CHANNEL_FAIL`: When set to `true`, if a guild’s log delivery mode is set to `channel` and sending to the configured channel fails (missing/not set/inaccessible), the bot will fall back to DMing bot owners. When unset or `false`, no owner-DM fallback occurs in `channel` mode. Applies to both moderation and security logs.
+- `BOT_OWNER_IDS`: Space or comma separated list of bot owner user IDs. Takes precedence over `BOT_OWNER_ID` when both are set.
+- `BOT_OWNER_ID`: Single bot owner user ID used if `BOT_OWNER_IDS` is unset.
