@@ -12,7 +12,8 @@
    ```env
    DISCORD_TOKEN=your_bot_token_here
    CLIENT_ID=your_client_id_here
-   GUILD_ID=your_guild_id_for_testing
+   # Comma-separated guild IDs for instant dev testing (optional)
+   GUILD_IDS=your_guild_id_for_testing
    NODE_ENV=production
    ```
 
@@ -20,6 +21,8 @@
    ```bash
    node deploy-commands.js
    ```
+   > **Note:** Global command deployments can take up to an hour to reach all servers.
+   > To test immediately in specific guilds, set `NODE_ENV=development` and provide `GUILD_IDS` before running the deploy script.
 
 5. Start the bot:
    ```bash
@@ -27,9 +30,10 @@
    ```
 
 ### 4. Development Mode
-For faster command testing in a specific server:
+Global commands are cached by Discord and may not appear for up to an hour.
+For immediate command availability in specific guilds:
 1. Set `NODE_ENV=development` in your `.env`
-2. Add your test server's `GUILD_ID`
+2. Add your test server IDs to `GUILD_IDS` (comma-separated)
 3. Run `node deploy-commands.js`
 
 
