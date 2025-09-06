@@ -56,6 +56,7 @@ const categories = {
   ],
   'System': [
     ['/- botinfo', 'Show instance, mode, commands loaded, uptime.'],
+    ['/- webhooks', 'List server webhooks and their creators. Requires Manage Webhooks.'],
   ],
   'Owner Only': [
     ['/- adminlist', '\u200B'],
