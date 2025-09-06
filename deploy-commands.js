@@ -53,6 +53,7 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
             throw new Error('Missing CLIENT_ID in environment.');
         }
 
+        // Guild-scoped commands appear instantly, whereas global updates may take up to an hour to propagate.
         if (env === 'development' && guildIds.length > 0) {
             // Deploy to one or more guilds for faster iteration
             console.log(`Target scope: guild (${guildIds.join(', ')})`);
@@ -68,7 +69,7 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
                 console.log('DRY-RUN: Skipping REST deployment for guild scope.');
             }
         } else {
-            // Deploy globally
+            // Deploy globally (slower propagation across Discord)
             console.log('Target scope: global');
             if (!isDryRun) {
                 const data = await rest.put(
