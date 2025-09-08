@@ -6,6 +6,7 @@ const categories = {
     ['/- mute', 'Timeout a member (10m, 1h, 2d). Requires Moderate Members.'],
     ['/- kick', 'Kick a member. Requires Kick Members.'],
     ['/- ban', 'Ban a user; optional prune_days (0–7). Requires Ban Members.'],
+    ['/- blacklist add/remove/list', 'Blacklist users to auto-ban on join. Requires Ban Members.'],
     ['/- purge', 'Delete 1–100 recent messages here. Requires Manage Messages.'],
     ['/- jail config/add/remove/status', 'Jail system to restrict and restore members. Requires Manage Roles.'],
   ],
