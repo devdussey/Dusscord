@@ -1,10 +1,11 @@
 const { SlashCommandBuilder } = require('discord.js');
+const { isOwner } = require('../utils/ownerIds');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('botlook')
-    .setDescription('Guild owner: change bot avatar, nickname, or bio')
+    .setDescription('Bot owner: change bot avatar, nickname, or bio')
     .addAttachmentOption(opt =>
       opt
         .setName('avatar')
@@ -29,8 +30,8 @@ module.exports = {
       return interaction.reply({ content: 'This command can only be used in a server.', ephemeral: true });
     }
 
-    if (interaction.guild.ownerId !== interaction.user.id) {
-      return interaction.reply({ content: 'Only the guild owner can use this command.', ephemeral: true });
+    if (!isOwner(interaction.user.id)) {
+      return interaction.reply({ content: 'Only the bot owner can use this command.', ephemeral: true });
     }
 
     const client = interaction.client;
