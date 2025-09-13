@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ChannelType } = require('discord.js');
+const { SlashCommandBuilder, ChannelType, EmbedBuilder } = require('discord.js');
 // node-fetch v3 is ESM-only; dynamic import for CommonJS
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
@@ -13,10 +13,10 @@ module.exports = {
     .setDescription('Summarize the last N messages in this channel (bullets + paragraph)')
     .addIntegerOption(opt =>
       opt.setName('count')
-        .setDescription('How many recent messages to analyze (max 300)')
+        .setDescription('How many recent messages to analyze (max 500)')
         .setRequired(false)
         .setMinValue(1)
-        .setMaxValue(300)
+        .setMaxValue(500)
     )
     .addStringOption(opt =>
       opt.setName('length')
@@ -60,8 +60,8 @@ module.exports = {
       return interaction.editReply('This command can only run in a text channel or thread.');
     }
 
-    // Fetch recent messages, up to 300 with pagination
-    const target = Math.min(300, Math.max(1, count));
+    // Fetch recent messages, up to 500 with pagination
+    const target = Math.min(500, Math.max(1, count));
     let collected = [];
     let before;
     try {
@@ -97,7 +97,8 @@ module.exports = {
 
     let transcript = '';
     for (const m of ordered) {
-      const author = m.author?.bot ? `${m.author.username} [bot]` : m.author?.username || 'Unknown';
+      const name = m.member?.displayName || m.author?.username || 'Unknown';
+      const author = m.author?.bot ? `${name} [bot]` : name;
       const content = sanitize(m.content);
       const attachments = m.attachments?.size ? ` [attachments: ${[...m.attachments.values()].map(a => a.name).filter(Boolean).join(', ')}]` : '';
       const line = content?.trim() ? `${author}: ${content}${attachments}` : (attachments ? `${author}:${attachments}` : '');
@@ -131,7 +132,7 @@ module.exports = {
       },
       {
         role: 'user',
-        content: `${lengthHint} Provide TWO sections:\n\n1) Bulleted Summary: concise bullet points (start each with '- ').\n2) Paragraph Summary: one concise paragraph.\n\nSummarize the following chat transcript. Focus on key topics, decisions, action items, and sentiment. Do not include user IDs.\n\n${truncated}`
+        content: `${lengthHint} Provide TWO sections:\n\n1) Bulleted Summary: concise bullet points (start each with '- ').\n2) Paragraph Summary: one concise paragraph.\n\nSummarize the following chat transcript. Focus on key topics, decisions, action items, and sentiment. Use user display names when referencing speakers and do not include user IDs.\n\n${truncated}`
       }
     ];
 
@@ -161,10 +162,26 @@ module.exports = {
 
       const finalMsg = `${out}${truncatedNote}`;
 
+      // Attempt to format summary into a neat embed
+      const bulletMatch = out.match(/1\)\s*Bulleted Summary:\n([\s\S]*?)\n2\)\s*Paragraph Summary:/);
+      const paraMatch = out.match(/2\)\s*Paragraph Summary:\n([\s\S]*)/);
+      const bullets = bulletMatch ? bulletMatch[1].trim() : out;
+      const paragraph = paraMatch ? paraMatch[1].trim() : '';
+
+      if (bullets.length <= 4096 && paragraph.length <= 1024) {
+        const embed = new EmbedBuilder()
+          .setTitle('Summary')
+          .setDescription(bullets)
+          .addFields(paragraph ? { name: 'Paragraph Summary', value: paragraph } : {})
+          .setColor(0x5865F2);
+        if (truncatedNote) embed.setFooter({ text: truncatedNote.trim() });
+        return interaction.editReply({ embeds: [embed] });
+      }
+
+      // Fallback to plain text with chunking if embed limits exceeded
       if (finalMsg.length <= 2000) {
         return interaction.editReply(finalMsg);
       }
-      // Chunk if needed
       await interaction.editReply('Summary is long; sending in parts below:');
       for (let i = 0; i < finalMsg.length; i += 2000) {
         const chunk = finalMsg.slice(i, i + 2000);
