@@ -1,4 +1,14 @@
-const { Events, PermissionsBitField, EmbedBuilder, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+const {
+    Events,
+    PermissionsBitField,
+    EmbedBuilder,
+    ModalBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    TextInputBuilder,
+    TextInputStyle,
+} = require('discord.js');
 const verifyStore = require('../utils/verificationStore');
 const securityLogger = require('../utils/securityLogger');
 const verifySession = require('../utils/verificationSession');
@@ -178,10 +188,92 @@ module.exports = {
                 }
                 return;
             }
+            if (typeof interaction.customId === 'string' && interaction.customId.startsWith('confess:open:')) {
+                if (!interaction.inGuild()) return;
+
+                const channelId = interaction.customId.slice('confess:open:'.length);
+                let channel = null;
+                try { channel = await interaction.guild.channels.fetch(channelId); } catch (_) {}
+                if (!channel || !channel.isTextBased?.()) {
+                    try { await interaction.reply({ content: 'That confession panel is no longer available.', ephemeral: true }); } catch (_) {}
+                    return;
+                }
+
+                const modal = new ModalBuilder()
+                    .setCustomId(`confess:submit:${channelId}`)
+                    .setTitle('Anonymous Confession');
+                const input = new TextInputBuilder()
+                    .setCustomId('confess:text')
+                    .setLabel('Write an anonymous confession')
+                    .setStyle(TextInputStyle.Paragraph)
+                    .setMinLength(1)
+                    .setMaxLength(1000)
+                    .setPlaceholder('Write an anonymous confession')
+                    .setRequired(true);
+                const row = new ActionRowBuilder().addComponents(input);
+                modal.addComponents(row);
+
+                try {
+                    await interaction.showModal(modal);
+                } catch (_) {
+                    try { await interaction.reply({ content: 'Could not open the confession form. Please try again.', ephemeral: true }); } catch (_) {}
+                }
+                return;
+            }
         }
 
         // Handle modal submissions
         if (interaction.isModalSubmit()) {
+            if (typeof interaction.customId === 'string' && interaction.customId.startsWith('confess:submit:')) {
+                if (!interaction.inGuild()) return;
+
+                const channelId = interaction.customId.slice('confess:submit:'.length);
+                const confession = (interaction.fields.getTextInputValue('confess:text') || '').trim();
+
+                if (!confession) {
+                    try { await interaction.reply({ content: 'Please enter a confession before submitting.', ephemeral: true }); } catch (_) {}
+                    return;
+                }
+
+                let channel = null;
+                try { channel = await interaction.guild.channels.fetch(channelId); } catch (_) {}
+
+                if (!channel || !channel.isTextBased?.()) {
+                    try { await interaction.reply({ content: 'The confession channel is no longer available. Please inform an admin.', ephemeral: true }); } catch (_) {}
+                    return;
+                }
+
+                const sanitized = confession
+                    .replace(/@/g, '@\u200b')
+                    .replace(/#/g, '#\u200b')
+                    .replace(/&/g, '&\u200b');
+
+                const embed = new EmbedBuilder()
+                    .setTitle('Anonymous Confession')
+                    .setDescription(sanitized)
+                    .setTimestamp();
+
+                try {
+                    const { applyDefaultColour } = require('../utils/guildColourStore');
+                    applyDefaultColour(embed, interaction.guildId);
+                } catch (_) {}
+
+                const button = new ButtonBuilder()
+                    .setCustomId(`confess:open:${channelId}`)
+                    .setLabel('Confess Anonymously')
+                    .setStyle(ButtonStyle.Success);
+                const row = new ActionRowBuilder().addComponents(button);
+
+                try {
+                    await channel.send({ embeds: [embed], components: [row] });
+                } catch (_) {
+                    try { await interaction.reply({ content: 'Failed to send your confession. Please try again later.', ephemeral: true }); } catch (_) {}
+                    return;
+                }
+
+                try { await interaction.reply({ content: 'Your confession has been sent anonymously.', ephemeral: true }); } catch (_) {}
+                return;
+            }
             // Welcome embed setup modal
             if (typeof interaction.customId === 'string' && interaction.customId.startsWith('welcome:embed:')) {
                 if (!interaction.inGuild()) return;
