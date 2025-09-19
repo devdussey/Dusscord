@@ -1,4 +1,4 @@
-### Dusscord - Utility bot with tons of detailed logs.
+### Smite - Utility bot with tons of detailed logs.
 
 
 
