@@ -40,6 +40,7 @@ const categories = {
     { cmd: '/joins user', desc: 'Stats for a specific member', perm: null },
     { cmd: '/joins setlog', desc: 'Link your existing join/leave log channel + keywords', perm: null },
     { cmd: '/joins backfill', desc: 'Import historical join/leave events from linked channel', perm: null },
+    { cmd: '/leave setup/status/disable/test', desc: 'Configure automated leave messages with an embed', perm: 'Manage Server' },
   ],
   Security: [
     { cmd: '/securitylog set/clear/show', desc: 'Configure security log channel and view settings', perm: null },
