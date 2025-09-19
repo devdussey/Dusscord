@@ -1,5 +1,5 @@
 // Ephemeral in-memory sessions for verification captcha
-// Key: `${guildId}:${userId}` -> { code, roleId, minAccountAgeDays, expiresAt, attempts }
+// Key: `${guildId}:${userId}` -> { code, roleId, removeRoleId, minAccountAgeDays, expiresAt, attempts }
 
 const sessions = new Map();
 
@@ -10,6 +10,7 @@ function create(guildId, userId, data) {
   const entry = {
     code: data.code,
     roleId: data.roleId,
+    removeRoleId: data.removeRoleId || null,
     minAccountAgeDays: Math.max(0, data.minAccountAgeDays || 0),
     expiresAt: now + (data.ttlMs || 3 * 60 * 1000), // default 3 minutes
     attempts: data.attempts || 3,

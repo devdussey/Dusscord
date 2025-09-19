@@ -13,6 +13,7 @@ module.exports = {
         .setDescription('Post a Verify button and configure the verification role')
         // Required first
         .addRoleOption(opt => opt.setName('role').setDescription('Role to grant on verification').setRequired(true))
+        .addRoleOption(opt => opt.setName('remove_role').setDescription('Role to remove on verification').setRequired(false))
         // Optional after required
         .addChannelOption(opt =>
           opt.setName('channel')
@@ -50,6 +51,7 @@ module.exports = {
 
     if (sub === 'setup') {
       const role = interaction.options.getRole('role', true);
+      const removeRole = interaction.options.getRole('remove_role');
       const channel = interaction.options.getChannel('channel') || interaction.channel;
       const title = interaction.options.getString('title') || 'Server Verification';
       const description = interaction.options.getString('description') || 'Click the button below to get verified and access the server.';
@@ -64,6 +66,18 @@ module.exports = {
       }
       if (me.roles.highest.comparePositionTo(role) <= 0) {
         return interaction.reply({ content: `My highest role must be above ${role} to assign it.`, ephemeral: true });
+      }
+
+      if (removeRole) {
+        if (removeRole.id === role.id) {
+          return interaction.reply({ content: 'The role to remove cannot be the same as the role granted on verification.', ephemeral: true });
+        }
+        if (removeRole.managed) {
+          return interaction.reply({ content: `I cannot manage ${removeRole} because it is managed by an integration.`, ephemeral: true });
+        }
+        if (me.roles.highest.comparePositionTo(removeRole) <= 0) {
+          return interaction.reply({ content: `My highest role must be above ${removeRole} to remove it.`, ephemeral: true });
+        }
       }
 
       const embed = new EmbedBuilder()
@@ -87,6 +101,7 @@ module.exports = {
           channelId: channel.id,
           messageId: msg.id,
           roleId: role.id,
+          removeRoleId: removeRole?.id || null,
           minAccountAgeDays: Math.max(0, minAgeDays | 0),
           label,
           title,
@@ -108,7 +123,7 @@ module.exports = {
       if (!cfg) return interaction.reply({ content: 'Verification is not configured.', ephemeral: true });
       const age = cfg.minAccountAgeDays ?? 0;
       return interaction.reply({
-        content: `Verification configured:\n- Channel: <#${cfg.channelId}>\n- Role: <@&${cfg.roleId}>\n- Min account age: ${age} day(s)\n- Button label: ${cfg.label || 'Verify'}`,
+        content: `Verification configured:\n- Channel: <#${cfg.channelId}>\n- Role: <@&${cfg.roleId}>\n- Remove role: ${cfg.removeRoleId ? `<@&${cfg.removeRoleId}>` : 'None'}\n- Min account age: ${age} day(s)\n- Button label: ${cfg.label || 'Verify'}`,
         ephemeral: true,
       });
     }

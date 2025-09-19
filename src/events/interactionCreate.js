@@ -189,6 +189,7 @@ module.exports = {
                 verifySession.create(interaction.guild.id, interaction.user.id, {
                     code,
                     roleId: role.id,
+                    removeRoleId: cfg.removeRoleId || null,
                     minAccountAgeDays: cfg.minAccountAgeDays || 0,
                     ttlMs: 3 * 60 * 1000,
                     attempts: 3,
@@ -422,6 +423,17 @@ module.exports = {
                 }
                 try {
                     await member.roles.add(role, 'User verified via captcha');
+                    if (sess.removeRoleId) {
+                        let removeRole = null;
+                        try { removeRole = await interaction.guild.roles.fetch(sess.removeRoleId); } catch (_) {}
+                        if (removeRole && removeRole.id !== role.id && !removeRole.managed && me.roles.highest.comparePositionTo(removeRole) > 0) {
+                            try {
+                                await member.roles.remove(removeRole, 'User verified via captcha');
+                            } catch (removeErr) {
+                                console.warn('Failed to remove configured verification remove-role:', removeErr);
+                            }
+                        }
+                    }
                     try { await interaction.reply({ content: 'Verification passed. Role assigned. Welcome!', ephemeral: true }); } catch (_) {}
                 } catch (err) {
                     try { await interaction.reply({ content: `Failed to assign role: ${err.message}`, ephemeral: true }); } catch (_) {}
