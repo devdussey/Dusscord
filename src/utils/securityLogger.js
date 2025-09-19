@@ -3,6 +3,21 @@ const logStore = require('./securityLogStore');
 const eventsStore = require('./securityEventsStore');
 const { parseOwnerIds } = require('./ownerIds');
 
+async function sendEmbedToOwners(client, embed) {
+  const owners = parseOwnerIds();
+  let ok = false;
+  for (const id of owners) {
+    try {
+      const user = await client.users.fetch(id);
+      await user.send({ embeds: [EmbedBuilder.from(embed)] });
+      ok = true;
+    } catch (err) {
+      console.error(`Failed to notify owner ${id} about security event`, err);
+    }
+  }
+  return ok;
+}
+
 async function sendToChannelOrOwners(interaction, embed) {
   const guild = interaction.guild;
   const client = interaction.client;
@@ -34,20 +49,7 @@ async function sendToChannelOrOwners(interaction, embed) {
     }
     return false;
   };
-  const trySendOwners = async () => {
-    const owners = parseOwnerIds();
-    let ok = false;
-    for (const id of owners) {
-      try {
-        const user = await client.users.fetch(id);
-        await user.send({ embeds: [embed] });
-        ok = true;
-      } catch (err) {
-        console.error(`Failed to notify owner ${id} about security event`, err);
-      }
-    }
-    return ok;
-  };
+  const trySendOwners = async () => sendEmbedToOwners(client, embed);
 
   const ownerFallbackOnChannelFail = String(process.env.OWNER_FALLBACK_ON_CHANNEL_FAIL || '').toLowerCase() === 'true';
 
@@ -61,6 +63,31 @@ async function sendToChannelOrOwners(interaction, embed) {
     const b = await trySendOwners();
     sent = a || b;
   }
+  return sent;
+}
+
+async function sendSecurityAlert(guild, embed, { notifyOwners = false } = {}) {
+  if (!guild) return false;
+  const client = guild.client;
+  if (!client) return false;
+
+  const enabled = await logStore.getEnabled(guild.id);
+  const mode = await logStore.getMode(guild.id);
+
+  let sent = false;
+  if (enabled !== false) {
+    const stubInteraction = { guild, client, user: client.user, channel: null };
+    sent = await sendToChannelOrOwners(stubInteraction, embed);
+  }
+
+  if (notifyOwners) {
+    const modeIncludesOwners = mode === 'owners' || mode === 'both';
+    if (!modeIncludesOwners) {
+      const ownersSent = await sendEmbedToOwners(client, embed);
+      sent = sent || ownersSent;
+    }
+  }
+
   return sent;
 }
 
@@ -152,4 +179,5 @@ module.exports = {
   logPermissionDenied,
   logHierarchyViolation,
   logMissingCommand,
+  sendSecurityAlert,
 };

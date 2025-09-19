@@ -16,6 +16,7 @@ const DEFAULT_CATEGORIES = {
   channels: false,
   bot: false,
   verification: false,
+  security: false,
 };
 
 async function ensureLoaded() {

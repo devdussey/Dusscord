@@ -11,6 +11,7 @@ const CATEGORY_LABELS = {
   channels: 'Channels',
   bot: 'Bot',
   verification: 'Verification',
+  security: 'Security',
 };
 
 async function send(guild, category, embed) {
