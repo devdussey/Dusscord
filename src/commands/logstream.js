@@ -11,6 +11,7 @@ const CATEGORY_CHOICES = [
   { name: 'Channels', value: 'channels' },
   { name: 'Bot', value: 'bot' },
   { name: 'Verification', value: 'verification' },
+  { name: 'Security', value: 'security' },
 ];
 
 module.exports = {

@@ -2,6 +2,7 @@ const { Events, PermissionsBitField, EmbedBuilder, ModalBuilder, ActionRowBuilde
 const verifyStore = require('../utils/verificationStore');
 const securityLogger = require('../utils/securityLogger');
 const verifySession = require('../utils/verificationSession');
+const antiNukeManager = require('../utils/antiNukeManager');
 
 module.exports = {
     name: Events.InteractionCreate,
@@ -89,6 +90,40 @@ module.exports = {
                     await interaction.reply({ content: 'Your roles have been updated.', ephemeral: true });
                 } catch (err) {
                     await interaction.reply({ content: `Failed to update roles: ${err.message}`, ephemeral: true });
+                }
+                return;
+            }
+            if (typeof interaction.customId === 'string' && interaction.customId.startsWith('antinuke:')) {
+                if (!interaction.inGuild()) return;
+                if (!interaction.member.permissions?.has(PermissionsBitField.Flags.ManageGuild)) {
+                    try { await interaction.reply({ content: 'You need Manage Server to update anti-nuke settings.', ephemeral: true }); } catch (_) {}
+                    return;
+                }
+                try {
+                    let updatedConfig = null;
+                    if (interaction.customId === 'antinuke:flags') {
+                        updatedConfig = await antiNukeManager.updateFlags(interaction.guildId, interaction.values);
+                    } else if (interaction.customId === 'antinuke:threshold:channelDelete') {
+                        const value = interaction.values?.[0];
+                        updatedConfig = await antiNukeManager.updateThreshold(interaction.guildId, 'channelDelete', value);
+                    } else if (interaction.customId === 'antinuke:threshold:roleDelete') {
+                        const value = interaction.values?.[0];
+                        updatedConfig = await antiNukeManager.updateThreshold(interaction.guildId, 'roleDelete', value);
+                    } else {
+                        return;
+                    }
+                    const view = await antiNukeManager.buildConfigView(interaction.guild, updatedConfig);
+                    await interaction.update({ embeds: [view.embed], components: view.components });
+                } catch (err) {
+                    console.error('Failed to update anti-nuke configuration via select menu:', err);
+                    const content = 'Failed to update anti-nuke settings. Please try again.';
+                    try {
+                        if (interaction.replied || interaction.deferred) {
+                            await interaction.followUp({ content, ephemeral: true });
+                        } else {
+                            await interaction.reply({ content, ephemeral: true });
+                        }
+                    } catch (_) {}
                 }
                 return;
             }
