@@ -45,19 +45,36 @@ async function persist() {
 
 async function ensureGuild(guildId) {
   await ensureLoaded();
-  if (!cache[guildId]) cache[guildId] = { channelId: null, categories: { ...DEFAULT_CATEGORIES } };
-  if (!cache[guildId].categories) cache[guildId].categories = { ...DEFAULT_CATEGORIES, ...(cache[guildId].categories || {}) };
-  return cache[guildId];
+  if (!cache[guildId]) cache[guildId] = { channelId: null, categories: { ...DEFAULT_CATEGORIES }, categoryChannels: {} };
+  const g = cache[guildId];
+  if (!g.categories || typeof g.categories !== 'object') g.categories = {};
+  g.categories = { ...DEFAULT_CATEGORIES, ...g.categories };
+  if (!g.categoryChannels || typeof g.categoryChannels !== 'object') g.categoryChannels = {};
+  return g;
 }
 
-async function setChannel(guildId, channelId) {
+async function setChannel(guildId, channelId, category = null) {
   const g = await ensureGuild(guildId);
-  g.channelId = channelId || null;
+  if (category) {
+    if (!Object.prototype.hasOwnProperty.call(g.categories, category)) throw new Error('Unknown category');
+    g.categoryChannels[category] = channelId || null;
+  } else {
+    g.channelId = channelId || null;
+  }
   await persist();
 }
 
 async function getChannel(guildId) {
   const g = await ensureGuild(guildId);
+  return g.channelId || null;
+}
+
+async function getChannelForCategory(guildId, category) {
+  const g = await ensureGuild(guildId);
+  if (category && Object.prototype.hasOwnProperty.call(g.categories, category)) {
+    const specific = g.categoryChannels?.[category];
+    if (specific) return specific;
+  }
   return g.channelId || null;
 }
 
@@ -76,13 +93,19 @@ async function getEnabled(guildId, category) {
 
 async function listStatuses(guildId) {
   const g = await ensureGuild(guildId);
-  return { channelId: g.channelId || null, categories: { ...g.categories } };
+  const categories = { ...g.categories };
+  const categoryChannels = {};
+  for (const key of Object.keys(categories)) {
+    categoryChannels[key] = g.categoryChannels?.[key] || null;
+  }
+  return { channelId: g.channelId || null, categories, categoryChannels };
 }
 
 module.exports = {
   DEFAULT_CATEGORIES,
   setChannel,
   getChannel,
+  getChannelForCategory,
   setEnabled,
   getEnabled,
   listStatuses,

@@ -19,7 +19,7 @@ async function send(guild, category, embed) {
     if (!guild) return false;
     const enabled = await store.getEnabled(guild.id, category);
     if (!enabled) return false;
-    const channelId = await store.getChannel(guild.id);
+    const channelId = await store.getChannelForCategory(guild.id, category);
     if (!channelId) return false;
     const ch = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
     if (!ch || !ch.isTextBased?.()) return false;

@@ -156,7 +156,7 @@ async function buildConfigEmbed(guild, config) {
   if (!canViewAudit) warnings.push('• Bot is missing **View Audit Log** permission. Executor detection may fail.');
   if (config.streamAlerts) {
     const streamEnabled = await streamLogStore.getEnabled(guild.id, 'security');
-    const streamChannel = await streamLogStore.getChannel(guild.id);
+    const streamChannel = await streamLogStore.getChannelForCategory(guild.id, 'security');
     if (!streamEnabled || !streamChannel) warnings.push('• Stream alerts are on, but the `security` stream category or channel is not configured. Use `/logstream`.');
   }
   if (!config.notifyOwners) warnings.push('• Owner DM alerts are disabled. Consider enabling them for escalations.');
