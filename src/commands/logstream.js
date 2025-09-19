@@ -14,6 +14,11 @@ const CATEGORY_CHOICES = [
   { name: 'Security', value: 'security' },
 ];
 
+const CATEGORY_LABELS = CATEGORY_CHOICES.reduce((acc, choice) => {
+  acc[choice.value] = choice.name;
+  return acc;
+}, {});
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('logstream')
@@ -26,6 +31,12 @@ module.exports = {
             .setDescription('Target text or announcement channel')
             .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
             .setRequired(true)
+        )
+        .addStringOption(opt =>
+          opt.setName('category')
+            .setDescription('Optional category to assign to this channel')
+            .addChoices(...CATEGORY_CHOICES)
+            .setRequired(false)
         )
     )
     .addSubcommand(sub =>
@@ -50,8 +61,17 @@ module.exports = {
     const gid = interaction.guildId;
     if (sub === 'setchannel') {
       const ch = interaction.options.getChannel('channel', true);
-      await store.setChannel(gid, ch.id);
-      return interaction.editReply({ content: `Stream logs channel set to ${ch}.` });
+      const category = interaction.options.getString('category');
+      try {
+        await store.setChannel(gid, ch.id, category || null);
+      } catch (err) {
+        return interaction.editReply({ content: 'Unknown category.' });
+      }
+      if (category) {
+        const label = CATEGORY_LABELS[category] || category;
+        return interaction.editReply({ content: `Stream logs channel for **${label}** set to ${ch}.` });
+      }
+      return interaction.editReply({ content: `Default stream logs channel set to ${ch}.` });
     }
     if (sub === 'toggle') {
       const category = interaction.options.getString('category', true);
@@ -64,15 +84,24 @@ module.exports = {
       return interaction.editReply({ content: `${category} is now ${enabled ? 'enabled' : 'disabled'}.` });
     }
     if (sub === 'show') {
-      const { channelId, categories } = await store.listStatuses(gid);
+      const { channelId, categories, categoryChannels } = await store.listStatuses(gid);
       const embed = new EmbedBuilder().setTitle('Stream Log Configuration');
       try {
         const { applyDefaultColour } = require('../utils/guildColourStore');
         applyDefaultColour(embed, gid);
       } catch (_) {}
-      embed.addFields({ name: 'Channel', value: channelId ? `<#${channelId}> (${channelId})` : 'Not set', inline: false });
-      for (const [k, v] of Object.entries(categories)) {
-        embed.addFields({ name: k, value: v ? '✅ Enabled' : '❌ Disabled', inline: true });
+      embed.addFields({ name: 'Default channel', value: channelId ? `<#${channelId}> (${channelId})` : 'Not set', inline: false });
+      for (const choice of CATEGORY_CHOICES) {
+        const key = choice.value;
+        const label = choice.name;
+        const enabled = categories?.[key];
+        const channelValue = categoryChannels?.[key]
+          ? `<#${categoryChannels[key]}> (${categoryChannels[key]})`
+          : channelId
+            ? `Uses default (<#${channelId}> — ${channelId})`
+            : 'Not set';
+        const status = enabled ? '✅ Enabled' : '❌ Disabled';
+        embed.addFields({ name: label, value: `${status}\nChannel: ${channelValue}`, inline: true });
       }
       return interaction.editReply({ embeds: [embed] });
     }

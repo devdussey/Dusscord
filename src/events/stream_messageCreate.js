@@ -6,6 +6,8 @@ module.exports = {
   async execute(message) {
     try {
       if (!message?.guild || !message.author) return;
+      const clientUserId = message.client?.user?.id;
+      if (clientUserId && message.author.id === clientUserId) return;
       const guild = message.guild;
       const embed = baseEmbed(guild, 'Message Created')
         .addFields(
