@@ -1,8 +1,8 @@
 const fs = require('fs').promises;
-const path = require('path');
+const { ensureFile, resolveDataPath, writeJson } = require('./dataDir');
 
-const dataDir = path.join(__dirname, '..', 'data');
-const dataFile = path.join(dataDir, 'streamlogs.json');
+const STORE_FILE = 'streamlogs.json';
+const dataFile = resolveDataPath(STORE_FILE);
 
 let cache = null;
 
@@ -21,18 +21,22 @@ const DEFAULT_CATEGORIES = {
 async function ensureLoaded() {
   if (cache) return;
   try {
-    await fs.mkdir(dataDir, { recursive: true });
-    const raw = await fs.readFile(dataFile, 'utf8');
-    cache = JSON.parse(raw);
-  } catch {
+    await ensureFile(STORE_FILE, '{}');
+    const raw = await fs.readFile(dataFile, 'utf8').catch(err => {
+      if (err?.code === 'ENOENT') return '{}';
+      throw err;
+    });
+    cache = JSON.parse(raw || '{}');
+  } catch (err) {
+    console.error('Failed to load stream log store:', err);
     cache = {};
   }
 }
 
 async function persist() {
   try {
-    await fs.mkdir(dataDir, { recursive: true });
-    await fs.writeFile(dataFile, JSON.stringify(cache, null, 2), 'utf8');
+    const safe = cache && typeof cache === 'object' ? cache : {};
+    await writeJson(STORE_FILE, safe);
   } catch (err) {
     console.error('Failed to write stream log store:', err);
   }

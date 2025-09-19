@@ -1,17 +1,13 @@
 const fs = require('fs');
-const path = require('path');
+const { ensureFileSync, resolveDataPath, writeJson } = require('./dataDir');
 
-const overrideDir = (process.env.DUSSCORD_DATA_DIR || '').trim();
-const dataDir = overrideDir ? path.resolve(overrideDir) : path.join(__dirname, '..', 'data');
-const STORE_FILE = path.join(dataDir, 'server_tags.json');
+const STORE_FILE_NAME = 'server_tags.json';
+const STORE_FILE = resolveDataPath(STORE_FILE_NAME);
 const MAX_TAG_LENGTH = 32;
 
 function ensureStore() {
   try {
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-    if (!fs.existsSync(STORE_FILE)) {
-      fs.writeFileSync(STORE_FILE, JSON.stringify({ guilds: {} }, null, 2), 'utf8');
-    }
+    ensureFileSync(STORE_FILE_NAME, { guilds: {} });
   } catch (err) {
     // best effort; downstream reads/writes will surface errors if needed
   }
@@ -34,8 +30,7 @@ async function writeStore(store) {
   ensureStore();
   const clean = store && typeof store === 'object' ? store : { guilds: {} };
   if (!clean.guilds || typeof clean.guilds !== 'object') clean.guilds = {};
-  await fs.promises.mkdir(dataDir, { recursive: true });
-  await fs.promises.writeFile(STORE_FILE, JSON.stringify(clean, null, 2), 'utf8');
+  await writeJson(STORE_FILE_NAME, clean);
 }
 
 function normaliseTag(input) {

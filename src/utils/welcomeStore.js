@@ -1,15 +1,14 @@
 const fs = require('fs');
-const path = require('path');
+const { ensureFileSync, resolveDataPath, writeJsonSync } = require('./dataDir');
 
-const dataDir = path.join(__dirname, '..', 'data');
-const file = path.join(dataDir, 'welcome.json');
+const STORE_FILE = 'welcome.json';
+const file = resolveDataPath(STORE_FILE);
 
 let cache = null;
 
 function ensure() {
   try {
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-    if (!fs.existsSync(file)) fs.writeFileSync(file, JSON.stringify({}, null, 2), 'utf8');
+    ensureFileSync(STORE_FILE, {});
   } catch (_) {}
 }
 
@@ -26,7 +25,8 @@ function load() {
 
 function save() {
   ensure();
-  fs.writeFileSync(file, JSON.stringify(cache || {}, null, 2), 'utf8');
+  const safe = cache && typeof cache === 'object' ? cache : {};
+  writeJsonSync(STORE_FILE, safe);
 }
 
 function get(guildId) {

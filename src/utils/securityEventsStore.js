@@ -1,27 +1,34 @@
 const fs = require('fs').promises;
-const path = require('path');
+const { ensureFile, resolveDataPath, writeJson } = require('./dataDir');
 
-const dataDir = path.join(__dirname, '..', 'data');
-const dataFile = path.join(dataDir, 'securityevents.json');
+const STORE_FILE = 'securityevents.json';
+const dataFile = resolveDataPath(STORE_FILE);
+const DEFAULT_STORE = { events: [] };
 
 let cache = null;
 
 async function load() {
   if (cache) return cache;
   try {
-    await fs.mkdir(dataDir, { recursive: true });
-    const raw = await fs.readFile(dataFile, 'utf8');
-    cache = JSON.parse(raw);
-  } catch {
-    cache = { events: [] };
+    await ensureFile(STORE_FILE, DEFAULT_STORE);
+    const raw = await fs.readFile(dataFile, 'utf8').catch(err => {
+      if (err?.code === 'ENOENT') return '';
+      throw err;
+    });
+    cache = raw ? JSON.parse(raw) : { ...DEFAULT_STORE };
+    if (!Array.isArray(cache.events)) cache.events = [];
+  } catch (err) {
+    console.error('Failed to load security events store:', err);
+    cache = { ...DEFAULT_STORE };
   }
   return cache;
 }
 
 async function persist() {
   try {
-    await fs.mkdir(dataDir, { recursive: true });
-    await fs.writeFile(dataFile, JSON.stringify(cache, null, 2), 'utf8');
+    const safe = cache && typeof cache === 'object' ? cache : { ...DEFAULT_STORE };
+    if (!Array.isArray(safe.events)) safe.events = [];
+    await writeJson(STORE_FILE, safe);
   } catch (err) {
     console.error('Failed to write security events store:', err);
   }

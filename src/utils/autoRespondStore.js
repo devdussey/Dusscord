@@ -1,28 +1,27 @@
 const fs = require('fs');
-const path = require('path');
+const { ensureFileSync, resolveDataPath, writeJsonSync } = require('./dataDir');
 
-const dataDir = path.join(__dirname, '..', 'data');
-const dataFile = path.join(dataDir, 'autorespond.json');
+const STORE_FILE = 'autorespond.json';
+const dataFile = resolveDataPath(STORE_FILE);
 
 let cache = null;
 
 function ensureLoaded() {
   if (cache) return;
   try {
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-    if (fs.existsSync(dataFile)) {
-      cache = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
-    } else {
-      cache = {};
-    }
-  } catch {
+    ensureFileSync(STORE_FILE, '{}');
+    const raw = fs.readFileSync(dataFile, 'utf8');
+    cache = raw ? JSON.parse(raw) : {};
+    if (!cache || typeof cache !== 'object') cache = {};
+  } catch (err) {
+    console.error('Failed to load autorespond store:', err);
     cache = {};
   }
 }
 
 function persist() {
-  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-  fs.writeFileSync(dataFile, JSON.stringify(cache, null, 2), 'utf8');
+  const safe = cache && typeof cache === 'object' ? cache : {};
+  writeJsonSync(STORE_FILE, safe);
 }
 
 function getGuildConfig(guildId) {

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ChannelType, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, ChannelType } = require('discord.js');
 // node-fetch v3 is ESM-only; dynamic import for CommonJS
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
@@ -13,10 +13,10 @@ module.exports = {
     .setDescription('Summarize the last N messages in this channel (bullets + paragraph)')
     .addIntegerOption(opt =>
       opt.setName('count')
-        .setDescription('How many recent messages to analyze (max 1000)')
+        .setDescription('How many recent messages to analyze (max 300)')
         .setRequired(false)
         .setMinValue(1)
-        .setMaxValue(1000)
+        .setMaxValue(300)
     )
     .addStringOption(opt =>
       opt.setName('length')
@@ -61,7 +61,7 @@ module.exports = {
     }
 
     // Fetch recent messages, up to 1000 with pagination
-    const target = Math.min(1000, Math.max(1, count));
+    const target = Math.min(300, Math.max(1, count));
     let collected = [];
     let before;
     try {
@@ -162,29 +162,18 @@ module.exports = {
 
       const finalMsg = `${out}${truncatedNote}`;
 
-      // Attempt to format summary into a neat embed
-      const bulletMatch = out.match(/1\)\s*Bulleted Summary:\n([\s\S]*?)\n2\)\s*Paragraph Summary:/);
-      const paraMatch = out.match(/2\)\s*Paragraph Summary:\n([\s\S]*)/);
-      const bullets = bulletMatch ? bulletMatch[1].trim() : out;
-      const paragraph = paraMatch ? paraMatch[1].trim() : '';
-
-      if (bullets.length <= 4096 && paragraph.length <= 1024) {
-        const embed = new EmbedBuilder()
-          .setTitle('Summary')
-          .setDescription(bullets)
-          .addFields(paragraph ? { name: 'Paragraph Summary', value: paragraph } : {})
-          .setColor(0x5865F2);
-        if (truncatedNote) embed.setFooter({ text: truncatedNote.trim() });
-        return interaction.editReply({ embeds: [embed] });
-      }
-
-      // Fallback to plain text with chunking if embed limits exceeded
       if (finalMsg.length <= 2000) {
         return interaction.editReply(finalMsg);
       }
-      await interaction.editReply('Summary is long; sending in parts below:');
+
+      const chunks = [];
       for (let i = 0; i < finalMsg.length; i += 2000) {
-        const chunk = finalMsg.slice(i, i + 2000);
+        chunks.push(finalMsg.slice(i, i + 2000));
+      }
+
+      const [first, ...rest] = chunks;
+      await interaction.editReply(first);
+      for (const chunk of rest) {
         try { await interaction.followUp({ content: chunk }); } catch (_) {}
       }
     } catch (err) {
