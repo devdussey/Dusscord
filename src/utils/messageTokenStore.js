@@ -1,19 +1,14 @@
 const fs = require('fs');
-const path = require('path');
+const { ensureFileSync, resolveDataPath, writeJson } = require('./dataDir');
 
-const overrideDir = (process.env.DUSSCORD_DATA_DIR || '').trim();
-const dataDir = overrideDir ? path.resolve(overrideDir) : path.join(__dirname, '..', 'data');
-const STORE_FILE = path.join(dataDir, 'message_tokens.json');
+const STORE_FILE = resolveDataPath('message_tokens.json');
 const AWARD_THRESHOLD = 200;
 
 let cache = null;
 
 function ensureStoreFile() {
   try {
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-    if (!fs.existsSync(STORE_FILE)) {
-      fs.writeFileSync(STORE_FILE, JSON.stringify({ guilds: {} }, null, 2), 'utf8');
-    }
+    ensureFileSync('message_tokens.json', { guilds: {} });
   } catch (err) {
     console.error('Failed to initialise message token store', err);
   }
@@ -41,8 +36,7 @@ async function saveStore() {
   ensureStoreFile();
   const safe = cache && typeof cache === 'object' ? cache : { guilds: {} };
   if (!safe.guilds || typeof safe.guilds !== 'object') safe.guilds = {};
-  await fs.promises.mkdir(dataDir, { recursive: true });
-  await fs.promises.writeFile(STORE_FILE, JSON.stringify(safe, null, 2), 'utf8');
+  await writeJson('message_tokens.json', safe);
 }
 
 function ensureRecord(guildId, userId) {

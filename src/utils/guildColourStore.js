@@ -1,19 +1,17 @@
 const fs = require('fs');
-const path = require('path');
+const { ensureFileSync, resolveDataPath, writeJson } = require('./dataDir');
 
 // Fallback default embed color (24-bit integer, no alpha)
 const DEFAULT_EMBED_COLOUR = 0xf10909;
 
-const dataDir = path.join(__dirname, '..', 'data');
-const STORE_FILE = path.join(dataDir, 'embed_colours.json');
+const STORE_FILE_NAME = 'embed_colours.json';
+const STORE_FILE = resolveDataPath(STORE_FILE_NAME);
 
 function ensureStore() {
   try {
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-    if (!fs.existsSync(STORE_FILE)) {
-      fs.writeFileSync(STORE_FILE, JSON.stringify({ guilds: {} }, null, 2), 'utf8');
-    }
-  } catch (_) {
+    ensureFileSync(STORE_FILE_NAME, { guilds: {} });
+  } catch (err) {
+    console.error('Failed to ensure guild colour store:', err);
     // best-effort; read/write calls will handle errors
   }
 }
@@ -31,7 +29,7 @@ function readStore() {
 
 async function writeStore(store) {
   ensureStore();
-  await fs.promises.writeFile(STORE_FILE, JSON.stringify(store, null, 2), 'utf8');
+  await writeJson(STORE_FILE_NAME, store);
 }
 
 function parseColour(input) {

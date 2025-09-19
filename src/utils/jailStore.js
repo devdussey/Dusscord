@@ -1,32 +1,23 @@
 const fs = require('fs/promises');
-const path = require('path');
+const { ensureFile, resolveDataPath, writeJson } = require('./dataDir');
 
-const DATA_DIR = path.join(__dirname, '..', '..', 'data');
-const FILE = path.join(DATA_DIR, 'jail.json');
+const STORE_FILE = 'jail.json';
+const FILE = resolveDataPath(STORE_FILE);
 
 let cache = null;
 let saveTimeout = null;
 
-async function ensureFile() {
+async function ensureStoreFile() {
   try {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-    await fs.access(FILE);
+    await ensureFile(STORE_FILE, { guilds: {} });
   } catch (err) {
-    if (err.code === 'ENOENT') {
-      try {
-        await fs.writeFile(FILE, JSON.stringify({ guilds: {} }, null, 2));
-      } catch (e) {
-        console.error('Failed to create jail store file:', e);
-      }
-    } else {
-      console.error('Failed to access jail store:', err);
-    }
+    console.error('Failed to prepare jail store file:', err);
   }
 }
 
 async function load() {
   if (cache) return cache;
-  await ensureFile();
+  await ensureStoreFile();
   try {
     const raw = await fs.readFile(FILE, 'utf8');
     const parsed = JSON.parse(raw || '{}');
@@ -44,7 +35,9 @@ function scheduleSave() {
   saveTimeout = setTimeout(async () => {
     saveTimeout = null;
     try {
-      await fs.writeFile(FILE, JSON.stringify(cache, null, 2));
+      const safe = cache && typeof cache === 'object' ? cache : { guilds: {} };
+      if (!safe.guilds || typeof safe.guilds !== 'object') safe.guilds = {};
+      await writeJson(STORE_FILE, safe);
     } catch (err) {
       console.error('Failed to save jail store:', err);
     }

@@ -59,6 +59,7 @@ const categories = {
     { cmd: '/removebg', desc: 'Remove image background (API key required)', perm: null },
     { cmd: '/transcribe', desc: 'Transcribe an attached audio file (OpenAI API)', perm: null },
     { cmd: '/summarize', desc: 'Summarize provided text or a text file (OpenAI)', perm: null },
+    { cmd: '/voiceauto enable/disable/status', desc: 'Configure automatic voice transcription channels', perm: 'Manage Server' },
   ],
   System: [
     { cmd: '/botinfo', desc: 'Show instance, mode, commands loaded, uptime', perm: null },

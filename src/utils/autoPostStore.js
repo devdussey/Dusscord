@@ -1,8 +1,8 @@
 const fs = require('fs/promises');
-const path = require('path');
+const { ensureFile, resolveDataPath, writeJson } = require('./dataDir');
 
-const dataDir = path.join(__dirname, '..', 'data');
-const dataFile = path.join(dataDir, 'autopost.json');
+const STORE_FILE = 'autopost.json';
+const dataFile = resolveDataPath(STORE_FILE);
 
 let cache = null;
 let loadPromise = null;
@@ -13,7 +13,7 @@ async function ensureLoaded() {
   if (loadPromise) return loadPromise;
   loadPromise = (async () => {
     try {
-      await fs.mkdir(dataDir, { recursive: true });
+      await ensureFile(STORE_FILE, '{}');
       const raw = await fs.readFile(dataFile, 'utf8').catch(err => {
         if (err.code === 'ENOENT') return '{}';
         throw err;
@@ -34,8 +34,8 @@ function schedulePersist() {
   saveTimeout = setTimeout(async () => {
     saveTimeout = null;
     try {
-      await fs.mkdir(dataDir, { recursive: true });
-      await fs.writeFile(dataFile, JSON.stringify(cache, null, 2), 'utf8');
+      const safe = cache && typeof cache === 'object' ? cache : {};
+      await writeJson(STORE_FILE, safe);
     } catch (err) {
       console.error('Failed to persist autopost store:', err);
     }

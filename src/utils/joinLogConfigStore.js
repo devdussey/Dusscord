@@ -1,25 +1,26 @@
 const fs = require('fs');
-const path = require('path');
+const { ensureFileSync, resolveDataPath, writeJsonSync } = require('./dataDir');
 
-const dataDir = path.join(__dirname, '..', 'data');
-const dataFile = path.join(dataDir, 'joinlog_config.json');
+const STORE_FILE = 'joinlog_config.json';
+const dataFile = resolveDataPath(STORE_FILE);
 
 let cache = null;
 
 function load() {
   if (cache) return cache;
   try {
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-    cache = fs.existsSync(dataFile) ? JSON.parse(fs.readFileSync(dataFile, 'utf8')) : {};
-  } catch {
+    ensureFileSync(STORE_FILE, {});
+    cache = fs.existsSync(dataFile) ? JSON.parse(fs.readFileSync(dataFile, 'utf8') || '{}') : {};
+  } catch (err) {
+    console.error('Failed to load join log config store:', err);
     cache = {};
   }
   return cache;
 }
 
 function save() {
-  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-  fs.writeFileSync(dataFile, JSON.stringify(cache, null, 2), 'utf8');
+  const safe = cache && typeof cache === 'object' ? cache : {};
+  writeJsonSync(STORE_FILE, safe);
 }
 
 function setConfig(guildId, cfg) {

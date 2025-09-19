@@ -1,30 +1,28 @@
 const fs = require('fs');
-const path = require('path');
+const { ensureFileSync, resolveDataPath, writeJsonSync } = require('./dataDir');
 
-const dataDir = path.join(__dirname, '..', 'data');
-const dataFile = path.join(dataDir, 'autoroles.json');
+const STORE_FILE = 'autoroles.json';
+const dataFile = resolveDataPath(STORE_FILE);
 
 let cache = null;
 
 function ensureLoaded() {
     if (!cache) {
         try {
-            if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-            if (fs.existsSync(dataFile)) {
-                const raw = fs.readFileSync(dataFile, 'utf8');
-                cache = JSON.parse(raw);
-            } else {
-                cache = {};
-            }
+            ensureFileSync(STORE_FILE, '{}');
+            const raw = fs.readFileSync(dataFile, 'utf8');
+            cache = raw ? JSON.parse(raw) : {};
+            if (!cache || typeof cache !== 'object') cache = {};
         } catch (e) {
+            console.error('Failed to load autoroles store:', e);
             cache = {};
         }
     }
 }
 
 function save() {
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-    fs.writeFileSync(dataFile, JSON.stringify(cache, null, 2), 'utf8');
+    const safe = cache && typeof cache === 'object' ? cache : {};
+    writeJsonSync(STORE_FILE, safe);
 }
 
 function getGuildRoles(guildId) {
