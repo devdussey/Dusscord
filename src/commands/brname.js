@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const boosterManager = require('../utils/boosterRoleManager');
+const boosterConfigStore = require('../utils/boosterRoleConfigStore');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -14,6 +15,14 @@ module.exports = {
   async execute(interaction) {
     if (!interaction.inGuild()) {
       return interaction.reply({ content: 'This command can only be used in a server.', ephemeral: true });
+    }
+
+    const enabled = await boosterConfigStore.isEnabled(interaction.guildId);
+    if (!enabled) {
+      return interaction.reply({
+        content: 'Custom booster roles are disabled on this server. Ask a server manager to enable them with /brconfig.',
+        ephemeral: true,
+      });
     }
 
     const requestedName = interaction.options.getString('name', true);
