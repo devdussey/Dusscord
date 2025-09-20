@@ -185,6 +185,19 @@ async function fetchMe(guild) {
   try { return await guild.members.fetchMe(); } catch (err) { return null; }
 }
 
+async function fetchPremiumSubscriberRole(guild) {
+  if (!guild || !guild.roles) return null;
+  let premiumRole = guild.roles.premiumSubscriberRole || null;
+  if (premiumRole) return premiumRole;
+  try {
+    await guild.roles.fetch();
+    premiumRole = guild.roles.premiumSubscriberRole || null;
+  } catch (err) {
+    console.warn(`Failed to fetch premium subscriber role for ${guild.id}:`, err);
+  }
+  return premiumRole;
+}
+
 function getEmblemExtension(attachment) {
   if (!attachment) return null;
   const contentType = (attachment.contentType || '').toLowerCase();
@@ -347,6 +360,13 @@ async function ensureRole(member, { createIfMissing = true, applyStoredColor = t
   const me = await fetchMe(guild);
   await ensureManageable(me, role?.position);
 
+  const premiumRole = await fetchPremiumSubscriberRole(guild);
+  let desiredPosition = null;
+  if (premiumRole && typeof premiumRole.position === 'number') {
+    desiredPosition = premiumRole.position + 1;
+    await ensureManageable(me, desiredPosition);
+  }
+
   if (!role && createIfMissing) {
     const name = buildDefaultRoleName(targetMember);
     role = await guild.roles.create({
@@ -358,6 +378,19 @@ async function ensureRole(member, { createIfMissing = true, applyStoredColor = t
   }
 
   if (role) {
+    if (
+      premiumRole &&
+      typeof premiumRole.position === 'number' &&
+      (typeof role.position !== 'number' || role.position <= premiumRole.position)
+    ) {
+      const anchorName = premiumRole.name || 'Server Booster';
+      try {
+        role = await role.setPosition(desiredPosition, `Aligning booster custom role above ${anchorName}`);
+      } catch (err) {
+        throw new Error(`Failed to position booster role: ${err.message || err}`);
+      }
+    }
+
     if (me.roles.highest && me.roles.highest.comparePositionTo(role) <= 0) {
       throw new Error('Role hierarchy prevents managing the booster role');
     }
