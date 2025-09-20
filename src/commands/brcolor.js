@@ -23,13 +23,13 @@ module.exports = {
     .addStringOption(option =>
       option
         .setName('primary')
-        .setDescription('Primary hex colour (example: #ff8800)')
+        .setDescription('Primary hex colour (changes your name colour, example: #ff8800)')
         .setRequired(true)
     )
     .addStringOption(option =>
       option
         .setName('secondary')
-        .setDescription('Secondary hex colour for gradients (example: #00ffaa)')
+        .setDescription('Secondary hex colour for the gradient emblem square (example: #00ffaa)')
         .setRequired(false)
     ),
   async execute(interaction) {
@@ -83,10 +83,12 @@ module.exports = {
       let message;
       if (appliedConfig.mode === 'solid') {
         const [hex] = appliedConfig.colors;
-        message = `Set your booster role colour to **${formatHex(hex)}**.`;
+        message = `Set your booster role colour to **${formatHex(hex)}** (this changes the colour of your name).`;
       } else {
         const [start, end] = appliedConfig.colors;
-        message = `Set your booster role gradient to **${formatHex(start)} → ${formatHex(end)}**.`;
+        message =
+          `Updated your booster role gradient emblem to **${formatHex(start)} → ${formatHex(end)}** ` +
+          `(the first colour controls your name, the second controls the gradient square).`;
       }
       if (unchanged) {
         message += ' Your role already used these colours, so we reapplied them.';
