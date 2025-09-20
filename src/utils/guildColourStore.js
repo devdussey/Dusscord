@@ -62,7 +62,17 @@ function getDefaultColour(guildId) {
 }
 
 async function setDefaultColour(guildId, input) {
-  const parsed = input === null ? null : parseColour(input);
+  let parsed;
+  if (input === null) {
+    parsed = null;
+  } else if (typeof input === 'number') {
+    if (!Number.isInteger(input) || input < 0 || input > 0xffffff) {
+      throw new Error("Invalid colour number. Use values between 0x000000 and 0xFFFFFF.");
+    }
+    parsed = input;
+  } else {
+    parsed = parseColour(input);
+  }
   const store = readStore();
   if (!store.guilds[guildId]) store.guilds[guildId] = {};
   if (parsed == null) delete store.guilds[guildId].colour; else store.guilds[guildId].colour = parsed;
