@@ -15,7 +15,7 @@ const categories = {
     { cmd: '/blacklist add/remove/list', desc: 'Manage the blacklist to auto-ban users on join', perm: 'Ban Members' },
     { cmd: '/purge', desc: 'Delete 1–100 recent messages in this channel', perm: 'Manage Messages' },
     { cmd: '/jail config/add/remove/status', desc: 'Jail members, remove roles, and restore them later', perm: 'Manage Roles' },
-    { cmd: '/drugscordbag', desc: 'Spend a bag to timeout a user for up to 10 minutes', perm: null },
+    { cmd: '/drugscordbag', desc: 'Spend a Smite to timeout a user for up to 10 minutes', perm: null },
   ],
   'Roles & Verification': [
     { cmd: '/autoroles add/remove/list/clear', desc: 'Auto-assign roles to new members', perm: 'Manage Roles' },

@@ -20,7 +20,7 @@ async function withTempStore(fn) {
   }
 }
 
-test('awards a Drugscord Bag every 200 messages', async () => {
+test('awards a Smite every 200 messages', async () => {
   await withTempStore(async store => {
     const guildId = 'guild';
     const userId = 'user';
@@ -47,7 +47,7 @@ test('awards a Drugscord Bag every 200 messages', async () => {
   });
 });
 
-test('consuming and refunding Drugscord Bags updates balance', async () => {
+test('consuming and refunding Smites updates balance', async () => {
   await withTempStore(async store => {
     const guildId = 'guild';
     const userId = 'user';

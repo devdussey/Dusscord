@@ -3,7 +3,7 @@ const tokenStore = require('../utils/messageTokenStore');
 const securityLogger = require('../utils/securityLogger');
 const modLogger = require('../utils/modLogger');
 
-const BAG_LABEL = 'Drugscord Bag';
+const BAG_LABEL = 'Smite';
 const MAX_MINUTES = 10;
 const PROTECTED_PERMISSIONS = new PermissionsBitField([
   PermissionsBitField.Flags.Administrator,
@@ -17,7 +17,7 @@ const PROTECTED_PERMISSIONS = new PermissionsBitField([
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('drugscordbag')
-    .setDescription('Spend a Drugscord Bag to timeout a user for up to 10 minutes.')
+    .setDescription('Spend a Smite to timeout a user for up to 10 minutes.')
     .addUserOption(opt =>
       opt
         .setName('target')
@@ -34,7 +34,7 @@ module.exports = {
     .addStringOption(opt =>
       opt
         .setName('reason')
-        .setDescription('Reason for spending the bag (optional, max 200 characters).')
+        .setDescription('Reason for spending the Smite (optional, max 200 characters).')
         .setMaxLength(200)
     ),
 
@@ -48,7 +48,7 @@ module.exports = {
     const me = interaction.guild.members.me;
     if (!me.permissions.has(PermissionsBitField.Flags.ModerateMembers)) {
       await securityLogger.logPermissionDenied(interaction, 'drugscordbag', 'Bot missing Moderate Members');
-      return interaction.editReply({ content: 'I need the Moderate Members permission to spend Drugscord Bags.' });
+      return interaction.editReply({ content: 'I need the Moderate Members permission to spend Smites.' });
     }
 
     const balance = tokenStore.getBalance(interaction.guild.id, interaction.user.id);
@@ -62,13 +62,13 @@ module.exports = {
 
     const targetUser = interaction.options.getUser('target', true);
     if (targetUser.id === interaction.user.id) {
-      return interaction.editReply({ content: "You can't use a Drugscord Bag on yourself." });
+      return interaction.editReply({ content: "You can't use a Smite on yourself." });
     }
     if (targetUser.id === interaction.client.user.id) {
-      return interaction.editReply({ content: "You can't spend a Drugscord Bag on me." });
+      return interaction.editReply({ content: "You can't spend a Smite on me." });
     }
     if (targetUser.bot) {
-      return interaction.editReply({ content: "You can't use a Drugscord Bag on a bot." });
+      return interaction.editReply({ content: "You can't use a Smite on a bot." });
     }
 
     let targetMember;
@@ -82,7 +82,7 @@ module.exports = {
       await securityLogger.logPermissionDenied(interaction, 'drugscordbag', 'Target has protected permissions', [
         { name: 'Target', value: `${targetUser.tag} (${targetUser.id})`, inline: false },
       ]);
-      return interaction.editReply({ content: 'You cannot spend Drugscord Bags on moderators or administrators.' });
+      return interaction.editReply({ content: 'You cannot spend Smites on moderators or administrators.' });
     }
 
     const meHigher = me.roles.highest.comparePositionTo(targetMember.roles.highest) > 0;
@@ -121,15 +121,15 @@ module.exports = {
       const remainingBags = tokenStore.getBalance(interaction.guild.id, interaction.user.id);
       const humanReason = reason || 'No reason provided';
       const baseMessage = `Timed out ${targetUser.tag} for ${durationMinutes} minute${durationMinutes === 1 ? '' : 's'} using a ${BAG_LABEL}.`;
-      const replyMessage = `${baseMessage} Remaining bags: ${remainingBags}. Reason: ${humanReason}`;
+      const replyMessage = `${baseMessage} Remaining Smites: ${remainingBags}. Reason: ${humanReason}`;
       await interaction.editReply({ content: replyMessage });
 
       try {
-        await modLogger.log(interaction, 'Drugscord Bag Timeout', [
+        await modLogger.log(interaction, 'Smite Timeout', [
           { name: 'Target', value: `${targetUser.tag} (${targetUser.id})`, inline: false },
           { name: 'Duration', value: `${durationMinutes} minute${durationMinutes === 1 ? '' : 's'}`, inline: true },
           { name: 'Reason', value: humanReason, inline: false },
-          { name: 'Remaining Bags', value: String(remainingBags), inline: true },
+          { name: 'Remaining Smites', value: String(remainingBags), inline: true },
         ], 0x2ecc71);
       } catch (_) {}
     } catch (err) {
