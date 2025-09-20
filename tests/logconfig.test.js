@@ -1,5 +1,11 @@
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const test = require('node:test');
 const assert = require('node:assert/strict');
+
+const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dusscord-logconfig-'));
+process.env.DUSSCORD_DATA_DIR = tempDir;
 
 const logconfig = require('../src/commands/logconfig');
 const securityLogStore = require('../src/utils/securityLogStore');
