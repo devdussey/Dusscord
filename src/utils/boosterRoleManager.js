@@ -1,14 +1,12 @@
 const { PermissionsBitField } = require('discord.js');
 const path = require('node:path');
 const fs = require('node:fs/promises');
-const zlib = require('node:zlib');
 const boosterStore = require('./boosterRoleStore');
 const { resolveDataPath, ensureDir } = require('./dataDir');
 // node-fetch v3 is ESM-only; dynamic import for CommonJS
 const fetch = (...args) => import('node-fetch').then(({ default: fetchFn }) => fetchFn(...args));
 
 const ROLE_SUFFIX = "'s Custom Role";
-const GRADIENT_ICON_SIZE = 128;
 const ROLE_ICON_FEATURE = 'ROLE_ICONS';
 const EMBLEM_DIR = 'booster-emblems';
 const MAX_EMBLEM_SIZE = 256 * 1024; // 256 KB Discord role icon limit
@@ -17,33 +15,11 @@ const EMBLEM_CONTENT_TYPES = new Map([
   ['image/jpeg', '.jpg'],
   ['image/jpg', '.jpg'],
 ]);
-const CRC_TABLE = (() => {
-  const table = new Uint32Array(256);
-  for (let n = 0; n < 256; n += 1) {
-    let c = n;
-    for (let k = 0; k < 8; k += 1) {
-      c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-    }
-    table[n] = c >>> 0;
-  }
-  return table;
-})();
-
 function normalizeHexColor(input) {
   if (!input) return null;
   const match = String(input).trim().match(/^#?([0-9a-fA-F]{6})$/);
   if (!match) return null;
   return `#${match[1].toUpperCase()}`;
-}
-
-function hexToRgb(hex) {
-  const normalized = normalizeHexColor(hex);
-  if (!normalized) return null;
-  return {
-    r: parseInt(normalized.slice(1, 3), 16),
-    g: parseInt(normalized.slice(3, 5), 16),
-    b: parseInt(normalized.slice(5, 7), 16),
-  };
 }
 
 function colorsEqual(a, b) {
@@ -85,70 +61,6 @@ function colorConfigEquals(a, b) {
     if (!colorsEqual(colorsA[i], colorsB[i])) return false;
   }
   return true;
-}
-
-function crc32(buffer) {
-  let crc = 0xFFFFFFFF;
-  for (let i = 0; i < buffer.length; i += 1) {
-    const byte = buffer[i];
-    crc = CRC_TABLE[(crc ^ byte) & 0xFF] ^ (crc >>> 8);
-  }
-  return (crc ^ 0xFFFFFFFF) >>> 0;
-}
-
-function createChunk(type, data) {
-  const typeBuffer = Buffer.from(type, 'ascii');
-  const lengthBuffer = Buffer.alloc(4);
-  lengthBuffer.writeUInt32BE(data.length, 0);
-  const crcBuffer = Buffer.alloc(4);
-  const crc = crc32(Buffer.concat([typeBuffer, data]));
-  crcBuffer.writeUInt32BE(crc >>> 0, 0);
-  return Buffer.concat([lengthBuffer, typeBuffer, data, crcBuffer]);
-}
-
-function createGradientIconBuffer(startHex, endHex) {
-  const start = hexToRgb(startHex);
-  const end = hexToRgb(endHex);
-  if (!start || !end) throw new Error('Invalid gradient colours provided.');
-
-  const width = GRADIENT_ICON_SIZE;
-  const height = GRADIENT_ICON_SIZE;
-  const rowLength = width * 4 + 1;
-  const raw = Buffer.alloc(rowLength * height);
-
-  for (let y = 0; y < height; y += 1) {
-    const ratio = height === 1 ? 0 : y / (height - 1);
-    const r = Math.round(start.r + (end.r - start.r) * ratio);
-    const g = Math.round(start.g + (end.g - start.g) * ratio);
-    const b = Math.round(start.b + (end.b - start.b) * ratio);
-    const rowOffset = y * rowLength;
-    raw[rowOffset] = 0; // filter type none
-    for (let x = 0; x < width; x += 1) {
-      const idx = rowOffset + 1 + x * 4;
-      raw[idx] = r;
-      raw[idx + 1] = g;
-      raw[idx + 2] = b;
-      raw[idx + 3] = 255;
-    }
-  }
-
-  const compressed = zlib.deflateSync(raw, { level: 9 });
-
-  const signature = Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(width, 0);
-  ihdr.writeUInt32BE(height, 4);
-  ihdr.writeUInt8(8, 8); // bit depth
-  ihdr.writeUInt8(6, 9); // colour type RGBA
-  ihdr.writeUInt8(0, 10); // compression
-  ihdr.writeUInt8(0, 11); // filter
-  ihdr.writeUInt8(0, 12); // interlace
-
-  const ihdrChunk = createChunk('IHDR', ihdr);
-  const idatChunk = createChunk('IDAT', compressed);
-  const iendChunk = createChunk('IEND', Buffer.alloc(0));
-
-  return Buffer.concat([signature, ihdrChunk, idatChunk, iendChunk]);
 }
 
 function sanitizeNameFragment(input) {
@@ -246,8 +158,12 @@ async function applyRoleEmblem(role, emblem, targetMember, { reason } = {}) {
   }
   const actor = targetMember?.user?.tag || targetMember?.id || 'booster';
   const reasonText = reason || `Updated booster role emblem for ${actor}`;
+  const contentType = typeof emblem?.contentType === 'string' ? emblem.contentType.trim().toLowerCase() : '';
+  const payload = contentType && contentType.startsWith('image/')
+    ? `data:${contentType};base64,${buffer.toString('base64')}`
+    : buffer;
   try {
-    await role.setIcon(buffer, reasonText);
+    await role.setIcon(payload, reasonText);
   } catch (err) {
     throw new Error(`Failed to set booster role emblem: ${err.message || err}`);
   }
@@ -303,30 +219,32 @@ async function applyRoleColor(role, colorConfig, targetMember, { reason } = {}) 
       throw new Error('This server does not support role icons, so gradient colours are unavailable.');
     }
 
-    let buffer;
-    try {
-      buffer = createGradientIconBuffer(startHex, endHex);
-    } catch (err) {
-      throw new Error(err?.message || 'Failed to generate gradient icon.');
-    }
+    const desiredPrimaryInt = parseInt(startHex.slice(1), 16);
+    const desiredSecondaryInt = parseInt(endHex.slice(1), 16);
+    const currentColors = role.colors || {};
+    const currentPrimary = typeof currentColors.primaryColor === 'number' ? currentColors.primaryColor : null;
+    const currentSecondary = typeof currentColors.secondaryColor === 'number' ? currentColors.secondaryColor : null;
+    const currentTertiary = typeof currentColors.tertiaryColor === 'number' ? currentColors.tertiaryColor : null;
+
+    const needsUpdate =
+      currentPrimary !== desiredPrimaryInt ||
+      currentSecondary !== desiredSecondaryInt ||
+      currentTertiary !== null;
 
     let colorUpdated = false;
-    if (!colorsEqual(role.hexColor, startHex)) {
+    if (needsUpdate) {
       try {
-        await role.setColor(startHex, reasonText);
+        await role.setColors(
+          { primaryColor: startHex, secondaryColor: endHex },
+          reasonText,
+        );
         colorUpdated = true;
       } catch (err) {
-        throw new Error(`Failed to update booster role colour: ${err.message || err}`);
+        throw new Error(`Failed to update booster role gradient colours: ${err.message || err}`);
       }
     }
 
-    try {
-      await role.setIcon(buffer, reasonText);
-    } catch (err) {
-      throw new Error(`Failed to set booster role gradient icon: ${err.message || err}`);
-    }
-
-    return { colorUpdated, iconUpdated: true, mode: 'gradient' };
+    return { colorUpdated, iconUpdated: false, mode: 'gradient' };
   }
 
   throw new Error('Unsupported colour mode requested.');
@@ -510,15 +428,19 @@ module.exports = {
 
     await boosterStore.setColorConfig(guild.id, targetMember.id, normalized);
 
-    if (normalized.mode === 'gradient') {
-      await boosterStore.setEmblem(guild.id, targetMember.id, null);
-    } else if (existingEmblem) {
+    if (existingEmblem) {
       try {
         await applyRoleEmblem(role, existingEmblem, targetMember, {
           reason: `Reapplying booster emblem after colour update for ${targetMember.user?.tag || targetMember.id}`,
         });
       } catch (err) {
         console.warn(`Failed to restore booster emblem for ${targetMember.id} in ${guild.id}:`, err);
+      }
+    } else if (normalized.mode === 'gradient' && role.icon) {
+      try {
+        await role.setIcon(null, `Clearing booster emblem after gradient colour update for ${targetMember.user?.tag || targetMember.id}`);
+      } catch (err) {
+        console.warn(`Failed to clear booster emblem for ${targetMember.id} in ${guild.id}:`, err);
       }
     }
 
@@ -607,8 +529,11 @@ module.exports = {
       name: attachment.name || null,
     });
 
+    const uploadContentType = (extInfo.contentType || 'image/png').toLowerCase();
+    const dataUri = `data:${uploadContentType};base64,${buffer.toString('base64')}`;
+
     try {
-      await role.setIcon(buffer, `Booster emblem updated by ${actor}`);
+      await role.setIcon(dataUri, `Booster emblem updated by ${actor}`);
     } catch (err) {
       try {
         await fs.unlink(resolveDataPath(metadata.file));
