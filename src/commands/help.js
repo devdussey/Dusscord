@@ -75,8 +75,67 @@ const categories = {
   ],
 };
 
-function buildEmbed(categoryName, includeOwner, guildId) {
-  const embed = new EmbedBuilder().setTitle('Bot Help');
+const categoryMeta = {
+  Moderation: {
+    emoji: '🛡️',
+    blurb: 'Keep your community safe with powerful moderation tools.',
+  },
+  'Roles & Verification': {
+    emoji: '🧩',
+    blurb: 'Streamline onboarding with smart role and verification helpers.',
+  },
+  'Server Setup & Messaging': {
+    emoji: '🏗️',
+    blurb: 'Automate announcements and set your server’s tone.',
+  },
+  'Embeds & Styling': {
+    emoji: '🎨',
+    blurb: 'Craft gorgeous embeds and set a cohesive style.',
+  },
+  'Channels & Logs': {
+    emoji: '🛰️',
+    blurb: 'Create, sync, and monitor channels with ease.',
+  },
+  'Emoji & Stickers': {
+    emoji: '😄',
+    blurb: 'Manage and magnify your favourite reactions.',
+  },
+  'AI & Media Tools': {
+    emoji: '🤖',
+    blurb: 'Unlock AI superpowers and media utilities.',
+  },
+  'Info & Utilities': {
+    emoji: '🧭',
+    blurb: 'Discover stats, diagnostics, and handy utilities.',
+  },
+  'Owner Only': {
+    emoji: '👑',
+    blurb: 'Exclusive controls reserved for bot owners.',
+  },
+};
+
+function buildEmbed(categoryName, includeOwner, guildId, botUser) {
+  const embed = new EmbedBuilder()
+    .setTitle('✨ Command Compass')
+    .setColor(0x5865f2)
+    .setFooter({
+      text: 'Use the selector below to explore — it disables after one minute.',
+    })
+    .setTimestamp();
+
+  const avatarURL =
+    typeof botUser?.displayAvatarURL === 'function'
+      ? botUser.displayAvatarURL({ size: 256 })
+      : null;
+
+  if (avatarURL) {
+    embed.setThumbnail(avatarURL);
+    embed.setAuthor({
+      name: botUser.username ?? 'Dusscord Help',
+      iconURL: avatarURL,
+    });
+  }
+
   try {
     const { applyDefaultColour } = require('../utils/guildColourStore');
     applyDefaultColour(embed, guildId);
@@ -87,22 +146,37 @@ function buildEmbed(categoryName, includeOwner, guildId) {
       embed.setDescription('Owner-only commands are hidden.');
       return embed;
     }
-    embed.setDescription(categoryName);
+    const meta = categoryMeta[categoryName] ?? {};
+    const emoji = meta.emoji ?? '📘';
+    const blurb = meta.blurb ? `\n_${meta.blurb}_` : '';
+    embed.setDescription(`${emoji} **${categoryName} Commands**${blurb}`);
     const fields = categories[categoryName].map(({ cmd, desc, perm }) => ({
-      name: cmd,
-      value: `${desc}${perm ? `\nRequires: ${perm}` : ''}`,
+      name: `${emoji} ${cmd}`,
+      value: `_${desc}_${perm ? `\n> **Requires:** ${perm}` : ''}`,
       inline: false,
     }));
     embed.addFields(fields);
     return embed;
   }
 
-  embed.setDescription('Select a category from the menu below.');
+  embed.setDescription('✨ Explore the command vault and find the perfect tool in seconds.');
   const cats = Object.keys(categories).filter(
     (cat) => !(cat === 'Owner Only' && !includeOwner)
   );
-  const value = cats.map((c) => `• ${c}`).join('\n');
-  embed.addFields({ name: 'Categories', value });
+  const value = cats
+    .map((c) => {
+      const { emoji, blurb } = categoryMeta[c] ?? {};
+      const accent = blurb ? ` — ${blurb}` : '';
+      return `${emoji ?? '📘'} **${c}**${accent}`;
+    })
+    .join('\n');
+  embed.addFields(
+    { name: '📚 Categories', value },
+    {
+      name: 'Need a quick tip?',
+      value: 'Use `/help` anytime to reopen this menu or explore another category.',
+    }
+  );
   return embed;
 }
 
@@ -113,15 +187,26 @@ module.exports = {
 
   async execute(interaction) {
     const owner = isOwner(interaction.user.id);
-    const embed = buildEmbed(null, owner, interaction.guildId);
+    const embed = buildEmbed(
+      null,
+      owner,
+      interaction.guildId,
+      interaction.client.user
+    );
 
     const options = Object.keys(categories)
       .filter((c) => !(c === 'Owner Only' && !owner))
-      .map((c) => ({ label: c, value: c }));
+      .map((c) => {
+        const meta = categoryMeta[c] ?? {};
+        const option = { label: c, value: c };
+        if (meta.emoji) option.emoji = meta.emoji;
+        if (meta.blurb) option.description = meta.blurb;
+        return option;
+      });
 
     const menu = new StringSelectMenuBuilder()
       .setCustomId('help-category')
-      .setPlaceholder('Choose a category')
+      .setPlaceholder('✨ Browse a command category')
       .addOptions(options);
 
     const row = new ActionRowBuilder().addComponents(menu);
@@ -142,7 +227,12 @@ module.exports = {
         return i.reply({ content: 'This menu is not for you.', ephemeral: true });
       }
       const selected = i.values[0];
-      const catEmbed = buildEmbed(selected, owner, interaction.guildId);
+      const catEmbed = buildEmbed(
+        selected,
+        owner,
+        interaction.guildId,
+        interaction.client.user
+      );
       await i.update({ embeds: [catEmbed], components: [row] });
     });
 
