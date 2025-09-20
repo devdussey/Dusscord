@@ -1,6 +1,7 @@
 const { Events, PermissionsBitField } = require('discord.js');
 const boosterStore = require('../utils/boosterRoleStore');
 const boosterManager = require('../utils/boosterRoleManager');
+const boosterConfigStore = require('../utils/boosterRoleConfigStore');
 
 async function getMe(guild) {
   if (!guild) return null;
@@ -15,6 +16,9 @@ module.exports = {
     try {
       if (!newMember?.guild) return;
       const guild = newMember.guild;
+
+      const enabled = await boosterConfigStore.isEnabled(guild.id);
+      if (!enabled) return;
 
       const hadBoost = Boolean(oldMember?.premiumSinceTimestamp || oldMember?.premiumSince);
       const hasBoost = Boolean(newMember?.premiumSinceTimestamp || newMember?.premiumSince);
