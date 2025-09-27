@@ -14,6 +14,47 @@ const DEFAULT_PERSONA = (process.env.ANALYSIS_PERSONA_PROMPT || '').trim() || [
   'Do not include any other keys or explanatory text.',
 ].join(' ');
 
+const PERSONAS = {
+  default: {
+    id: 'default',
+    label: 'Standard',
+    systemPrompt: DEFAULT_PERSONA,
+    messageLimit: 1000,
+  },
+  psychological: {
+    id: 'psychological',
+    label: 'Psychological Analysis',
+    systemPrompt: [
+      'You are an advanced psychological analytical assistant.',
+      'Your task is to carefully review and interpret the last 500 messages sent by this user.',
+      '',
+      'Objectives:',
+      '',
+      'Psychological & Personality Analysis',
+      'Provide a detailed and nuanced breakdown of the user\'s mental health, personality traits, and behavioural patterns.',
+      'Highlight both strengths and potential vulnerabilities in their thinking, communication, and decision-making styles.',
+      '',
+      'Hidden Issues & Coping Mechanisms',
+      'Identify signs of struggles, suppressed emotions, or underlying issues the user may be avoiding.',
+      'Point out subtle patterns (such as repeated concerns, avoidance behaviours, or recurring emotional tones) that suggest deeper challenges.',
+      '',
+      'Future Risks & Challenges',
+      'Predict potential problems the user may face if these patterns persist (e.g., burnout, interpersonal conflicts, difficulty achieving goals).',
+      'Suggest areas for growth or self-reflection to help the user navigate these challenges proactively.',
+      '',
+      'Evidence-Based Insights',
+      'Support all claims with direct references to the user\'s past messages.',
+      'Quote or paraphrase specific examples to demonstrate how the user\'s own words reveal these traits or struggles.',
+      '',
+      'Output Requirements:',
+      'The analysis should be thorough, insightful, and empathetic, not judgmental.',
+      'Structure the response into clear sections (e.g., Mental Health Indicators, Personality Traits, Hidden Issues, Future Challenges).',
+      'Use professional but approachable language, ensuring the feedback feels constructive and human-centred.',
+    ].join('\n'),
+    messageLimit: 500,
+  },
+};
+
 function formatMessages(logs, targetCount) {
   if (!Array.isArray(logs) || !logs.length) {
     return { text: 'No recent messages.', usedCount: 0 };
@@ -73,7 +114,15 @@ function buildEmbed(interaction, analysis, count) {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('analysis')
-    .setDescription('Spend a Judgement to analyse your last 1000 messages'),
+    .setDescription('Spend a Judgement to analyse your recent messages')
+    .addStringOption((option) => option
+      .setName('persona')
+      .setDescription('Choose the analysis persona to apply')
+      .addChoices(
+        { name: PERSONAS.default.label, value: PERSONAS.default.id },
+        { name: PERSONAS.psychological.label, value: PERSONAS.psychological.id },
+      )
+      .setRequired(false)),
 
   async execute(interaction) {
     if (!interaction.inGuild()) {
@@ -95,7 +144,14 @@ module.exports = {
       });
     }
 
-    const logs = messageLogStore.getRecentMessages(interaction.guildId, interaction.user.id, 1000);
+    const requestedPersona = interaction.options.getString('persona') || PERSONAS.default.id;
+    const persona = PERSONAS[requestedPersona] || PERSONAS.default;
+
+    const logs = messageLogStore.getRecentMessages(
+      interaction.guildId,
+      interaction.user.id,
+      persona.messageLimit,
+    );
     if (!logs.length) {
       return interaction.editReply({ content: 'No message history recorded yet. Try again after chatting more.' });
     }
@@ -105,7 +161,7 @@ module.exports = {
       return interaction.editReply({ content: 'You no longer have a Judgement to spend.' });
     }
 
-    const { text: formatted, usedCount } = formatMessages(logs, 1000);
+    const { text: formatted, usedCount } = formatMessages(logs, persona.messageLimit);
     if (usedCount === 0) {
       await judgementStore.addTokens(interaction.guildId, interaction.user.id, 1);
       return interaction.editReply({ content: 'Unable to find analysable messages yet. Try again later.' });
@@ -130,7 +186,7 @@ module.exports = {
         body: JSON.stringify({
           model: OPENAI_CHAT_MODEL,
           messages: [
-            { role: 'system', content: DEFAULT_PERSONA },
+            { role: 'system', content: persona.systemPrompt },
             { role: 'user', content: prompt },
           ],
           temperature: 0.3,
