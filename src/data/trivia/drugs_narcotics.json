@@ -1,0 +1,613 @@
+{
+  "id": "drugs_narcotics",
+  "name": "Drugs and Narcotics",
+  "description": "Trivia focused on recreational drugs, their history, and policy milestones.",
+  "difficulties": {
+    "easy": [
+      {
+        "prompt": "Which plant is the source of cocaine?",
+        "choices": {
+          "A": "Tobacco",
+          "B": "Coffee",
+          "C": "Coca",
+          "D": "Opium"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Marijuana is most commonly consumed by:",
+        "choices": {
+          "A": "Injection",
+          "B": "Smoking",
+          "C": "Snorting",
+          "D": "IV drip"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which drug is often referred to as 'weed'?",
+        "choices": {
+          "A": "LSD",
+          "B": "Heroin",
+          "C": "Cannabis",
+          "D": "Cocaine"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "What year did Canada legalize recreational cannabis?",
+        "choices": {
+          "A": "2015",
+          "B": "2016",
+          "C": "2018",
+          "D": "2019"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which ancient civilization first recorded opium use?",
+        "choices": {
+          "A": "Romans",
+          "B": "Greeks",
+          "C": "Sumerians",
+          "D": "Egyptians"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which stimulant is most commonly found in coffee and tea?",
+        "choices": {
+          "A": "Nicotine",
+          "B": "Caffeine",
+          "C": "Cocaine",
+          "D": "Morphine"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which drug is commonly known as 'acid'?",
+        "choices": {
+          "A": "Heroin",
+          "B": "LSD",
+          "C": "PCP",
+          "D": "Meth"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which U.S. president declared the 'War on Drugs'?",
+        "choices": {
+          "A": "Kennedy",
+          "B": "Johnson",
+          "C": "Nixon",
+          "D": "Reagan"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "What does 'THC' stand for?",
+        "choices": {
+          "A": "Tetrahydrocannabinol",
+          "B": "Tetrahydrocannabinol",
+          "C": "Trihydrocarbon",
+          "D": "Trichloride"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which drug is often prescribed as a painkiller?",
+        "choices": {
+          "A": "Cocaine",
+          "B": "LSD",
+          "C": "Morphine",
+          "D": "Caffeine"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "What color pill is commonly associated with ecstasy in pop culture?",
+        "choices": {
+          "A": "Green",
+          "B": "Blue",
+          "C": "Yellow",
+          "D": "Purple"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which illegal drug is often injected using a syringe?",
+        "choices": {
+          "A": "Cocaine",
+          "B": "Heroin",
+          "C": "LSD",
+          "D": "Cannabis"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "What is the slang term 'meth' short for?",
+        "choices": {
+          "A": "Methadone",
+          "B": "Methamphetamine",
+          "C": "Methyl alcohol",
+          "D": "Metrazine"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which drug is made from the poppy plant?",
+        "choices": {
+          "A": "Cocaine",
+          "B": "Opium",
+          "C": "LSD",
+          "D": "Caffeine"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "What country is famous for its coca leaf tea?",
+        "choices": {
+          "A": "Mexico",
+          "B": "Jamaica",
+          "C": "Peru",
+          "D": "China"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which drug is known as 'angel dust'?",
+        "choices": {
+          "A": "LSD",
+          "B": "Ecstasy",
+          "C": "PCP",
+          "D": "Ketamine"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which system of the body does alcohol primarily depress?",
+        "choices": {
+          "A": "Digestive",
+          "B": "Respiratory",
+          "C": "Central Nervous System",
+          "D": "Circulatory"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which drug is commonly smoked in a glass pipe?",
+        "choices": {
+          "A": "Heroin",
+          "B": "Crack Cocaine",
+          "C": "LSD",
+          "D": "Morphine"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "What does the slang term 'shrooms' refer to?",
+        "choices": {
+          "A": "Poppies",
+          "B": "LSD",
+          "C": "Psilocybin mushrooms",
+          "D": "Ecstasy"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which famous soda originally contained coca leaf extract?",
+        "choices": {
+          "A": "Pepsi",
+          "B": "Coca-Cola",
+          "C": "Dr. Pepper",
+          "D": "7-Up"
+        },
+        "answer": "B"
+      }
+    ],
+    "medium": [
+      {
+        "prompt": "LSD was discovered in 1938 by which Swiss chemist?",
+        "choices": {
+          "A": "Sigmund Freud",
+          "B": "Carl Jung",
+          "C": "Albert Hofmann",
+          "D": "Richard Evans"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which U.S. act in 1970 classified drugs into 'schedules'?",
+        "choices": {
+          "A": "Prohibition Act",
+          "B": "Controlled Substances Act",
+          "C": "Drug Enforcement Act",
+          "D": "Narcotics Control Act"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "What is the active compound in 'magic mushrooms'?",
+        "choices": {
+          "A": "DMT",
+          "B": "Psilocybin",
+          "C": "LSD",
+          "D": "THC"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Methamphetamine was originally derived from which plant alkaloid?",
+        "choices": {
+          "A": "Nicotine",
+          "B": "Ephedrine",
+          "C": "Quinine",
+          "D": "Atropine"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "What does MDMA stand for?",
+        "choices": {
+          "A": "Methyldioxymethamphetamine",
+          "B": "3,4-Methylenedioxymethamphetamine",
+          "C": "Methyldioxyamphetamine",
+          "D": "Metadioxyamine"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which U.S. agency was created in 1973 to combat drugs?",
+        "choices": {
+          "A": "FDA",
+          "B": "CDC",
+          "C": "DEA",
+          "D": "NIH"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "In the 1800s, morphine was commonly marketed as a treatment for:",
+        "choices": {
+          "A": "Asthma",
+          "B": "Pain relief",
+          "C": "Tuberculosis",
+          "D": "Depression"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which indigenous people used peyote in religious ceremonies?",
+        "choices": {
+          "A": "Inuit",
+          "B": "Aztec",
+          "C": "Native American tribes",
+          "D": "Mayan"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "The 'Golden Triangle' is a major opium-producing region located in:",
+        "choices": {
+          "A": "South America",
+          "B": "Central Asia",
+          "C": "Southeast Asia",
+          "D": "Africa"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which neurotransmitter is boosted by ecstasy (MDMA)?",
+        "choices": {
+          "A": "GABA",
+          "B": "Norepinephrine",
+          "C": "Serotonin",
+          "D": "Glutamate"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "What does Narcan (naloxone) do?",
+        "choices": {
+          "A": "Enhances a high",
+          "B": "Causes hallucinations",
+          "C": "Reverses opioid overdoses",
+          "D": "Acts as a stimulant"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Crack cocaine differs from powder cocaine because it is:",
+        "choices": {
+          "A": "Weaker",
+          "B": "Smoked in crystal form",
+          "C": "Less addictive",
+          "D": "Dissolved in liquid"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "The Harrison Narcotics Tax Act (1914) was the first U.S. law to regulate:",
+        "choices": {
+          "A": "Cannabis",
+          "B": "Opiates & Cocaine",
+          "C": "LSD",
+          "D": "Alcohol"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "What is methadone primarily used for?",
+        "choices": {
+          "A": "Hallucinations",
+          "B": "Treating opioid addiction",
+          "C": "Boosting energy",
+          "D": "Pain management only"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "The drug PCP was originally developed as a:",
+        "choices": {
+          "A": "Cough medicine",
+          "B": "Antibiotic",
+          "C": "Anesthetic",
+          "D": "Fertilizer"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which synthetic opioid is 50-100 times stronger than morphine?",
+        "choices": {
+          "A": "Methadone",
+          "B": "Oxycodone",
+          "C": "Fentanyl",
+          "D": "Codeine"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Cocaine primarily affects which brain chemical?",
+        "choices": {
+          "A": "Acetylcholine",
+          "B": "Dopamine",
+          "C": "Histamine",
+          "D": "Melatonin"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which psychedelic was used in CIA experiments under 'MKUltra'?",
+        "choices": {
+          "A": "MDMA",
+          "B": "Mescaline",
+          "C": "LSD",
+          "D": "Psilocybin"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "In the 19th century, what narcotic was widely sold in patent medicines?",
+        "choices": {
+          "A": "LSD",
+          "B": "Cannabis",
+          "C": "Opium",
+          "D": "MDMA"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which South American drug cartel was led by Pablo Escobar?",
+        "choices": {
+          "A": "Cali Cartel",
+          "B": "Medellín Cartel",
+          "C": "Sinaloa Cartel",
+          "D": "Juárez Cartel"
+        },
+        "answer": "B"
+      }
+    ],
+    "hard": [
+      {
+        "prompt": "Which 19th-century war was fought largely over the opium trade?",
+        "choices": {
+          "A": "Spanish-American War",
+          "B": "Russo-Japanese War",
+          "C": "Opium Wars",
+          "D": "Boer War"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "'Speedball' is a dangerous mix of:",
+        "choices": {
+          "A": "Cocaine + LSD",
+          "B": "Cocaine + Heroin",
+          "C": "Ecstasy + Alcohol",
+          "D": "Meth + Nicotine"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "What chemical process turns morphine into heroin?",
+        "choices": {
+          "A": "Fermentation",
+          "B": "Acetylation",
+          "C": "Oxidation",
+          "D": "Hydrogenation"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "In what year did the U.S. pass the Marijuana Tax Act, effectively banning cannabis?",
+        "choices": {
+          "A": "1914",
+          "B": "1920",
+          "C": "1937",
+          "D": "1945"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which psychoactive compound is found in the Amazonian brew Ayahuasca?",
+        "choices": {
+          "A": "Mescaline",
+          "B": "LSD",
+          "C": "DMT",
+          "D": "Psilocin"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "What’s the main risk of combining benzodiazepines with opioids?",
+        "choices": {
+          "A": "High blood pressure",
+          "B": "Respiratory depression",
+          "C": "Seizures",
+          "D": "Liver failure"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "What is the half-life of methadone in the body?",
+        "choices": {
+          "A": "4–6 hours",
+          "B": "24–36 hours",
+          "C": "48–72 hours",
+          "D": "12–15 hours"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which UN convention in 1988 strengthened international drug enforcement?",
+        "choices": {
+          "A": "Geneva Protocol",
+          "B": "Single Convention",
+          "C": "UN Convention Against Illicit Traffic in Narcotic Drugs",
+          "D": "Vienna Pact"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "What receptor does THC primarily bind to in the brain?",
+        "choices": {
+          "A": "Dopamine",
+          "B": "CB1 (Cannabinoid receptor)",
+          "C": "GABA",
+          "D": "NMDA"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "'China White' is a street name for:",
+        "choices": {
+          "A": "Cocaine",
+          "B": "Meth",
+          "C": "Fentanyl",
+          "D": "Heroin"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which stimulant was widely used by soldiers in WWII to stay awake?",
+        "choices": {
+          "A": "Caffeine",
+          "B": "Amphetamines",
+          "C": "Cocaine",
+          "D": "Nicotine"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "What is the primary difference between Schedule I and Schedule II drugs (U.S.)?",
+        "choices": {
+          "A": "Both are illegal",
+          "B": "Schedule I has no accepted medical use, Schedule II does",
+          "C": "Schedule II is less addictive",
+          "D": "Schedule I includes alcohol"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "In which year did Portugal decriminalize all drugs for personal use?",
+        "choices": {
+          "A": "1995",
+          "B": "1999",
+          "C": "2001",
+          "D": "2005"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "What is the typical lethal dose of fentanyl in milligrams?",
+        "choices": {
+          "A": "10 mg",
+          "B": "2 mg",
+          "C": "50 mg",
+          "D": "0.5 mg"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which U.S. city is known for the 'Crack Epidemic' of the 1980s?",
+        "choices": {
+          "A": "Chicago",
+          "B": "Miami",
+          "C": "Los Angeles",
+          "D": "Detroit"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "What synthetic hallucinogen is nicknamed 'Special K'?",
+        "choices": {
+          "A": "PCP",
+          "B": "Ketamine",
+          "C": "MDMA",
+          "D": "Mescaline"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which precursor chemical is essential in making methamphetamine?",
+        "choices": {
+          "A": "Quinine",
+          "B": "Pseudoephedrine",
+          "C": "Benzene",
+          "D": "Lidocaine"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "The coca leaf has been traditionally chewed for centuries in:",
+        "choices": {
+          "A": "India",
+          "B": "Mexico",
+          "C": "Andes region",
+          "D": "Africa"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which drug is considered the most addictive by rapid onset and short half-life?",
+        "choices": {
+          "A": "Alcohol",
+          "B": "Crack Cocaine",
+          "C": "LSD",
+          "D": "Cannabis"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "What year did the UN adopt the Single Convention on Narcotic Drugs?",
+        "choices": {
+          "A": "1945",
+          "B": "1950",
+          "C": "1961",
+          "D": "1972"
+        },
+        "answer": "C"
+      }
+    ]
+  }
+}
