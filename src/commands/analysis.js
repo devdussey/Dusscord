@@ -12,8 +12,8 @@ const OPENAI_CHAT_MODEL = process.env.ANALYSIS_MODEL || process.env.CHAT_MODEL |
 const DEFAULT_PERSONA = (process.env.ANALYSIS_PERSONA_PROMPT || '').trim() || [
   'You are a private analytical assistant configured by the bot owner to review community members.',
   'Analyse the supplied Discord messages for tone, behaviour patterns, rule compliance, and wellbeing concerns.',
-  'Respond in JSON with keys "summary", "strengths", "risks", and "recommendations". Each value must be a short markdown string (<800 characters).',
-  'Do not include any other keys or explanatory text.',
+  'Speak in a single, well-structured paragraph in character as this assistant persona.',
+  'Avoid bullet points, numbered lists, or JSON formatting.',
 ].join(' ');
 
 const PERSONAS = {
@@ -50,8 +50,8 @@ const PERSONAS = {
       '',
       'Output Requirements:',
       'The analysis should be thorough, insightful, and empathetic, not judgmental.',
-      'Structure the response into clear sections (e.g., Mental Health Indicators, Personality Traits, Hidden Issues, Future Challenges).',
-      'Use professional but approachable language, ensuring the feedback feels constructive and human-centred.',
+      'Deliver the response as flowing paragraphs that reflect your professional persona.',
+      'Use professional but approachable language, ensuring the feedback feels constructive and human-centred, and avoid JSON or bullet lists.',
     ].join('\n'),
     messageLimit: 500,
   },
@@ -90,7 +90,17 @@ function buildEmbed(interaction, analysis, count) {
     .setTimestamp(new Date());
 
   const fields = [];
-  if (analysis && typeof analysis === 'object') {
+  if (typeof analysis === 'string') {
+    const text = analysis || 'No analysis generated.';
+    for (let i = 0; i < text.length; i += 1024) {
+      const chunk = text.slice(i, i + 1024) || 'No analysis generated.';
+      const label = i === 0 ? 'Report' : `Report (cont. ${Math.floor(i / 1024) + 1})`;
+      fields.push({ name: label, value: chunk, inline: false });
+    }
+    if (!fields.length) {
+      fields.push({ name: 'Report', value: 'No analysis generated.', inline: false });
+    }
+  } else if (analysis && typeof analysis === 'object') {
     const entries = [
       ['Summary', analysis.summary],
       ['Strengths', analysis.strengths],
@@ -196,7 +206,7 @@ module.exports = {
       `Analyse the following ${usedCount} messages written by ${interaction.user.tag}.`,
       'Identify behavioural patterns, moderation concerns, sentiment, and notable habits.',
       'Focus strictly on the content and avoid speculation beyond the evidence provided.',
-      'Return JSON only.',
+      'Respond with a natural paragraph that stays in-character for your configured persona.',
       '',
       formatted,
     ].join('\n');
@@ -225,19 +235,9 @@ module.exports = {
         throw new Error(msg);
       }
 
-      let analysis;
-      try {
-        const data = JSON.parse(text);
-        const out = data?.choices?.[0]?.message?.content?.trim();
-        if (!out) throw new Error('No analysis returned.');
-        try {
-          analysis = JSON.parse(out);
-        } catch (_) {
-          analysis = out;
-        }
-      } catch (err) {
-        throw err;
-      }
+      const data = JSON.parse(text);
+      const analysis = data?.choices?.[0]?.message?.content?.trim();
+      if (!analysis) throw new Error('No analysis returned.');
 
       const embed = buildEmbed(interaction, analysis, usedCount);
       await interaction.editReply({ embeds: [embed] });
