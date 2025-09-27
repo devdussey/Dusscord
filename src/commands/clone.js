@@ -200,9 +200,12 @@ module.exports = {
             }
             name = name.toLowerCase().replace(/[^a-z0-9_]/g, '_').slice(0, 30) || 'sticker';
 
+            const extensionMatch = sourceUrl?.match(/\.([a-z0-9]+)(?:\?.*)?$/i);
+            const fileExtension = extensionMatch ? extensionMatch[1].toLowerCase() : 'png';
+
             try {
                 const created = await interaction.guild.stickers.create({
-                    file: fileBuffer,
+                    file: { name: `${name}.${fileExtension}`, data: fileBuffer },
                     name,
                     tags: tagsInput,
                     description,

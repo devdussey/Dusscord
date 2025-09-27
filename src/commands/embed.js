@@ -1,5 +1,17 @@
 const { SlashCommandBuilder, EmbedBuilder, ChannelType } = require('discord.js');
 const { createEmbedModal } = require('../utils/embedBuilder');
+const { parseColorInput } = require('../utils/colorParser');
+
+function sanitiseUrl(input) {
+    if (!input || typeof input !== 'string') return null;
+    try {
+        const url = new URL(input.trim());
+        if (!['http:', 'https:'].includes(url.protocol)) return null;
+        return url.toString();
+    } catch (_) {
+        return null;
+    }
+}
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -67,17 +79,25 @@ module.exports = {
 
             const title = interaction.options.getString('title');
             const description = interaction.options.getString('description');
-            const color = interaction.options.getString('color') || '#0000ff';
-            const image = interaction.options.getString('image');
+            const colorInput = interaction.options.getString('color');
+            const imageInput = interaction.options.getString('image');
+            const thumbnailInput = interaction.options.getString('thumbnail');
             const targetChannel = interaction.options.getChannel('channel') || interaction.channel;
 
             try {
+                const colour = parseColorInput(colorInput, 0x5865f2);
                 const embed = new EmbedBuilder()
-                    .setTitle(title)
-                    .setDescription(description)
-                    .setColor(color)
-                    .setImage(image)
-                  
+                    .setColor(colour);
+
+                if (title) embed.setTitle(title.slice(0, 256));
+                if (description) embed.setDescription(description.slice(0, 4096));
+
+                const image = sanitiseUrl(imageInput);
+                if (image) embed.setImage(image);
+
+                const thumb = sanitiseUrl(thumbnailInput);
+                if (thumb) embed.setThumbnail(thumb);
+
                 // Send the embed to the chosen channel
                 await targetChannel.send({ embeds: [embed] });
 
@@ -87,7 +107,7 @@ module.exports = {
                 });
 
             } catch (error) {
-                console.error(error);
+                console.error('embed quick failed:', error);
                 await interaction.editReply({
                     content: '❌ Error creating embed. Please check your inputs (especially URLs and color format).'
                 });
