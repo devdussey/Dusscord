@@ -68,3 +68,24 @@ test('sanitises mentions and records attachments when content empty', async () =
     assert.match(logs[1].content, /Attachments: file\.png/);
   });
 });
+
+test('recordMessagesBulk stores messages in chronological order', async () => {
+  await withTempStore(async store => {
+    const guildId = 'bulk-guild';
+    const userId = 'bulk-user';
+    const messages = [
+      { id: 'm2', channelId: 'chan', content: 'second', createdTimestamp: 2000 },
+      { id: 'm1', channelId: 'chan', content: 'first', createdTimestamp: 1000 },
+      { id: 'm3', channelId: 'chan', content: 'third', createdTimestamp: 3000 },
+    ];
+
+    const result = await store.recordMessagesBulk(guildId, userId, messages);
+    assert.equal(result.added, 3);
+
+    const logs = store.getRecentMessages(guildId, userId, 10);
+    assert.equal(logs.length, 3);
+    assert.equal(logs[0].id, 'm1');
+    assert.equal(logs[1].id, 'm2');
+    assert.equal(logs[2].id, 'm3');
+  });
+});

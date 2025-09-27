@@ -61,18 +61,35 @@ function sanitizeContent(content) {
     .replace(/<#(\d+)>/g, '[#channel:$1]');
 }
 
-async function recordMessage(guildId, userId, message) {
-  if (!guildId || !userId) return;
+function buildEntryFromMessage(message) {
+  if (!message) return null;
   const contentRaw = message?.content || '';
   let cleaned = sanitizeContent(contentRaw).slice(0, 1900);
-  if (!cleaned && message?.attachments?.size) {
-    const attachments = [...message.attachments.values()].slice(0, 3)
-      .map(att => att?.name || 'attachment');
-    cleaned = attachments.length
-      ? `Attachments: ${attachments.join(', ')}`
-      : '';
+  if (!cleaned) {
+    const attachments = [];
+    if (message?.attachments?.size) {
+      for (const att of message.attachments.values()) {
+        if (!att) continue;
+        if (att.name) attachments.push(att.name);
+        else if (att.id) attachments.push(`attachment-${att.id}`);
+        else attachments.push('attachment');
+        if (attachments.length >= 3) break;
+      }
+    }
+    if (!attachments.length && Array.isArray(message?.attachments)) {
+      for (const att of message.attachments) {
+        if (!att) continue;
+        if (att.name) attachments.push(att.name);
+        else attachments.push('attachment');
+        if (attachments.length >= 3) break;
+      }
+    }
+    if (attachments.length) {
+      cleaned = `Attachments: ${attachments.join(', ')}`;
+    }
   }
-  const entry = {
+
+  return {
     id: message?.id || null,
     channelId: message?.channelId || null,
     content: cleaned,
@@ -80,13 +97,44 @@ async function recordMessage(guildId, userId, message) {
       ? Number(message.createdTimestamp)
       : Date.now(),
   };
+}
+
+function trimList(list) {
+  if (Array.isArray(list) && list.length > MAX_PER_USER) {
+    list.splice(0, list.length - MAX_PER_USER);
+  }
+}
+
+async function recordMessage(guildId, userId, message) {
+  if (!guildId || !userId) return;
+  const entry = buildEntryFromMessage(message);
+  if (!entry) return;
 
   const list = ensureGuildUser(guildId, userId);
   list.push(entry);
-  if (list.length > MAX_PER_USER) {
-    list.splice(0, list.length - MAX_PER_USER);
-  }
+  trimList(list);
   await saveStore();
+}
+
+async function recordMessagesBulk(guildId, userId, messages) {
+  if (!guildId || !userId) return { added: 0 };
+  if (!Array.isArray(messages) || !messages.length) return { added: 0 };
+
+  const entries = messages
+    .map((message) => buildEntryFromMessage(message))
+    .filter((entry) => entry && typeof entry === 'object');
+  if (!entries.length) return { added: 0 };
+
+  entries.sort((a, b) => (a.createdTimestamp || 0) - (b.createdTimestamp || 0));
+
+  const list = ensureGuildUser(guildId, userId);
+  for (const entry of entries) {
+    list.push(entry);
+  }
+  trimList(list);
+  await saveStore();
+
+  return { added: entries.length, total: list.length };
 }
 
 function getRecentMessages(guildId, userId, limit = MAX_PER_USER) {
@@ -102,4 +150,5 @@ module.exports = {
   MAX_PER_USER,
   recordMessage,
   getRecentMessages,
+  recordMessagesBulk,
 };
