@@ -69,6 +69,7 @@ const categories = {
   'Bot Owner': [
     { cmd: '/adminlist', desc: 'List mutual guilds where a user has Administrator', perm: 'Bot Owner' },
     { cmd: '/botlook', desc: 'Update the bot avatar, nickname, or bio', perm: 'Bot Owner' },
+    { cmd: '/fetchmessage', desc: 'Backfill user messages from a channel for analysis tools', perm: 'Bot Owner' },
     { cmd: '/dmdiag test/role', desc: 'DM diagnostics for a member or role', perm: 'Bot Owner' },
     { cmd: '/wraith start/stop', desc: 'Create a private spam channel and isolate a member', perm: 'Bot Owner' },
     { cmd: '/securitylog set/mode/clear/toggle/show', desc: 'Configure security log delivery and enablement', perm: 'Bot Owner' },
