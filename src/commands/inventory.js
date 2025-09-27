@@ -1,10 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js');
 const tokenStore = require('../utils/messageTokenStore');
-const judgementStore = require('../utils/judgementStore');
 const smiteConfigStore = require('../utils/smiteConfigStore');
 
 const BAG_LABEL = 'Smite';
-const JUDGEMENT_LABEL = 'Judgement';
 
 function formatCurrencyProgress(label, progress = {}) {
   const tokens = Number.isFinite(progress.tokens) ? Math.max(0, Math.floor(progress.tokens)) : 0;
@@ -32,17 +30,14 @@ module.exports = {
     await interaction.deferReply({ ephemeral: true });
 
     const smiteProgress = tokenStore.getProgress(interaction.guildId, interaction.user.id);
-    const judgementProgress = judgementStore.getProgress(interaction.guildId, interaction.user.id);
-
     const smiteLine = formatCurrencyProgress(BAG_LABEL, smiteProgress);
-    const judgementLine = formatCurrencyProgress(JUDGEMENT_LABEL, judgementProgress);
 
     const smiteEnabled = smiteConfigStore.isEnabled(interaction.guildId);
     const statusLine = smiteEnabled
       ? 'Smite rewards are currently enabled on this server.'
       : 'Smite rewards are currently disabled on this server.';
 
-    const response = [smiteLine, judgementLine, statusLine].join('\n').slice(0, 1900);
+    const response = [smiteLine, statusLine].join('\n').slice(0, 1900);
     await interaction.editReply({ content: response });
   },
 };
