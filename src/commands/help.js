@@ -15,7 +15,8 @@ const categories = {
     { cmd: '/blacklist add/remove/list', desc: 'Manage the blacklist to auto-ban users on join', perm: 'Ban Members' },
     { cmd: '/purge', desc: 'Delete 1–100 recent messages in this channel', perm: 'Manage Messages' },
     { cmd: '/jail config/add/remove/status', desc: 'Jail members, remove roles, and restore them later', perm: 'Manage Roles' },
-    { cmd: '/drugscordbag', desc: 'Spend a Smite to timeout a user for up to 10 minutes', perm: null },
+    { cmd: '/smite', desc: 'Smite a non staff user, silencing them for 10 minutes', perm: null },
+    { cmd: '/smiteconfig', desc: 'Enable or disable Smite rewards and commands', perm: 'Manage Server' },
   ],
   'Roles & Verification': [
     { cmd: '/autoroles add/remove/list/clear', desc: 'Auto-assign roles to new members', perm: 'Manage Roles' },
@@ -64,6 +65,7 @@ const categories = {
   'Info & Utilities': [
     { cmd: '/joins leaderboard/user/setlog/backfill', desc: 'Join/leave stats; setup/backfill require Manage Server', perm: null },
     { cmd: '/botinfo', desc: 'Show bot instance, mode, commands loaded, and uptime', perm: null },
+    { cmd: '/inventory', desc: 'Check how many Smites you have and when you earn the next one', perm: null },
     { cmd: '/webhooks', desc: 'List server webhooks and their creators', perm: 'Manage Webhooks' },
     { cmd: '/servertag set/show/clear', desc: 'Manage the saved server tag for quick reference', perm: 'Manage Server' },
   ],

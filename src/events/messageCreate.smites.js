@@ -1,5 +1,6 @@
 const { Events } = require('discord.js');
 const bagStore = require('../utils/messageTokenStore');
+const smiteConfigStore = require('../utils/smiteConfigStore');
 
 const BAG_LABEL = 'Smite';
 
@@ -9,6 +10,7 @@ module.exports = {
     try {
       if (!message?.guild) return;
       if (message.author?.bot) return;
+      if (!smiteConfigStore.isEnabled(message.guild.id)) return;
 
       const result = await bagStore.incrementMessage(message.guild.id, message.author.id);
       if (!result || !result.awarded) return;
@@ -21,16 +23,13 @@ module.exports = {
       const base = `You just earned ${awardedBags} ${BAG_LABEL}${pluralAward} in ${message.guild.name}!`;
       const totalLine = `You now have ${totalBags} ${BAG_LABEL}${pluralTotal}.`;
       const nextLine = `Next Smite in ${nextIn} message${nextIn === 1 ? '' : 's'}.`;
-      const content = `${base} ${totalLine} ${nextLine}`.slice(0, 1900);
+      const hintLine = 'Check `/inventory` anytime to view your items.';
+      const content = `${base} ${totalLine} ${nextLine} ${hintLine}`.slice(0, 1900);
 
       try {
-        await message.author.send({ content });
+        await message.reply({ content, allowedMentions: { repliedUser: false } });
       } catch (_) {
-        try {
-          await message.reply({ content, allowedMentions: { repliedUser: false } });
-        } catch (_) {
-          // ignore if we cannot notify the user
-        }
+        // ignore if we cannot notify the user
       }
     } catch (err) {
       console.error('Failed to process Smite increment', err);
