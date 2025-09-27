@@ -12,9 +12,9 @@ const { recordRace } = require('../utils/horseRaceStore');
 const coinStore = require('../utils/coinStore');
 const { getRaceEntryFee, getRaceRewards } = require('../utils/economyConfig');
 
-const TRACK_SLOTS = 20;
+const TRACK_SLOTS = 80;
 const TICK_DELAY_MS = 1200;
-const MAX_TICKS = 18;
+const MAX_TICKS = 72;
 const JOIN_WINDOW_MS = 60_000;
 const MIN_PLAYERS = 3;
 const MAX_PLAYERS = 8; // command issuer + up to 7 more
