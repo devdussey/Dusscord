@@ -5,7 +5,7 @@ const judgementStore = require('../utils/judgementStore');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('givejudgement')
-    .setDescription('Owner: grant Judgements to a user')
+    .setDescription('Owners: grant Judgements to a user')
     .addUserOption(opt =>
       opt
         .setName('user')
@@ -30,8 +30,24 @@ module.exports = {
       return interaction.reply({ content: 'Use this command in a server.', ephemeral: true });
     }
 
-    if (!isOwner(interaction.user.id)) {
-      return interaction.reply({ content: 'Only the bot owner can use this command.', ephemeral: true });
+    const isBotOwner = isOwner(interaction.user.id);
+    let isGuildOwner = false;
+    if (interaction.guild && interaction.guild.ownerId) {
+      isGuildOwner = interaction.guild.ownerId === interaction.user.id;
+    }
+    if (!isGuildOwner && interaction.guild && interaction.guild.fetchOwner) {
+      try {
+        const owner = await interaction.guild.fetchOwner();
+        if (owner && owner.id === interaction.user.id) {
+          isGuildOwner = true;
+        }
+      } catch (_) {
+        // ignore fetch errors and fall back to known state
+      }
+    }
+
+    if (!isBotOwner && !isGuildOwner) {
+      return interaction.reply({ content: 'Only the bot owner or the guild owner can use this command.', ephemeral: true });
     }
 
     const target = interaction.options.getUser('user', true);
@@ -41,13 +57,20 @@ module.exports = {
 
     const total = await judgementStore.addTokens(interaction.guildId, target.id, amount);
 
-    const base = `Granted ${amount} Judgement${amount === 1 ? '' : 's'} to ${target.tag}.`;
-    const balanceLine = `They now have ${total} Judgement${total === 1 ? '' : 's'}.`;
+    const balanceLine = `They now have ${total} judgement${total === 1 ? '' : 's'}.`;
     const reasonLine = reason ? `Reason: ${reason}` : '';
 
+    const lines = [
+      `<@${interaction.user.id}> has given <@${target.id}> ${amount} judgement${amount === 1 ? '' : 's'}.`,
+      balanceLine,
+      reasonLine,
+    ]
+      .filter(Boolean)
+      .join('\n')
+      .slice(0, 1900);
+
     return interaction.reply({
-      content: [base, balanceLine, reasonLine].filter(Boolean).join('\n').slice(0, 1900),
-      ephemeral: true,
+      content: lines,
     });
   },
 };
