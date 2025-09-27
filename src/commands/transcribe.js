@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { transcribeAttachment, MAX_BYTES } = require('../utils/whisper');
+const { createFieldEmbeds } = require('../utils/embedFields');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -34,14 +35,24 @@ module.exports = {
 
     try {
       const text = await transcribeAttachment(attachment, prompt);
-      const MAX_DISCORD = 2000;
-      if (text.length <= MAX_DISCORD) {
-        return interaction.editReply(`Transcript:\n${text}`);
+      const embeds = createFieldEmbeds({
+        title: 'Transcript',
+        user: interaction.user,
+        sections: [
+          { name: 'Content', value: text }
+        ]
+      }).map(embed => embed.toJSON());
+
+      if (!embeds.length) {
+        return interaction.editReply('Transcript was empty.');
       }
-      await interaction.editReply('Transcript is long; sending in parts below:');
-      for (let i = 0; i < text.length; i += MAX_DISCORD) {
-        const chunk = text.slice(i, i + MAX_DISCORD);
-        try { await interaction.followUp({ content: chunk, ephemeral: true }); } catch (_) {}
+
+      const [first, ...rest] = embeds;
+      await interaction.editReply({ embeds: [first] });
+      for (const embed of rest) {
+        try {
+          await interaction.followUp({ embeds: [embed], ephemeral: true });
+        } catch (_) {}
       }
     } catch (err) {
       const msg = err?.message || String(err);
