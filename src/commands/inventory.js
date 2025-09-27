@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const coinStore = require('../utils/coinStore');
 const tokenStore = require('../utils/messageTokenStore');
 const judgementStore = require('../utils/judgementStore');
@@ -28,6 +28,72 @@ function formatDuration(ms) {
   return parts.length ? parts.join(', ') : '0 seconds';
 }
 
+function buildInventoryEmbed({
+  user,
+  coinSummary,
+  smiteBalance,
+  smiteCost,
+  judgementBalance,
+  judgementCost,
+  smiteEnabled,
+  prayStatus,
+  prayReward,
+}) {
+  const username = user && typeof user.username === 'string' && user.username.trim().length
+    ? user.username
+    : null;
+  const title = username ? `${username}'s Divine Inventory` : 'Your Divine Inventory';
+
+  const embed = new EmbedBuilder()
+    .setColor(0xf1c40f)
+    .setTitle(title)
+    .setDescription(
+      'Your sacred belongings, tallied and catalogued. Spend coins in /store to expand your arsenal.'
+    )
+    .addFields(
+      {
+        name: '🪙 Coins',
+        value: `**Balance:** ${formatCoins(coinSummary.coins)}\n**Ledger:** Earned ${formatCoins(
+          coinSummary.lifetimeEarned
+        )} · Spent ${formatCoins(
+          coinSummary.lifetimeSpent
+        )}\nCoins are the divine currency for all purchases, including empowering Smites and unlocking Judgements.`,
+      },
+      {
+        name: '⚡ Smites',
+        value: `**Owned:** ${smiteBalance}\n**Cost:** ${formatCoins(
+          smiteCost
+        )} coins each\nCall down righteous lightning to discipline wrongdoers using the /smite command. ${
+          smiteEnabled
+            ? 'Smite rewards are currently **enabled** on this server.'
+            : 'Smite rewards are currently **disabled** on this server.'
+        }`,
+      },
+      {
+        name: '⚖️ Judgements',
+        value: `**Owned:** ${judgementBalance}\n**Cost:** ${formatCoins(
+          judgementCost
+        )} coins each\nJudgements unlock the powerful /analysis command and can also be bestowed by moderators using /givejudgement.`,
+      }
+    );
+
+  embed.addFields({
+    name: '🙏 Daily Prayer',
+    value: prayStatus.canPray
+      ? `Ready to pray! Use /pray to receive ${formatCoins(prayReward)} coins.`
+      : `Already blessed. You can pray again in ${formatDuration(prayStatus.cooldownMs)}.`,
+  });
+
+  const avatarUrl = typeof user.displayAvatarURL === 'function' ? user.displayAvatarURL({ forceStatic: true }) : null;
+  if (avatarUrl) {
+    embed.setThumbnail(avatarUrl);
+  }
+
+  embed.setFooter({ text: 'Visit the Divine Store to trade your blessings for power.' });
+
+  return embed;
+}
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('inventory')
@@ -44,32 +110,26 @@ module.exports = {
     const userId = interaction.user.id;
 
     const coinSummary = coinStore.getSummary(guildId, userId);
-    const coinsLine = `Coins: ${formatCoins(coinSummary.coins)} coins.`;
-
     const smiteBalance = tokenStore.getBalance(guildId, userId);
     const smiteCost = getSmiteCost();
-    const smiteLine = `Smites: ${smiteBalance} available. Each costs ${formatCoins(smiteCost)} coins to buy.`;
-
     const judgementBalance = judgementStore.getBalance(guildId, userId);
     const judgementCost = getJudgementCost();
-    const judgementLine = `Judgements: ${judgementBalance} available. Each costs ${formatCoins(judgementCost)} coins to buy.`;
-
     const smiteEnabled = smiteConfigStore.isEnabled(guildId);
-    const statusLine = smiteEnabled
-      ? 'Smite rewards are currently enabled on this server.'
-      : 'Smite rewards are currently disabled on this server.';
-
-    const judgementHint = 'Judgements unlock /analysis. Earn one by spending coins or via /givejudgement.';
-
     const prayStatus = coinStore.getPrayStatus(guildId, userId);
     const prayReward = getPrayReward();
-    const prayLine = prayStatus.canPray
-      ? `Daily prayer: Ready! Use /pray to receive ${formatCoins(prayReward)} coins.`
-      : `Daily prayer: Available again in ${formatDuration(prayStatus.cooldownMs)}.`;
 
-    const response = [coinsLine, smiteLine, judgementLine, statusLine, judgementHint, prayLine]
-      .join('\n')
-      .slice(0, 1900);
-    await interaction.editReply({ content: response });
+    const embed = buildInventoryEmbed({
+      user: interaction.user,
+      coinSummary,
+      smiteBalance,
+      smiteCost,
+      judgementBalance,
+      judgementCost,
+      smiteEnabled,
+      prayStatus,
+      prayReward,
+    });
+
+    await interaction.editReply({ embeds: [embed] });
   },
 };
