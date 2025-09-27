@@ -1,0 +1,613 @@
+{
+  "id": "controversial_american_politics",
+  "name": "2000–2025 Controversial American Politics",
+  "description": "Trivia covering major controversies in U.S. politics from 2000 through 2025.",
+  "difficulties": {
+    "easy": [
+      {
+        "prompt": "Who was U.S. President during the 9/11 terrorist attacks?",
+        "choices": {
+          "A": "Bill Clinton",
+          "B": "George W. Bush",
+          "C": "Barack Obama",
+          "D": "Donald Trump"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which U.S. war began in 2003 and became highly controversial?",
+        "choices": {
+          "A": "Vietnam War",
+          "B": "Iraq War",
+          "C": "Afghanistan War",
+          "D": "Persian Gulf War"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which state decided the outcome of the 2000 presidential election with a recount?",
+        "choices": {
+          "A": "Ohio",
+          "B": "Pennsylvania",
+          "C": "Florida",
+          "D": "Michigan"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Who won the 2008 U.S. presidential election?",
+        "choices": {
+          "A": "Hillary Clinton",
+          "B": "John McCain",
+          "C": "Barack Obama",
+          "D": "Mitt Romney"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "What was the name of Barack Obama’s healthcare reform law?",
+        "choices": {
+          "A": "Medicare For All",
+          "B": "Clinton Health Act",
+          "C": "Affordable Care Act",
+          "D": "Patient Protection Act"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which president nominated three Supreme Court justices between 2017–2020?",
+        "choices": {
+          "A": "Barack Obama",
+          "B": "Joe Biden",
+          "C": "Donald Trump",
+          "D": "George W. Bush"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Who was president during the COVID-19 pandemic outbreak in 2020?",
+        "choices": {
+          "A": "Joe Biden",
+          "B": "Barack Obama",
+          "C": "Donald Trump",
+          "D": "George W. Bush"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which event in 2021 involved rioters storming the U.S. Capitol?",
+        "choices": {
+          "A": "Tea Party Rally",
+          "B": "Black Lives Matter protest",
+          "C": "January 6 Insurrection",
+          "D": "Occupy Wall Street"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which woman became the first female Vice President of the United States?",
+        "choices": {
+          "A": "Hillary Clinton",
+          "B": "Kamala Harris",
+          "C": "Nancy Pelosi",
+          "D": "Elizabeth Warren"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "In which year did the U.S. legalize same-sex marriage nationwide?",
+        "choices": {
+          "A": "2010",
+          "B": "2013",
+          "C": "2015",
+          "D": "2018"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which Supreme Court case overturned Roe v. Wade in 2022?",
+        "choices": {
+          "A": "Obergefell v. Hodges",
+          "B": "Dobbs v. Jackson Women’s Health Organization",
+          "C": "Bush v. Gore",
+          "D": "Citizens United v. FEC"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Who ran against Donald Trump in the 2016 election?",
+        "choices": {
+          "A": "Bernie Sanders",
+          "B": "Joe Biden",
+          "C": "Hillary Clinton",
+          "D": "John Kerry"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which movement began after George Floyd’s death in 2020?",
+        "choices": {
+          "A": "Tea Party",
+          "B": "Occupy Wall Street",
+          "C": "Black Lives Matter",
+          "D": "#MeToo"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which U.S. president was impeached twice?",
+        "choices": {
+          "A": "Bill Clinton",
+          "B": "Richard Nixon",
+          "C": "Donald Trump",
+          "D": "George W. Bush"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which military prison became infamous for torture scandals in the 2000s?",
+        "choices": {
+          "A": "Alcatraz",
+          "B": "Guantanamo Bay",
+          "C": "Abu Ghraib",
+          "D": "Rikers Island"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which political party is associated with the “Red” color in U.S. politics?",
+        "choices": {
+          "A": "Democrats",
+          "B": "Republicans",
+          "C": "Libertarians",
+          "D": "Greens"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Who served as Secretary of State under George W. Bush during the Iraq invasion?",
+        "choices": {
+          "A": "Dick Cheney",
+          "B": "Donald Rumsfeld",
+          "C": "Colin Powell",
+          "D": "Condoleezza Rice"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Who was the Democratic candidate in the 2004 presidential election?",
+        "choices": {
+          "A": "Al Gore",
+          "B": "Barack Obama",
+          "C": "John Kerry",
+          "D": "Joe Biden"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which country was accused of interfering in the 2016 U.S. election?",
+        "choices": {
+          "A": "China",
+          "B": "North Korea",
+          "C": "Russia",
+          "D": "Iran"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "What issue did Occupy Wall Street mainly protest in 2011?",
+        "choices": {
+          "A": "Climate Change",
+          "B": "War in Iraq",
+          "C": "Economic Inequality",
+          "D": "Immigration"
+        },
+        "answer": "C"
+      }
+    ],
+    "medium": [
+      {
+        "prompt": "Which legislation passed in 2001 expanded government surveillance powers?",
+        "choices": {
+          "A": "Affordable Care Act",
+          "B": "USA PATRIOT Act",
+          "C": "Homeland Security Bill",
+          "D": "Freedom Act"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which hurricane response in 2005 was widely criticized as inadequate?",
+        "choices": {
+          "A": "Hurricane Sandy",
+          "B": "Hurricane Harvey",
+          "C": "Hurricane Katrina",
+          "D": "Hurricane Maria"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "What controversial Supreme Court decision in 2010 allowed unlimited corporate spending in elections?",
+        "choices": {
+          "A": "Bush v. Gore",
+          "B": "Dobbs v. Jackson",
+          "C": "Citizens United v. FEC",
+          "D": "McCain-Feingold"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which Democratic senator became a key figure in opposing Bush’s Iraq War policy?",
+        "choices": {
+          "A": "John Kerry",
+          "B": "Ted Kennedy",
+          "C": "Joe Biden",
+          "D": "Chuck Schumer"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which president announced the withdrawal of U.S. forces from Afghanistan in 2021?",
+        "choices": {
+          "A": "Donald Trump",
+          "B": "Joe Biden",
+          "C": "George W. Bush",
+          "D": "Barack Obama"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "What controversial interrogation technique was referred to as “enhanced interrogation”?",
+        "choices": {
+          "A": "Sleep deprivation",
+          "B": "Waterboarding",
+          "C": "Stress positions",
+          "D": "Loud music"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Who was the first African American president of the United States?",
+        "choices": {
+          "A": "Jesse Jackson",
+          "B": "Barack Obama",
+          "C": "Colin Powell",
+          "D": "Clarence Thomas"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which conservative movement began in 2009 opposing Obama’s policies?",
+        "choices": {
+          "A": "Occupy Wall Street",
+          "B": "Tea Party Movement",
+          "C": "Black Lives Matter",
+          "D": "Libertarian Caucus"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which controversial government program leaked by Edward Snowden in 2013 exposed NSA surveillance?",
+        "choices": {
+          "A": "PRISM",
+          "B": "XKeyscore",
+          "C": "Both A & B",
+          "D": "Patriot Files"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "What was Donald Trump’s campaign slogan in 2016?",
+        "choices": {
+          "A": "Yes We Can",
+          "B": "Forward",
+          "C": "Make America Great Again",
+          "D": "Change We Need"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which Supreme Court justice’s death in 2016 sparked a heated replacement battle?",
+        "choices": {
+          "A": "Ruth Bader Ginsburg",
+          "B": "Antonin Scalia",
+          "C": "Sandra Day O’Connor",
+          "D": "John Paul Stevens"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which senator ran as an independent in 2016 before endorsing Hillary Clinton?",
+        "choices": {
+          "A": "Joe Manchin",
+          "B": "Andrew Yang",
+          "C": "Bernie Sanders",
+          "D": "Tulsi Gabbard"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which election method became controversial after Bush v. Gore (2000)?",
+        "choices": {
+          "A": "Mail-in ballots",
+          "B": "Electronic voting",
+          "C": "Hanging chads",
+          "D": "Ranked choice"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Who became Speaker of the House in 2007, the first woman to do so?",
+        "choices": {
+          "A": "Hillary Clinton",
+          "B": "Nancy Pelosi",
+          "C": "Condoleezza Rice",
+          "D": "Kamala Harris"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which political figure was at the center of a private email server controversy?",
+        "choices": {
+          "A": "Donald Trump",
+          "B": "Hillary Clinton",
+          "C": "Joe Biden",
+          "D": "John Kerry"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which Supreme Court justice was confirmed in 2018 despite sexual assault allegations?",
+        "choices": {
+          "A": "Neil Gorsuch",
+          "B": "Brett Kavanaugh",
+          "C": "Amy Coney Barrett",
+          "D": "Samuel Alito"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which controversial law targeted undocumented immigrants in Arizona in 2010?",
+        "choices": {
+          "A": "Prop 64",
+          "B": "SB 1070",
+          "C": "Prop 8",
+          "D": "HB 2"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Who was Donald Trump’s vice president?",
+        "choices": {
+          "A": "John Bolton",
+          "B": "Lindsey Graham",
+          "C": "Mike Pence",
+          "D": "Ted Cruz"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which U.S. military operation killed Osama bin Laden in 2011?",
+        "choices": {
+          "A": "Operation Freedom",
+          "B": "Operation Eagle Claw",
+          "C": "Operation Neptune Spear",
+          "D": "Operation Desert Storm"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "What political scandal led to Vice President Dick Cheney’s aide being convicted in 2007?",
+        "choices": {
+          "A": "Watergate",
+          "B": "Plame Affair (CIA Leak)",
+          "C": "Iran-Contra",
+          "D": "Whitewater"
+        },
+        "answer": "B"
+      }
+    ],
+    "hard": [
+      {
+        "prompt": "Which Supreme Court case in 2008 affirmed an individual’s right to own firearms?",
+        "choices": {
+          "A": "Roe v. Wade",
+          "B": "Obergefell v. Hodges",
+          "C": "District of Columbia v. Heller",
+          "D": "Brown v. Board"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which 2005 law gave liability protection to gun manufacturers?",
+        "choices": {
+          "A": "Second Amendment Defense Act",
+          "B": "Protection of Lawful Commerce in Arms Act",
+          "C": "Gun Safety Responsibility Act",
+          "D": "Firearms Protection Act"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which 2012 attack in Libya led to a major political scandal for Hillary Clinton?",
+        "choices": {
+          "A": "Kabul Embassy Attack",
+          "B": "Benghazi Attack",
+          "C": "Baghdad Embassy Raid",
+          "D": "Tripoli Uprising"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "What 2008 Supreme Court case struck down campaign finance restrictions for corporations and unions?",
+        "choices": {
+          "A": "Bush v. Gore",
+          "B": "McConnell v. FEC",
+          "C": "Citizens United v. FEC",
+          "D": "Shelby County v. Holder"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "What controversial ruling in 2013 gutted a key provision of the Voting Rights Act of 1965?",
+        "choices": {
+          "A": "Bush v. Gore",
+          "B": "Dobbs v. Jackson",
+          "C": "Shelby County v. Holder",
+          "D": "Obergefell v. Hodges"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which controversial security program monitored U.S. phone metadata?",
+        "choices": {
+          "A": "Patriot Prism",
+          "B": "Section 215 (NSA)",
+          "C": "FBI Wiretap Act",
+          "D": "Homeland Shield"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Who was the controversial Bush-era Attorney General who resigned in 2007?",
+        "choices": {
+          "A": "John Ashcroft",
+          "B": "Alberto Gonzales",
+          "C": "Eric Holder",
+          "D": "William Barr"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which 2012 policy allowed undocumented immigrants brought as children to stay in the U.S.?",
+        "choices": {
+          "A": "Dream Act",
+          "B": "DACA (Deferred Action for Childhood Arrivals)",
+          "C": "SB 1070",
+          "D": "Immigration Reform Act"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which Supreme Court justice was confirmed in 2020 weeks before the election?",
+        "choices": {
+          "A": "Sonia Sotomayor",
+          "B": "Amy Coney Barrett",
+          "C": "Brett Kavanaugh",
+          "D": "John Roberts"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which controversial Trump administration policy separated migrant children from families?",
+        "choices": {
+          "A": "Dream Act",
+          "B": "Build the Wall Act",
+          "C": "Zero Tolerance Policy",
+          "D": "SB 1070"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "What scandal involved Russian contacts with Trump’s 2016 campaign?",
+        "choices": {
+          "A": "Benghazi",
+          "B": "Russiagate",
+          "C": "Iran-Contra 2.0",
+          "D": "Watergate 2.0"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which social media platform banned Donald Trump after January 6, 2021?",
+        "choices": {
+          "A": "Instagram",
+          "B": "Twitter (X)",
+          "C": "TikTok",
+          "D": "Reddit"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which 2018 Senate race in Florida sparked recount controversies?",
+        "choices": {
+          "A": "Georgia",
+          "B": "Texas",
+          "C": "Florida",
+          "D": "Arizona"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which 2020 law enforcement response was criticized for force against protesters near the White House?",
+        "choices": {
+          "A": "Patriot March",
+          "B": "Tea Party Rally",
+          "C": "Lafayette Square Incident",
+          "D": "Occupy Protest"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which Supreme Court case legalized same-sex marriage nationwide in 2015?",
+        "choices": {
+          "A": "Dobbs v. Jackson",
+          "B": "Roe v. Wade",
+          "C": "Obergefell v. Hodges",
+          "D": "Bush v. Gore"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which scandal involved the firing of FBI Director James Comey?",
+        "choices": {
+          "A": "Watergate",
+          "B": "Trump-Comey Controversy",
+          "C": "Fast & Furious",
+          "D": "Benghazi"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "What was the name of the 2021 COVID relief bill signed by Joe Biden?",
+        "choices": {
+          "A": "CARES Act",
+          "B": "American Rescue Plan",
+          "C": "Inflation Reduction Act",
+          "D": "COVID Support Act"
+        },
+        "answer": "B"
+      },
+      {
+        "prompt": "Which 2022 congressional committee investigated the January 6th Capitol attack?",
+        "choices": {
+          "A": "House Oversight Committee",
+          "B": "Senate Judiciary Committee",
+          "C": "House Select Committee on January 6th",
+          "D": "Homeland Security"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which state passed one of the strictest abortion bans in 2019 that later went to the Supreme Court?",
+        "choices": {
+          "A": "California",
+          "B": "New York",
+          "C": "Mississippi",
+          "D": "Texas"
+        },
+        "answer": "C"
+      },
+      {
+        "prompt": "Which Supreme Court justice was appointed by George W. Bush in 2005 and became Chief Justice?",
+        "choices": {
+          "A": "Samuel Alito",
+          "B": "Brett Kavanaugh",
+          "C": "John Roberts",
+          "D": "Clarence Thomas"
+        },
+        "answer": "C"
+      }
+    ]
+  }
+}
