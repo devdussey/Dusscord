@@ -1,6 +1,8 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const judgementStore = require('../utils/judgementStore');
 const messageLogStore = require('../utils/userMessageLogStore');
+const coinStore = require('../utils/coinStore');
+const { getJudgementCost } = require('../utils/economyConfig');
 
 const fetch = (...args) => import('node-fetch').then(({ default: fetchImpl }) => fetchImpl(...args));
 
@@ -135,12 +137,32 @@ module.exports = {
       return interaction.editReply({ content: 'OpenAI API key not configured. Set OPENAI_API_KEY to enable /analysis.' });
     }
 
-    const balance = judgementStore.getBalance(interaction.guildId, interaction.user.id);
+    const guildId = interaction.guildId;
+    const userId = interaction.user.id;
+    let balance = judgementStore.getBalance(guildId, userId);
+    const judgementCost = getJudgementCost();
+    let coinsSpent = false;
+
+    if (balance <= 0 && judgementCost > 0) {
+      const coinsAvailable = coinStore.getBalance(guildId, userId);
+      if (coinsAvailable + 1e-6 >= judgementCost) {
+        const spent = await coinStore.spendCoins(guildId, userId, judgementCost);
+        if (spent) {
+          await judgementStore.addTokens(guildId, userId, 1);
+          balance = judgementStore.getBalance(guildId, userId);
+          coinsSpent = true;
+        }
+      }
+    }
+
     if (balance <= 0) {
-      const progress = judgementStore.getProgress(interaction.guildId, interaction.user.id);
-      const remaining = progress.messagesUntilNext || judgementStore.AWARD_THRESHOLD;
+      const coinsAvailable = coinStore.getBalance(guildId, userId);
+      const costText = judgementCost > 0
+        ? `${Number(judgementCost).toLocaleString()} coin${judgementCost === 1 ? '' : 's'}`
+        : 'coins';
+      const balanceText = `${Number(coinsAvailable).toLocaleString(undefined, { maximumFractionDigits: 2 })} coin${coinsAvailable === 1 ? '' : 's'}`;
       return interaction.editReply({
-        content: `You do not have any Judgements. Send ${remaining} more message${remaining === 1 ? '' : 's'} to earn one, or ask an owner to use /givejudgement.`,
+        content: `You do not have any Judgements. You need ${costText} to buy one. Current balance: ${balanceText}. Ask an owner to use /givejudgement if needed.`,
       });
     }
 
@@ -156,8 +178,11 @@ module.exports = {
       return interaction.editReply({ content: 'No message history recorded yet. Try again after chatting more.' });
     }
 
-    const consumed = await judgementStore.consumeToken(interaction.guildId, interaction.user.id);
+    const consumed = await judgementStore.consumeToken(guildId, userId);
     if (!consumed) {
+      if (coinsSpent && judgementCost > 0) {
+        await coinStore.addCoins(guildId, userId, judgementCost);
+      }
       return interaction.editReply({ content: 'You no longer have a Judgement to spend.' });
     }
 
@@ -217,7 +242,10 @@ module.exports = {
       const embed = buildEmbed(interaction, analysis, usedCount);
       await interaction.editReply({ embeds: [embed] });
     } catch (err) {
-      await judgementStore.addTokens(interaction.guildId, interaction.user.id, 1);
+      await judgementStore.addTokens(guildId, userId, 1);
+      if (coinsSpent && judgementCost > 0) {
+        await coinStore.addCoins(guildId, userId, judgementCost);
+      }
       const msg = err?.message || String(err);
       await interaction.editReply({ content: `Analysis failed: ${msg}` });
     }

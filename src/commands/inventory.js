@@ -1,28 +1,37 @@
 const { SlashCommandBuilder } = require('discord.js');
+const coinStore = require('../utils/coinStore');
 const tokenStore = require('../utils/messageTokenStore');
 const judgementStore = require('../utils/judgementStore');
 const smiteConfigStore = require('../utils/smiteConfigStore');
+const {
+  getSmiteCost,
+  getJudgementCost,
+  getPrayReward,
+} = require('../utils/economyConfig');
 
-const BAG_LABEL = 'Smite';
-const JUDGEMENT_LABEL = 'Judgement';
+function formatCoins(value) {
+  return Number(value).toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+}
 
-function formatCurrencyProgress(label, progress = {}) {
-  const tokens = Number.isFinite(progress.tokens) ? Math.max(0, Math.floor(progress.tokens)) : 0;
-  const messagesUntilNextRaw = Number.isFinite(progress.messagesUntilNext)
-    ? Math.max(0, Math.floor(progress.messagesUntilNext))
-    : 0;
-  const plural = tokens === 1 ? '' : 's';
-  const baseLine = `${label}: ${tokens} ${label}${plural}.`;
-  const nextLine = messagesUntilNextRaw > 0
-    ? `Next ${label} in ${messagesUntilNextRaw} message${messagesUntilNextRaw === 1 ? '' : 's'}.`
-    : `You're due for a ${label} on your next message!`;
-  return `${baseLine} ${nextLine}`;
+function formatDuration(ms) {
+  const totalSeconds = Math.ceil(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const parts = [];
+  if (hours > 0) parts.push(`${hours} hour${hours === 1 ? '' : 's'}`);
+  if (minutes > 0) parts.push(`${minutes} minute${minutes === 1 ? '' : 's'}`);
+  if (seconds > 0 && parts.length < 2) parts.push(`${seconds} second${seconds === 1 ? '' : 's'}`);
+  return parts.length ? parts.join(', ') : '0 seconds';
 }
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('inventory')
-    .setDescription('Check how many Smites you currently have available'),
+    .setDescription('Check your coin balance, Smites, and Judgements'),
 
   async execute(interaction) {
     if (!interaction.inGuild()) {
@@ -31,19 +40,34 @@ module.exports = {
 
     await interaction.deferReply({ ephemeral: true });
 
-    const smiteProgress = tokenStore.getProgress(interaction.guildId, interaction.user.id);
-    const judgementProgress = judgementStore.getProgress(interaction.guildId, interaction.user.id);
-    const smiteLine = formatCurrencyProgress(BAG_LABEL, smiteProgress);
-    const judgementLine = formatCurrencyProgress(JUDGEMENT_LABEL, judgementProgress);
+    const guildId = interaction.guildId;
+    const userId = interaction.user.id;
 
-    const smiteEnabled = smiteConfigStore.isEnabled(interaction.guildId);
+    const coinSummary = coinStore.getSummary(guildId, userId);
+    const coinsLine = `Coins: ${formatCoins(coinSummary.coins)} coins.`;
+
+    const smiteBalance = tokenStore.getBalance(guildId, userId);
+    const smiteCost = getSmiteCost();
+    const smiteLine = `Smites: ${smiteBalance} available. Each costs ${formatCoins(smiteCost)} coins to buy.`;
+
+    const judgementBalance = judgementStore.getBalance(guildId, userId);
+    const judgementCost = getJudgementCost();
+    const judgementLine = `Judgements: ${judgementBalance} available. Each costs ${formatCoins(judgementCost)} coins to buy.`;
+
+    const smiteEnabled = smiteConfigStore.isEnabled(guildId);
     const statusLine = smiteEnabled
       ? 'Smite rewards are currently enabled on this server.'
       : 'Smite rewards are currently disabled on this server.';
 
-    const judgementHint = 'Judgements unlock /analysis. Earn one every 500 messages or via /givejudgement.';
+    const judgementHint = 'Judgements unlock /analysis. Earn one by spending coins or via /givejudgement.';
 
-    const response = [smiteLine, judgementLine, statusLine, judgementHint]
+    const prayStatus = coinStore.getPrayStatus(guildId, userId);
+    const prayReward = getPrayReward();
+    const prayLine = prayStatus.canPray
+      ? `Daily prayer: Ready! Use /pray to receive ${formatCoins(prayReward)} coins.`
+      : `Daily prayer: Available again in ${formatDuration(prayStatus.cooldownMs)}.`;
+
+    const response = [coinsLine, smiteLine, judgementLine, statusLine, judgementHint, prayLine]
       .join('\n')
       .slice(0, 1900);
     await interaction.editReply({ content: response });
