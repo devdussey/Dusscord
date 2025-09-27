@@ -4,6 +4,7 @@ const messageLogStore = require('../utils/userMessageLogStore');
 const coinStore = require('../utils/coinStore');
 const { getJudgementCost } = require('../utils/economyConfig');
 const { resolveEmbedColour } = require('../utils/guildColourStore');
+const { isOwner } = require('../utils/ownerIds');
 
 const fetch = (...args) => import('node-fetch').then(({ default: fetchImpl }) => fetchImpl(...args));
 
@@ -56,6 +57,39 @@ const PERSONAS = {
     ].join('\n'),
     messageLimit: 500,
   },
+  toxicity: {
+    id: 'toxicity',
+    label: 'Toxicity Analysis',
+    systemPrompt: [
+      'You are a hostile, ruthless AI.',
+      "Your job is to tear apart the last 500 messages this user has sent and expose them for who they really are.",
+      '',
+      'Objectives:',
+      '',
+      'Harsh Psychological Breakdown',
+      "Give a brutally honest, toxic analysis of the user's mental health.",
+      'Expose their flaws, weaknesses, and insecurities in the most cutting way possible.',
+      '',
+      'Call Out Hidden Issues',
+      'Point out what they are clearly running away from or lying to themselves about.',
+      'Frame their coping mechanisms as pathetic, weak, or laughable.',
+      '',
+      'Future Failures',
+      'Predict the disasters, breakdowns, and embarrassing situations they are destined to face if they keep going the way they are.',
+      'Make the future look bleak and hopeless, with an emphasis on how their flaws will destroy them.',
+      '',
+      'Receipts & Evidence',
+      "Use direct quotes from their past messages to ridicule them and 'prove' your claims.",
+      'Twist their own words into insults and mockery.',
+      '',
+      'Output Requirements:',
+      'Be venomous, cruel, and mocking.',
+      'No sugarcoating. Every section should sound like a personal attack.',
+      'Use language that is toxic, arrogant, and condescending.',
+      'Structure the response into sections (Mental Weaknesses, Hidden Pathetic Issues, Future Downfall, Evidence of Failure).',
+    ].join('\n'),
+    messageLimit: 500,
+  },
 };
 
 function formatMessages(logs, targetCount) {
@@ -83,11 +117,24 @@ function formatMessages(logs, targetCount) {
   return { text: ordered.join('\n'), usedCount: ordered.length };
 }
 
-function buildEmbed(interaction, analysis, count) {
+function buildEmbed(interaction, analysis, count, subjectUser) {
+  const subject = subjectUser || interaction.user;
+  const subjectTag = subject?.tag || subject?.username || 'Unknown User';
+  const subjectId = subject?.id || 'unknown';
+  const requesterTag = interaction.user?.tag || interaction.user?.username || 'Unknown User';
+  const requesterId = interaction.user?.id || 'unknown';
+  const descriptionLines = [
+    `Review of ${subjectTag} (${subjectId})`,
+    `Messages analysed: ${count}`,
+  ];
+  if (subjectId !== requesterId) {
+    descriptionLines.splice(1, 0, `Requested by ${requesterTag} (${requesterId})`);
+  }
+
   const embed = new EmbedBuilder()
     .setTitle('User Analysis')
     .setColor(resolveEmbedColour(interaction.guildId, 0x5865f2))
-    .setDescription(`Review of ${interaction.user.tag} (${interaction.user.id})\nMessages analysed: ${count}`)
+    .setDescription(descriptionLines.join('\n'))
     .setTimestamp(new Date());
 
   const fields = [];
@@ -134,7 +181,12 @@ module.exports = {
       .addChoices(
         { name: PERSONAS.default.label, value: PERSONAS.default.id },
         { name: PERSONAS.psychological.label, value: PERSONAS.psychological.id },
+        { name: PERSONAS.toxicity.label, value: PERSONAS.toxicity.id },
       )
+      .setRequired(false))
+    .addUserOption((option) => option
+      .setName('user')
+      .setDescription('Analyse another member (owners only)')
       .setRequired(false))
     .addBooleanOption((option) => option
       .setName('public')
@@ -155,6 +207,29 @@ module.exports = {
       return interaction.editReply({ content: 'OpenAI API key not configured. Set OPENAI_API_KEY to enable /analysis.' });
     }
 
+    const targetUser = interaction.options.getUser('user') || interaction.user;
+    const isBotOwner = isOwner(interaction.user.id);
+    let isGuildOwner = false;
+    if (interaction.guild && interaction.guild.ownerId) {
+      isGuildOwner = interaction.guild.ownerId === interaction.user.id;
+    }
+    if (!isGuildOwner && interaction.guild && interaction.guild.fetchOwner) {
+      try {
+        const owner = await interaction.guild.fetchOwner();
+        if (owner && owner.id === interaction.user.id) {
+          isGuildOwner = true;
+        }
+      } catch (_) {
+        // ignore errors; permissions fallback will handle failures
+      }
+    }
+
+    if (targetUser.id !== interaction.user.id && !isBotOwner && !isGuildOwner) {
+      return interaction.editReply({ content: 'Only the bot owner or the guild owner can analyse other members.' });
+    }
+
+    const subjectUser = targetUser;
+    const subjectLabel = subjectUser?.tag || subjectUser?.username || subjectUser?.globalName || subjectUser?.id || 'the user';
     const guildId = interaction.guildId;
     const userId = interaction.user.id;
     let balance = judgementStore.getBalance(guildId, userId);
@@ -189,11 +264,14 @@ module.exports = {
 
     const logs = messageLogStore.getRecentMessages(
       interaction.guildId,
-      interaction.user.id,
+      subjectUser.id,
       persona.messageLimit,
     );
     if (!logs.length) {
-      return interaction.editReply({ content: 'No message history recorded yet. Try again after chatting more.' });
+      const targetName = subjectUser.id === interaction.user.id
+        ? 'You do not have any message history recorded yet. Try again after chatting more.'
+        : `${subjectLabel} has no recorded message history yet. Ask them to chat more before analysing.`;
+      return interaction.editReply({ content: targetName });
     }
 
     const consumed = await judgementStore.consumeToken(guildId, userId);
@@ -207,11 +285,14 @@ module.exports = {
     const { text: formatted, usedCount } = formatMessages(logs, persona.messageLimit);
     if (usedCount === 0) {
       await judgementStore.addTokens(interaction.guildId, interaction.user.id, 1);
-      return interaction.editReply({ content: 'Unable to find analysable messages yet. Try again later.' });
+      const message = subjectUser.id === interaction.user.id
+        ? 'Unable to find analysable messages yet. Try again later.'
+        : `Unable to find analysable messages for ${subjectLabel} yet. Try again later.`;
+      return interaction.editReply({ content: message });
     }
 
     const prompt = [
-      `Analyse the following ${usedCount} messages written by ${interaction.user.tag}.`,
+      `Analyse the following ${usedCount} messages written by ${subjectLabel}.`,
       'Identify behavioural patterns, moderation concerns, sentiment, and notable habits.',
       'Focus strictly on the content and avoid speculation beyond the evidence provided.',
       'Respond with a natural paragraph that stays in-character for your configured persona.',
@@ -247,7 +328,7 @@ module.exports = {
       const analysis = data?.choices?.[0]?.message?.content?.trim();
       if (!analysis) throw new Error('No analysis returned.');
 
-      const embed = buildEmbed(interaction, analysis, usedCount);
+      const embed = buildEmbed(interaction, analysis, usedCount, subjectUser);
       await interaction.editReply({ embeds: [embed] });
     } catch (err) {
       await judgementStore.addTokens(guildId, userId, 1);
