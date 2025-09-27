@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionsBitField, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionsBitField, EmbedBuilder, ChannelType } = require('discord.js');
 const store = require('../utils/jailStore');
 
 function parseDuration(str) {
@@ -33,6 +33,13 @@ module.exports = {
       sub.setName('config')
         .setDescription('Configure jail role')
         .addRoleOption(opt => opt.setName('role').setDescription('Role used to jail members').setRequired(false))
+        .addChannelOption(opt =>
+          opt
+            .setName('channel')
+            .setDescription('Channel used for jailed members')
+            .addChannelTypes(ChannelType.GuildText)
+            .setRequired(false)
+        )
         .addStringOption(opt =>
           opt.setName('visibility')
             .setDescription('Default reply visibility for jail actions')
@@ -85,22 +92,102 @@ module.exports = {
     if (sub === 'config') {
       const role = interaction.options.getRole('role');
       const vis = interaction.options.getString('visibility');
+      const channel = interaction.options.getChannel('channel');
+      const subOptions = interaction.options.data.find(opt => opt.name === 'config')?.options || [];
+      const channelProvided = subOptions.some(opt => opt.name === 'channel');
+      const configOptions = subOptions.filter(opt => ['role', 'visibility', 'channel'].includes(opt.name));
 
       let changes = [];
+      const cfg = await store.getConfig(interaction.guild.id);
+      let jailRoleId = cfg.jailRoleId;
+      let jailChannelId = cfg.jailChannelId;
       if (role) {
         if (role.managed) return interaction.reply({ content: 'Please choose a normal role, not a managed role.', ephemeral });
         if (me.roles.highest.comparePositionTo(role) <= 0) return interaction.reply({ content: 'My highest role must be above the jail role.', ephemeral });
         await store.setJailRole(interaction.guild.id, role.id);
         changes.push(`jail role → ${role}`);
+        jailRoleId = role.id;
       }
       if (vis) {
         const pub = vis === 'public';
         await store.setPublicDefault(interaction.guild.id, pub);
         changes.push(`default visibility → ${pub ? 'public' : 'ephemeral'}`);
       }
+      const needsChannelCreation = !channelProvided && configOptions.length > 0 && !jailChannelId;
+      if (channel || needsChannelCreation) {
+        if (!me.permissions.has(PermissionsBitField.Flags.ManageChannels)) {
+          return interaction.reply({ content: 'I need Manage Channels to update the jail channel.', ephemeral });
+        }
+        if (!interaction.member.permissions?.has(PermissionsBitField.Flags.ManageChannels)) {
+          return interaction.reply({ content: 'You need Manage Channels to update the jail channel.', ephemeral });
+        }
+
+        const everyoneId = interaction.guild.roles.everyone.id;
+        let targetChannel = channel;
+
+        if (!targetChannel && needsChannelCreation) {
+          const overwrites = [
+            { id: everyoneId, deny: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
+          ];
+          if (jailRoleId) {
+            overwrites.push({
+              id: jailRoleId,
+              allow: [
+                PermissionsBitField.Flags.ViewChannel,
+                PermissionsBitField.Flags.SendMessages,
+                PermissionsBitField.Flags.ReadMessageHistory,
+              ],
+            });
+          }
+          try {
+            targetChannel = await interaction.guild.channels.create({
+              name: 'jail',
+              type: ChannelType.GuildText,
+              permissionOverwrites: overwrites,
+            });
+          } catch (err) {
+            console.error('Failed to create jail channel:', err);
+            return interaction.reply({ content: 'Failed to create a jail channel. Please check my permissions and try again.', ephemeral });
+          }
+        }
+
+        if (targetChannel) {
+          if (targetChannel.guild.id !== interaction.guild.id) {
+            return interaction.reply({ content: 'Please choose a channel from this server.', ephemeral });
+          }
+          if (targetChannel.type !== ChannelType.GuildText) {
+            return interaction.reply({ content: 'Please choose a text channel.', ephemeral });
+          }
+
+          try {
+            await targetChannel.permissionOverwrites.edit(everyoneId, {
+              ViewChannel: false,
+              SendMessages: false,
+            });
+          } catch (err) {
+            console.error('Failed to update @everyone permissions for jail channel:', err);
+          }
+
+          if (jailRoleId) {
+            try {
+              await targetChannel.permissionOverwrites.edit(jailRoleId, {
+                ViewChannel: true,
+                SendMessages: true,
+                ReadMessageHistory: true,
+              });
+            } catch (err) {
+              console.error('Failed to grant jail role permissions for jail channel:', err);
+            }
+          }
+
+          await store.setJailChannel(interaction.guild.id, targetChannel.id);
+          jailChannelId = targetChannel.id;
+          changes.push(`jail channel → ${targetChannel}`);
+        }
+      }
       if (!changes.length) {
-        const cfg = await store.getConfig(interaction.guild.id);
-        return interaction.reply({ content: `Current jail config:\n- role: ${cfg.jailRoleId ? `<@&${cfg.jailRoleId}>` : 'not set'}\n- default visibility: ${cfg.publicDefault ? 'public' : 'ephemeral'}`, ephemeral });
+        const current = await store.getConfig(interaction.guild.id);
+        return interaction.reply({ content: `Current jail config:\n- role: ${current.jailRoleId ? `<@&${current.jailRoleId}>` : 'not set'}\n- channel: ${current.jailChannelId ? `<#${current.jailChannelId}>` : 'not set'}\n- default visibility: ${current.publicDefault ? 'public' : 'ephemeral'}`, ephemeral });
       }
       return interaction.reply({ content: `Updated: ${changes.join('; ')}`, ephemeral });
     }
