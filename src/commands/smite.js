@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
 const tokenStore = require('../utils/messageTokenStore');
+const smiteConfigStore = require('../utils/smiteConfigStore');
 const securityLogger = require('../utils/securityLogger');
 const modLogger = require('../utils/modLogger');
 
@@ -16,8 +17,8 @@ const PROTECTED_PERMISSIONS = new PermissionsBitField([
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('drugscordbag')
-    .setDescription('Spend a Smite to timeout a user for up to 10 minutes.')
+    .setName('smite')
+    .setDescription('Smite a non staff user, silencing them for 10 minutes')
     .addUserOption(opt =>
       opt
         .setName('target')
@@ -43,11 +44,15 @@ module.exports = {
       return interaction.reply({ content: 'Use this command in a server.', ephemeral: true });
     }
 
+    if (!smiteConfigStore.isEnabled(interaction.guildId)) {
+      return interaction.reply({ content: 'Smite is disabled on this server.', ephemeral: true });
+    }
+
     await interaction.deferReply({ ephemeral: true });
 
     const me = interaction.guild.members.me;
     if (!me.permissions.has(PermissionsBitField.Flags.ModerateMembers)) {
-      await securityLogger.logPermissionDenied(interaction, 'drugscordbag', 'Bot missing Moderate Members');
+      await securityLogger.logPermissionDenied(interaction, 'smite', 'Bot missing Moderate Members');
       return interaction.editReply({ content: 'I need the Moderate Members permission to spend Smites.' });
     }
 
@@ -79,7 +84,7 @@ module.exports = {
     }
 
     if (targetMember.permissions.has(PROTECTED_PERMISSIONS)) {
-      await securityLogger.logPermissionDenied(interaction, 'drugscordbag', 'Target has protected permissions', [
+      await securityLogger.logPermissionDenied(interaction, 'smite', 'Target has protected permissions', [
         { name: 'Target', value: `${targetUser.tag} (${targetUser.id})`, inline: false },
       ]);
       return interaction.editReply({ content: 'You cannot spend Smites on moderators or administrators.' });
@@ -87,14 +92,14 @@ module.exports = {
 
     const meHigher = me.roles.highest.comparePositionTo(targetMember.roles.highest) > 0;
     if (!meHigher || !targetMember.moderatable) {
-      await securityLogger.logHierarchyViolation(interaction, 'drugscordbag', targetMember, 'Bot lower than target or not moderatable');
+      await securityLogger.logHierarchyViolation(interaction, 'smite', targetMember, 'Bot lower than target or not moderatable');
       return interaction.editReply({ content: "I can't timeout that member due to role hierarchy or permissions." });
     }
 
     const requesterHigher = interaction.member.roles.highest.comparePositionTo(targetMember.roles.highest) > 0
       || interaction.guild.ownerId === interaction.user.id;
     if (!requesterHigher) {
-      await securityLogger.logHierarchyViolation(interaction, 'drugscordbag', targetMember, 'Requester lower or equal to target');
+      await securityLogger.logHierarchyViolation(interaction, 'smite', targetMember, 'Requester lower or equal to target');
       return interaction.editReply({ content: "You can't timeout someone with an equal or higher role." });
     }
 
