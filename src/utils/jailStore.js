@@ -45,8 +45,9 @@ function scheduleSave() {
 }
 
 function getGuild(data, guildId) {
-  if (!data.guilds[guildId]) data.guilds[guildId] = { jailRoleId: null, publicDefault: true, jailed: {} };
+  if (!data.guilds[guildId]) data.guilds[guildId] = { jailRoleId: null, jailChannelId: null, publicDefault: true, jailed: {} };
   const g = data.guilds[guildId];
+  if (!Object.prototype.hasOwnProperty.call(g, 'jailChannelId')) g.jailChannelId = null;
   if (typeof g.publicDefault !== 'boolean') g.publicDefault = true;
   if (!g.jailed) g.jailed = {};
   return g;
@@ -56,12 +57,18 @@ module.exports = {
   async getConfig(guildId) {
     const data = await load();
     const g = getGuild(data, guildId);
-    return { jailRoleId: g.jailRoleId || null, publicDefault: g.publicDefault };
+    return { jailRoleId: g.jailRoleId || null, jailChannelId: g.jailChannelId || null, publicDefault: g.publicDefault };
   },
   async setJailRole(guildId, roleId) {
     const data = await load();
     const g = getGuild(data, guildId);
     g.jailRoleId = roleId;
+    scheduleSave();
+  },
+  async setJailChannel(guildId, channelId) {
+    const data = await load();
+    const g = getGuild(data, guildId);
+    g.jailChannelId = channelId;
     scheduleSave();
   },
   async getPublicDefault(guildId) {
