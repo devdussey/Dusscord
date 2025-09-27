@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField, ChannelType } = require('discord.js');
 const store = require('../utils/joinLeaveStore');
 const cfgStore = require('../utils/joinLogConfigStore');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -78,7 +79,10 @@ module.exports = {
       }));
 
       const title = type === 'leave' ? 'Top Leaves' : type === 'join' ? 'Top Joins' : 'Top Joins/Leaves (Total)';
-      const embed = new EmbedBuilder().setTitle(title).setColor(0x0000ff).setDescription(lines.join('\n'));
+      const embed = new EmbedBuilder()
+        .setTitle(title)
+        .setColor(resolveEmbedColour(interaction.guildId, 0x0000ff))
+        .setDescription(lines.join('\n'));
       if (days) embed.setFooter({ text: `Window: last ${days} day(s)` });
       return interaction.editReply({ embeds: [embed] });
     }
@@ -90,7 +94,7 @@ module.exports = {
       const stats = store.getUserStats(interaction.guildId, member.id, sinceMs);
       const embed = new EmbedBuilder()
         .setTitle(`Join/Leave Stats — ${member.tag}`)
-        .setColor(0x0000ff)
+        .setColor(resolveEmbedColour(interaction.guildId, 0x0000ff))
         .addFields(
           { name: 'Joins', value: String(stats.joins || 0), inline: true },
           { name: 'Leaves', value: String(stats.leaves || 0), inline: true },

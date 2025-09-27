@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionsBitField, EmbedBuilder } = require('discord.js');
 const { isOwner } = require('../utils/ownerIds');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
 
@@ -53,7 +54,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setTitle('Admin Guilds Report')
-      .setColor(0x0000ff)
+      .setColor(resolveEmbedColour(interaction.guildId, 0x0000ff))
       .addFields(
         { name: 'User', value: `${user.tag} (${user.id})`, inline: false },
         { name: 'Total admin guilds (mutual)', value: String(adminGuilds.length), inline: true },

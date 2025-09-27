@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, PermissionsBitField, EmbedBuilder } = require('discord.js');
 const logger = require('../utils/securityLogger');
 const { isOwner } = require('../utils/ownerIds');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
 
@@ -96,7 +97,7 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setTitle('DM Diagnostic Report')
-        .setColor(0x0000ff)
+        .setColor(resolveEmbedColour(interaction.guildId, 0x0000ff))
         .setDescription(`Role: ${role} • Checked: ${list.length}\nSuccess: ${ok} • Fail: ${fail}`)
         .setTimestamp(new Date());
       if (failed.length) {

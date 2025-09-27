@@ -10,6 +10,7 @@ const tokenStore = require('../utils/messageTokenStore');
 const judgementStore = require('../utils/judgementStore');
 const smiteConfigStore = require('../utils/smiteConfigStore');
 const { getSmiteCost, getJudgementCost } = require('../utils/economyConfig');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 function formatCoins(value) {
   return Number(value).toLocaleString(undefined, {
@@ -19,6 +20,7 @@ function formatCoins(value) {
 }
 
 function buildStoreEmbed({
+  guildId,
   user,
   coins,
   smiteBalance,
@@ -28,7 +30,7 @@ function buildStoreEmbed({
   smiteEnabled,
 }) {
   const embed = new EmbedBuilder()
-    .setColor(0x9b59b6)
+    .setColor(resolveEmbedColour(guildId, 0x9b59b6))
     .setTitle('Divine Storefront')
     .setDescription('Spend your celestial coins on powerful blessings and punishments.')
     .addFields(
@@ -149,6 +151,7 @@ module.exports = {
     let message = await interaction.editReply({
       embeds: [
         buildStoreEmbed({
+          guildId,
           user: interaction.user,
           coins,
           smiteBalance,
@@ -199,6 +202,7 @@ module.exports = {
           message = await selection.update({
             embeds: [
               buildStoreEmbed({
+                guildId,
                 user: interaction.user,
                 coins,
                 smiteBalance: updatedSmiteBalance,

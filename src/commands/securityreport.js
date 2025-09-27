@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const eventsStore = require('../utils/securityEventsStore');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -48,7 +49,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setTitle('Security Report')
-      .setColor(0x0000ff)
+      .setColor(resolveEmbedColour(interaction.guildId, 0x0000ff))
       .setDescription(lines.join('\n'))
       .setFooter({ text: `Type: ${type} • Window: ${days}d • Total unique: ${rows.length}` })
       .setTimestamp(new Date());

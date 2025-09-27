@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, escapeMarkdown } = require('discord.js');
 const triviaStatsStore = require('../utils/triviaStatsStore');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 async function resolveDisplayName(guild, userId) {
   if (!guild) return `User ${userId}`;
@@ -66,7 +67,7 @@ module.exports = {
     const lines = resolved.map(entry => formatLeaderboardLine(entry, entry.index));
 
     const embed = new EmbedBuilder()
-      .setColor(0x5865F2)
+      .setColor(resolveEmbedColour(interaction.guildId, 0x5865F2))
       .setTitle('Trivia Leaderboard')
       .setDescription(lines.join('\n'))
       .setFooter({ text: 'Wins grant +20 coins and runners-up earn +10 coins.' });

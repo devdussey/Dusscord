@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 function buildAvatarLinks(user) {
   const size = 4096;
@@ -33,7 +34,7 @@ module.exports = {
       .setTitle(`${target.tag || target.username}'s avatar`)
       .setDescription(links)
       .setImage(displayUrl)
-      .setColor(0x5865F2)
+      .setColor(resolveEmbedColour(interaction.guildId, 0x5865F2))
       .setFooter({ text: `Requested by ${interaction.user.tag || interaction.user.username}` })
       .setTimestamp(Date.now());
 

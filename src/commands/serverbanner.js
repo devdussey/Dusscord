@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -29,7 +30,7 @@ module.exports = {
       .setTitle(`${guild.name} server banner`)
       .setDescription(links)
       .setImage(banner)
-      .setColor(0x5865F2)
+      .setColor(resolveEmbedColour(interaction.guildId, 0x5865F2))
       .setTimestamp(Date.now());
 
     await interaction.reply({ embeds: [embed] });

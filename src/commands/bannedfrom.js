@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionsBitField, EmbedBuilder } = require('discord.js');
 const banStore = require('../utils/banStore');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -32,7 +33,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setTitle(`Ban history for ${target.tag}`)
-      .setColor(0xff0000);
+      .setColor(resolveEmbedColour(interaction.guildId, 0xff0000));
 
     const lines = bans.map(entry => {
       const guildName = entry.guildName || entry.guildId;

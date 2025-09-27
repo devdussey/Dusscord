@@ -3,6 +3,7 @@ const coinStore = require('../utils/coinStore');
 const tokenStore = require('../utils/messageTokenStore');
 const judgementStore = require('../utils/judgementStore');
 const smiteConfigStore = require('../utils/smiteConfigStore');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 const {
   getSmiteCost,
   getJudgementCost,
@@ -29,6 +30,7 @@ function formatDuration(ms) {
 }
 
 function buildInventoryEmbed({
+  guildId,
   user,
   coinSummary,
   smiteBalance,
@@ -45,7 +47,7 @@ function buildInventoryEmbed({
   const title = username ? `${username}'s Divine Inventory` : 'Your Divine Inventory';
 
   const embed = new EmbedBuilder()
-    .setColor(0xf1c40f)
+    .setColor(resolveEmbedColour(guildId, 0xf1c40f))
     .setTitle(title)
     .setDescription(
       'Your sacred belongings, tallied and catalogued. Spend coins in /store to expand your arsenal.'
@@ -119,6 +121,7 @@ module.exports = {
     const prayReward = getPrayReward();
 
     const embed = buildInventoryEmbed({
+      guildId,
       user: interaction.user,
       coinSummary,
       smiteBalance,

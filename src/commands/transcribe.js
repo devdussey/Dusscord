@@ -36,6 +36,7 @@ module.exports = {
     try {
       const text = await transcribeAttachment(attachment, prompt);
       const embeds = createFieldEmbeds({
+        guildId: interaction.guildId,
         title: 'Transcript',
         user: interaction.user,
         sections: [

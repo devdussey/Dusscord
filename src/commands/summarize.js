@@ -199,6 +199,7 @@ module.exports = {
 
       const sections = buildSummarySections(out);
       const embeds = createFieldEmbeds({
+        guildId: interaction.guildId,
         title: 'Channel Summary',
         user: interaction.user,
         description: truncatedNote ? truncatedNote.trim() : undefined,

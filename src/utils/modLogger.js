@@ -1,6 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 const store = require('./modLogStore');
 const { parseOwnerIds } = require('./ownerIds');
+const { resolveEmbedColour } = require('./guildColourStore');
 
 async function send(interaction, embed) {
   const guild = interaction.guild;
@@ -67,7 +68,8 @@ function baseEmbed(interaction, title, color = 0x5865f2) {
   ];
   if (guild) fields.unshift({ name: 'Guild', value: `${guild.name} (${guild.id})`, inline: false });
   if (interaction.channel) fields.push({ name: 'Channel', value: `<#${interaction.channel.id}> (${interaction.channel.id})`, inline: false });
-  return new EmbedBuilder().setTitle(title).setColor(color).setTimestamp(new Date()).addFields(fields);
+  const resolvedColor = resolveEmbedColour(interaction.guildId, color);
+  return new EmbedBuilder().setTitle(title).setColor(resolvedColor).setTimestamp(new Date()).addFields(fields);
 }
 
 async function log(interaction, title, extraFields = [], color) {

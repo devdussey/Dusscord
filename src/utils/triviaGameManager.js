@@ -2,6 +2,7 @@ const { EmbedBuilder, escapeMarkdown } = require('discord.js');
 const coinStore = require('./coinStore');
 const triviaData = require('./triviaData');
 const triviaStatsStore = require('./triviaStatsStore');
+const { resolveEmbedColour } = require('./guildColourStore');
 
 const ROUND_DURATION_MS = 6_000;
 const DEFAULT_QUESTION_COUNT = 10;
@@ -224,7 +225,7 @@ async function finishGame(game) {
 
 async function askQuestion(game, question, index) {
   const embed = new EmbedBuilder()
-    .setColor(0x5865F2)
+    .setColor(resolveEmbedColour(game.guildId, 0x5865F2))
     .setTitle(`Question ${index + 1} of ${game.questionCount}`)
     .setDescription(formatChoices(question));
 

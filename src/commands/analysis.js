@@ -3,6 +3,7 @@ const judgementStore = require('../utils/judgementStore');
 const messageLogStore = require('../utils/userMessageLogStore');
 const coinStore = require('../utils/coinStore');
 const { getJudgementCost } = require('../utils/economyConfig');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 const fetch = (...args) => import('node-fetch').then(({ default: fetchImpl }) => fetchImpl(...args));
 
@@ -85,7 +86,7 @@ function formatMessages(logs, targetCount) {
 function buildEmbed(interaction, analysis, count) {
   const embed = new EmbedBuilder()
     .setTitle('User Analysis')
-    .setColor(0x5865f2)
+    .setColor(resolveEmbedColour(interaction.guildId, 0x5865f2))
     .setDescription(`Review of ${interaction.user.tag} (${interaction.user.id})\nMessages analysed: ${count}`)
     .setTimestamp(new Date());
 

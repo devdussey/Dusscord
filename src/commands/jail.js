@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionsBitField, EmbedBuilder, ChannelType } = require('discord.js');
 const store = require('../utils/jailStore');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 function parseDuration(str) {
   if (!str) return null;
@@ -228,7 +229,7 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setTitle('Member Jailed')
-        .setColor(0xff0000)
+        .setColor(resolveEmbedColour(interaction.guildId, 0xff0000))
         .setDescription(`${member.user.tag} has been jailed.`)
         .addFields(
           { name: 'Reason', value: reason, inline: false },
