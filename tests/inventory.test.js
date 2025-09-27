@@ -5,6 +5,7 @@ const inventory = require('../src/commands/inventory');
 const tokenStore = require('../src/utils/messageTokenStore');
 const judgementStore = require('../src/utils/judgementStore');
 const smiteConfigStore = require('../src/utils/smiteConfigStore');
+const coinStore = require('../src/utils/coinStore');
 
 function createInteraction() {
   let reply;
@@ -21,14 +22,18 @@ function createInteraction() {
   };
 }
 
-test('inventory lists smite and judgement balances with status', async () => {
-  const originalSmiteProgress = tokenStore.getProgress;
-  const originalJudgementProgress = judgementStore.getProgress;
+test('inventory shows coin balance, item counts, and prayer status', async () => {
+  const originalSmiteBalance = tokenStore.getBalance;
+  const originalJudgementBalance = judgementStore.getBalance;
   const originalIsEnabled = smiteConfigStore.isEnabled;
+  const originalCoinSummary = coinStore.getSummary;
+  const originalPrayStatus = coinStore.getPrayStatus;
 
-  tokenStore.getProgress = () => ({ tokens: 3, messagesUntilNext: 42 });
-  judgementStore.getProgress = () => ({ tokens: 1, messagesUntilNext: 12 });
+  tokenStore.getBalance = () => 3;
+  judgementStore.getBalance = () => 1;
   smiteConfigStore.isEnabled = () => true;
+  coinStore.getSummary = () => ({ coins: 321.5, lifetimeEarned: 0, lifetimeSpent: 0, lastPrayAt: null });
+  coinStore.getPrayStatus = () => ({ canPray: false, cooldownMs: 3_600_000, nextAvailableAt: Date.now() + 3_600_000 });
 
   try {
     const interaction = createInteraction();
@@ -38,15 +43,17 @@ test('inventory lists smite and judgement balances with status', async () => {
     assert(reply, 'expected inventory command to edit the reply');
 
     const content = reply.content;
-    assert.match(content, /Smite: 3 Smites\./);
-    assert.match(content, /Next Smite in 42 messages?\./);
-    assert.match(content, /Judgement: 1 Judgement\./);
-    assert.match(content, /Next Judgement in 12 messages?\./);
+    assert.match(content, /Coins: 321\.5 coins\./);
+    assert.match(content, /Smites: 3 available\. Each costs 200 coins to buy\./);
+    assert.match(content, /Judgements: 1 available\. Each costs 500 coins to buy\./);
     assert.match(content, /Smite rewards are currently enabled on this server\./);
-    assert.match(content, /Judgements unlock \/analysis\./);
+    assert.match(content, /Judgements unlock \/analysis\. Earn one by spending coins or via \/givejudgement\./);
+    assert.match(content, /Daily prayer: Available again in 1 hour\./);
   } finally {
-    tokenStore.getProgress = originalSmiteProgress;
-    judgementStore.getProgress = originalJudgementProgress;
+    tokenStore.getBalance = originalSmiteBalance;
+    judgementStore.getBalance = originalJudgementBalance;
     smiteConfigStore.isEnabled = originalIsEnabled;
+    coinStore.getSummary = originalCoinSummary;
+    coinStore.getPrayStatus = originalPrayStatus;
   }
 });

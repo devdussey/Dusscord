@@ -64,7 +64,8 @@ const categories = {
   ],
   'Info & Utilities': [
     { cmd: '/botinfo', desc: 'Show bot instance, mode, commands loaded, and uptime', perm: null },
-    { cmd: '/inventory', desc: 'Check how many Smites you have and when you earn the next one', perm: null },
+    { cmd: '/inventory', desc: 'View your coin balance plus available Smites and Judgements', perm: null },
+    { cmd: '/pray', desc: 'Pray once per day to receive a coin blessing', perm: null },
   ],
   'Bot Owner': [
     { cmd: '/adminlist', desc: 'List mutual guilds where a user has Administrator', perm: 'Bot Owner' },

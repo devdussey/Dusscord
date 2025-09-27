@@ -9,6 +9,8 @@ const {
   escapeMarkdown,
 } = require('discord.js');
 const { recordRace } = require('../utils/horseRaceStore');
+const coinStore = require('../utils/coinStore');
+const { getRaceEntryFee, getRaceRewards } = require('../utils/economyConfig');
 
 const TRACK_SLOTS = 20;
 const TICK_DELAY_MS = 1200;
@@ -134,7 +136,7 @@ function calculateBettingState(horses, bets) {
   return { betTotals, totalPool, oddsMap };
 }
 
-function renderWaitingState(horses, joinDeadline, betsState) {
+function renderWaitingState(horses, joinDeadline, betsState, entryFee) {
   const now = Date.now();
   const secondsLeft = Math.max(0, Math.ceil((joinDeadline - now) / 1000));
   const header = '**🏁 Horse Race Lobby**';
@@ -150,9 +152,13 @@ function renderWaitingState(horses, joinDeadline, betsState) {
     : '_No riders yet — invite some friends!_';
 
   const countdown = `_Race starts in ${secondsLeft}s. Up to seven other players may join._`;
+  const feeLine = entryFee > 0
+    ? `_Entry fee: ${formatNumber(entryFee)} coins per rider._`
+    : '_Entry fee: Free to enter._';
   const betting = renderBettingSummary(horses, betsState.betTotals, betsState.totalPool, betsState.oddsMap);
 
-  return `${header}\n\n${description}\n\n${countdown}\n\n${betting}`;
+  const feeBlock = feeLine ? `\n${feeLine}` : '';
+  return `${header}\n\n${description}\n\n${countdown}${feeBlock}\n\n${betting}`;
 }
 
 function buildComponents(stage, participantCount, joinButtonId, betButtonId) {
@@ -201,6 +207,11 @@ module.exports = {
       return;
     }
 
+    const guildId = interaction.guildId;
+    const entryFee = getRaceEntryFee();
+    const raceRewards = getRaceRewards();
+    const rewardValues = [raceRewards.first, raceRewards.second, raceRewards.third];
+
     const raceId = `${interaction.id}-${Date.now()}`;
     const joinButtonId = `horserace-join-${raceId}`;
     const betButtonId = `horserace-bet-${raceId}`;
@@ -209,6 +220,15 @@ module.exports = {
     const horses = [];
     const finishOrder = [];
     const bets = new Map();
+    const entryPayments = new Map();
+
+    async function chargeEntry(userId) {
+      if (entryFee <= 0) return true;
+      if (entryPayments.has(userId)) return true;
+      const paid = await coinStore.spendCoins(guildId, userId, entryFee);
+      if (paid) entryPayments.set(userId, entryFee);
+      return paid;
+    }
 
     function registerParticipant(user) {
       if (participants.has(user.id)) {
@@ -245,6 +265,15 @@ module.exports = {
       }
     }
 
+    if (!(await chargeEntry(interaction.user.id))) {
+      const costText = formatNumber(entryFee);
+      await interaction.reply({
+        content: `You need ${costText} coins to enter a horse race.`,
+        ephemeral: true,
+      });
+      return;
+    }
+
     registerParticipant({
       id: interaction.user.id,
       username: interaction.user.username,
@@ -264,7 +293,7 @@ module.exports = {
         const betsState = calculateBettingState(horses, bets);
         let content;
         if (stage === 'waiting') {
-          content = renderWaitingState(horses, joinDeadline, betsState);
+          content = renderWaitingState(horses, joinDeadline, betsState, entryFee);
         } else {
           const raceBody = renderRace(horses, finishOrder, {
             finished: stage === 'finished',
@@ -315,13 +344,26 @@ module.exports = {
           await componentInteraction.reply({ content: 'You are already entered in this race.', ephemeral: true });
           return;
         }
+        if (!(await chargeEntry(componentInteraction.user.id))) {
+          const balance = coinStore.getBalance(guildId, componentInteraction.user.id);
+          const costText = formatNumber(entryFee);
+          const balanceText = formatNumber(balance);
+          await componentInteraction.reply({
+            content: `Joining a race costs ${costText} coins. Your balance is ${balanceText} coins.`,
+            ephemeral: true,
+          });
+          return;
+        }
         registerParticipant({
           id: componentInteraction.user.id,
           username: componentInteraction.user.username,
           displayName: componentInteraction.member?.displayName,
           globalName: componentInteraction.user.globalName,
         });
-        await componentInteraction.reply({ content: 'You have joined the race! 🐎', ephemeral: true });
+        const joinMessage = entryFee > 0
+          ? `You have joined the race! 🐎 (-${formatNumber(entryFee)} coins)`
+          : 'You have joined the race! 🐎';
+        await componentInteraction.reply({ content: joinMessage, ephemeral: true });
         await buildAndSend();
       } else if (componentInteraction.customId === betButtonId) {
         if (stage === 'finished') {
@@ -378,10 +420,34 @@ module.exports = {
           }
 
           const targetHorse = horses[horseNumber - 1];
+          const existing = bets.get(submission.user.id);
+          const previousAmount = existing ? Number(existing.amount) || 0 : 0;
+          const delta = betAmount - previousAmount;
+
+          if (delta > 0) {
+            const paid = await coinStore.spendCoins(guildId, submission.user.id, delta);
+            if (!paid) {
+              const balance = coinStore.getBalance(guildId, submission.user.id);
+              await submission.reply({
+                content: `That wager requires ${formatNumber(delta)} coins. Your balance is ${formatNumber(balance)} coins.`,
+                ephemeral: true,
+              });
+              return;
+            }
+          } else if (delta < 0) {
+            await coinStore.addCoins(guildId, submission.user.id, -delta);
+          }
+
           bets.set(submission.user.id, { horseId: targetHorse.id, amount: betAmount });
 
+          const deltaMessage = delta > 0
+            ? ` (-${formatNumber(delta)} coins)`
+            : delta < 0
+              ? ` (+${formatNumber(-delta)} coins refunded)`
+              : '';
+
           await submission.reply({
-            content: `Bet placed on **${escapeMarkdown(targetHorse.shortName || targetHorse.name)}** for ${formatNumber(betAmount)} coins.`,
+            content: `Bet placed on **${escapeMarkdown(targetHorse.shortName || targetHorse.name)}** for ${formatNumber(betAmount)} coins.${deltaMessage}`,
             ephemeral: true,
           });
           await buildAndSend();
@@ -472,6 +538,7 @@ module.exports = {
       if (!Number.isFinite(amount) || amount <= 0) continue;
       const payout = bet.horseId === winningHorse.id ? amount * winningOdds : 0;
       if (payout > 0) {
+        await coinStore.addCoins(guildId, userId, payout);
         winners.push(`• <@${userId}> won ${formatNumber(payout, 2)} coins (bet ${formatNumber(amount)}).`);
       } else {
         losers.push(`• <@${userId}> lost ${formatNumber(amount)} coins.`);
@@ -483,12 +550,17 @@ module.exports = {
       if (!horse.isPlayer || !horse.userId) continue;
       const placementIndex = finishOrder.indexOf(horse);
       const placementNumber = placementIndex === -1 ? null : placementIndex + 1;
-      const stats = recordRace(interaction.guildId, horse.userId, placementNumber);
+      const stats = recordRace(guildId, horse.userId, placementNumber);
       const placementLabel = placementNumber
         ? PLACE_EMOJIS[placementIndex] ?? `#${placementNumber}`
         : '#?';
+      const reward = placementNumber ? rewardValues[placementIndex] || 0 : 0;
+      if (reward > 0) {
+        await coinStore.addCoins(guildId, horse.userId, reward);
+      }
+      const rewardText = reward > 0 ? ` (+${formatNumber(reward)} coins)` : '';
       playerSummaryLines.push(
-        `• **${escapeMarkdown(horse.shortName || horse.name)}** ${placementLabel} — 🥇 ${stats.first ?? 0} · 🥈 ${stats.second ?? 0} · 🥉 ${stats.third ?? 0} (Races: ${stats.races ?? 0})`,
+        `• **${escapeMarkdown(horse.shortName || horse.name)}** ${placementLabel}${rewardText} — 🥇 ${stats.first ?? 0} · 🥈 ${stats.second ?? 0} · 🥉 ${stats.third ?? 0} (Races: ${stats.races ?? 0})`,
       );
     }
 
@@ -502,6 +574,10 @@ module.exports = {
     }
     if (playerSummaryLines.length) {
       summarySections.push('**Player stats:**', ...playerSummaryLines);
+    }
+
+    if (entryFee > 0) {
+      summarySections.push(`_Entry fee: ${formatNumber(entryFee)} coins per rider._`);
     }
 
     summarySections.push(`**Winning horse:** ${escapeMarkdown(winningHorse.shortName || winningHorse.name)} (odds ${formatNumber(winningOdds, 2)}x)`);
