@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const triviaData = require('../utils/triviaData');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 function formatCategoryLine(category) {
   const description = category.description
@@ -33,6 +34,7 @@ module.exports = {
     }
 
     const lines = categories.map(formatCategoryLine);
+    const embedColor = resolveEmbedColour(interaction.guildId, 0x5865F2);
     const embeds = [];
     let buffer = '';
 
@@ -40,7 +42,7 @@ module.exports = {
       const next = buffer ? `${buffer}\n\n${line}` : line;
       if (next.length > 3800 && buffer) {
         embeds.push(new EmbedBuilder()
-          .setColor(0x5865F2)
+          .setColor(embedColor)
           .setTitle('Trivia Categories')
           .setDescription(buffer)
           .setFooter({ text: 'Use /triviastart to begin a game in your favourite category.' }));
@@ -52,7 +54,7 @@ module.exports = {
 
     if (buffer) {
       embeds.push(new EmbedBuilder()
-        .setColor(0x5865F2)
+        .setColor(embedColor)
         .setTitle('Trivia Categories')
         .setDescription(buffer)
         .setFooter({ text: 'Use /triviastart to begin a game in your favourite category.' }));

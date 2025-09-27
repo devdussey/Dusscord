@@ -29,6 +29,7 @@ module.exports = {
 
       const text = await transcribeAttachment(attachment);
       const embeds = createFieldEmbeds({
+        guildId: message.guildId,
         title: 'Voice Transcript',
         user: message.author,
         sections: [

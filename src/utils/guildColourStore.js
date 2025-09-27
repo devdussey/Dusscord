@@ -57,11 +57,24 @@ function toHex6(colourNum) {
   return `#${Number(colourNum).toString(16).padStart(6, '0').toUpperCase()}`;
 }
 
-function getDefaultColour(guildId) {
+function getStoredColour(guildId) {
   const store = readStore();
   const rec = store.guilds[guildId];
-  if (!rec || typeof rec.colour !== 'number') return DEFAULT_EMBED_COLOUR;
+  if (!rec || typeof rec.colour !== 'number') return null;
   return rec.colour;
+}
+
+function getDefaultColour(guildId) {
+  const stored = getStoredColour(guildId);
+  if (typeof stored === 'number') return stored;
+  return DEFAULT_EMBED_COLOUR;
+}
+
+function resolveEmbedColour(guildId, fallback = DEFAULT_EMBED_COLOUR) {
+  const stored = getStoredColour(guildId);
+  if (typeof stored === 'number') return stored;
+  if (typeof fallback === 'number') return fallback;
+  return DEFAULT_EMBED_COLOUR;
 }
 
 async function setDefaultColour(guildId, input) {
@@ -92,7 +105,9 @@ module.exports = {
   DEFAULT_EMBED_COLOUR,
   parseColour,
   toHex6,
+  getStoredColour,
   getDefaultColour,
+  resolveEmbedColour,
   setDefaultColour,
   applyDefaultColour,
 };

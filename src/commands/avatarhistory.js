@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 // node-fetch v3 is ESM-only; use dynamic import in CommonJS
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
@@ -73,7 +74,7 @@ module.exports = {
         .setTitle(`${target.tag || target.username}'s recent avatars`)
         .setDescription(lines.join('\n'))
         .setThumbnail(target.displayAvatarURL({ size: 256 }))
-        .setColor(0x5865F2);
+        .setColor(resolveEmbedColour(interaction.guildId, 0x5865F2));
 
       await interaction.editReply({
         content: null,

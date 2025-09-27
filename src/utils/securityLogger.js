@@ -2,6 +2,7 @@ const { EmbedBuilder, PermissionsBitField } = require('discord.js');
 const logStore = require('./securityLogStore');
 const eventsStore = require('./securityEventsStore');
 const { parseOwnerIds } = require('./ownerIds');
+const { resolveEmbedColour } = require('./guildColourStore');
 
 async function sendEmbedToOwners(client, embed) {
   const owners = parseOwnerIds();
@@ -98,9 +99,10 @@ function baseEmbed(interaction, title, color = 0xffaa00) {
   ];
   if (guild) fields.unshift({ name: 'Guild', value: `${guild.name} (${guild.id})`, inline: false });
   if (interaction.channel) fields.push({ name: 'Channel', value: `<#${interaction.channel.id}> (${interaction.channel.id})`, inline: false });
+  const resolvedColor = resolveEmbedColour(interaction.guildId, color);
   return new EmbedBuilder()
     .setTitle(title)
-    .setColor(color)
+    .setColor(resolvedColor)
     .setTimestamp(new Date())
     .addFields(fields);
 }

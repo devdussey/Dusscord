@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, escapeMarkdown } = require('discord.js');
 const { getLeaderboard, getStatsForGuild } = require('../utils/horseRaceStore');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 const PLACE_EMOJIS = ['🥇', '🥈', '🥉'];
 
@@ -65,7 +66,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setTitle('🏇 Horse Race Standings')
-      .setColor(0x5865f2)
+      .setColor(resolveEmbedColour(interaction.guildId, 0x5865f2))
       .setDescription(lines.join('\n'))
       .setFooter({ text: 'Standings are sorted by golds, then silvers, bronzes, and races.' });
 

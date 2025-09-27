@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionsBitField, EmbedBuilder } = require('discord.js');
 const banStore = require('../utils/banStore');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -53,7 +54,7 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setTitle(`Banned members in ${interaction.guild.name}`)
       .setDescription(`${lines.join('\n')}${extra}`)
-      .setColor(0xff0000)
+      .setColor(resolveEmbedColour(interaction.guildId, 0xff0000))
       .setFooter({ text: `Synced ${records.length} ban(s)` })
       .setTimestamp();
 

@@ -1,6 +1,7 @@
 const { Events, AuditLogEvent, PermissionsBitField, EmbedBuilder } = require('discord.js');
 const store = require('../utils/logChannelsStore');
 const { parseOwnerIds } = require('../utils/ownerIds');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 module.exports = {
   name: Events.MessageDelete,
@@ -67,7 +68,7 @@ module.exports = {
       ];
       const embed = new EmbedBuilder()
         .setTitle('Admin deleted a message in a monitored log channel')
-        .setColor(0x0000ff)
+        .setColor(resolveEmbedColour(guild.id, 0x0000ff))
         .setTimestamp(new Date())
         .addFields(fields);
 

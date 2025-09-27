@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { resolveEmbedColour } = require('../utils/guildColourStore');
 
 function formatUptime(ms) {
   const sec = Math.floor(ms / 1000) % 60;
@@ -28,7 +29,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setTitle('Bot Info')
-      .setColor('#0000ff')
+      .setColor(resolveEmbedColour(interaction.guildId, 0x0000ff))
       .addFields(
         { name: 'Bot', value: `${user.tag} (${user.id})`, inline: false },
         { name: 'Application ID', value: appId, inline: false },

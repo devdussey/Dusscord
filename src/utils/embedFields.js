@@ -1,4 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
+const { resolveEmbedColour } = require('./guildColourStore');
 
 const DEFAULT_COLOR = 0x5865F2;
 const FIELD_CHUNK_SIZE = 1024;
@@ -20,7 +21,8 @@ function createFieldEmbeds({
   sections,
   user,
   description,
-  color = DEFAULT_COLOR,
+  guildId,
+  color = null,
   inline = false,
 }) {
   if (!Array.isArray(sections) || !sections.length) return [];
@@ -56,8 +58,9 @@ function createFieldEmbeds({
   const startNewEmbed = () => {
     const suffix = embedIndex === 0 ? '' : ` (cont. ${embedIndex})`;
     const computedTitle = title ? `${title}${suffix}` : null;
+    const resolvedColor = color ?? resolveEmbedColour(guildId, DEFAULT_COLOR);
     currentEmbed = new EmbedBuilder()
-      .setColor(color);
+      .setColor(resolvedColor);
     if (computedTitle) {
       currentEmbed.setTitle(computedTitle);
     }
