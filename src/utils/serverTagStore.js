@@ -2,8 +2,11 @@ const fs = require('fs');
 const { ensureFileSync, resolveDataPath, writeJson } = require('./dataDir');
 
 const STORE_FILE_NAME = 'server_tags.json';
-const STORE_FILE = resolveDataPath(STORE_FILE_NAME);
 const MAX_TAG_LENGTH = 32;
+
+function getStoreFilePath() {
+  return resolveDataPath(STORE_FILE_NAME);
+}
 
 function ensureStore() {
   try {
@@ -16,7 +19,7 @@ function ensureStore() {
 function readStore() {
   ensureStore();
   try {
-    const raw = fs.readFileSync(STORE_FILE, 'utf8');
+    const raw = fs.readFileSync(getStoreFilePath(), 'utf8');
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') return { guilds: {} };
     if (!parsed.guilds || typeof parsed.guilds !== 'object') parsed.guilds = {};

@@ -1,14 +1,18 @@
 const fs = require('fs');
 const { ensureFileSync, resolveDataPath, writeJson } = require('./dataDir');
 
-const STORE_FILE = resolveDataPath('user_messages.json');
+const STORE_FILE_NAME = 'user_messages.json';
 const MAX_PER_USER = 1000;
 
 let cache = null;
 
+function getStoreFilePath() {
+  return resolveDataPath(STORE_FILE_NAME);
+}
+
 function ensureStoreFile() {
   try {
-    ensureFileSync('user_messages.json', { guilds: {} });
+    ensureFileSync(STORE_FILE_NAME, { guilds: {} });
   } catch (err) {
     console.error('Failed to initialise user message log store', err);
   }
@@ -18,7 +22,7 @@ function loadStore() {
   if (cache) return cache;
   ensureStoreFile();
   try {
-    const raw = fs.readFileSync(STORE_FILE, 'utf8');
+    const raw = fs.readFileSync(getStoreFilePath(), 'utf8');
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') {
       cache = { guilds: {} };
@@ -36,7 +40,7 @@ async function saveStore() {
   ensureStoreFile();
   const safe = cache && typeof cache === 'object' ? cache : { guilds: {} };
   if (!safe.guilds || typeof safe.guilds !== 'object') safe.guilds = {};
-  await writeJson('user_messages.json', safe);
+  await writeJson(STORE_FILE_NAME, safe);
 }
 
 function ensureGuildUser(guildId, userId) {

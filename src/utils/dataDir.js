@@ -1,36 +1,53 @@
 const fs = require('fs');
 const path = require('path');
 
-const overrideDir = (process.env.DUSSCORD_DATA_DIR || '').trim();
-const primaryDir = overrideDir ? path.resolve(overrideDir) : path.join(__dirname, '..', '..', 'data');
-const legacyDirs = [
-  path.join(__dirname, '..', '..', 'data'),
-  path.join(__dirname, '..', 'data'),
-].filter(dir => dir !== primaryDir);
+let cachedPaths = null;
+
+function computePaths() {
+  const overrideDir = (process.env.DUSSCORD_DATA_DIR || '').trim();
+  const primaryDir = overrideDir ? path.resolve(overrideDir) : path.join(__dirname, '..', '..', 'data');
+  const legacyDirs = [
+    path.join(__dirname, '..', '..', 'data'),
+    path.join(__dirname, '..', 'data'),
+  ].filter(dir => dir !== primaryDir);
+  return { primaryDir, legacyDirs };
+}
+
+function getPaths() {
+  if (!cachedPaths) cachedPaths = computePaths();
+  return cachedPaths;
+}
+
+function resetDataDirCache() {
+  cachedPaths = null;
+}
 
 function getDataDir() {
-  return primaryDir;
+  return getPaths().primaryDir;
 }
 
 function resolveDataPath(...segments) {
-  return path.join(primaryDir, ...segments);
+  return path.join(getPaths().primaryDir, ...segments);
 }
 
 function listCandidatePaths(fileName) {
+  const { legacyDirs } = getPaths();
   return [resolveDataPath(fileName), ...legacyDirs.map(dir => path.join(dir, fileName))];
 }
 
-function ensureDirSync(dirPath = primaryDir) {
+function ensureDirSync(dirPath) {
+  const targetDir = dirPath || getPaths().primaryDir;
   try {
-    fs.mkdirSync(dirPath, { recursive: true });
+    fs.mkdirSync(targetDir, { recursive: true });
   } catch (err) {
     if (err && err.code !== 'EEXIST') throw err;
   }
 }
 
-async function ensureDir(dirPath = primaryDir) {
+async function ensureDir(dirPath) {
+  const targetDir = dirPath || getPaths().primaryDir;
   try {
-    await fs.promises.mkdir(dirPath, { recursive: true });
+    await fs.promises.mkdir(targetDir, { recursive: true });
   } catch (err) {
     if (!err || err.code !== 'EEXIST') throw err;
   }
@@ -147,4 +164,5 @@ module.exports = {
   readJsonSync,
   writeJson,
   writeJsonSync,
+  resetDataDirCache,
 };

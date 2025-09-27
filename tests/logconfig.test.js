@@ -6,12 +6,20 @@ const assert = require('node:assert/strict');
 
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dusscord-logconfig-'));
 process.env.DUSSCORD_DATA_DIR = tempDir;
+const { resetDataDirCache } = require('../src/utils/dataDir');
+resetDataDirCache();
 
 const logconfig = require('../src/commands/logconfig');
 const securityLogStore = require('../src/utils/securityLogStore');
 const modLogStore = require('../src/utils/modLogStore');
 const logChannelsStore = require('../src/utils/logChannelsStore');
 const joinLogConfigStore = require('../src/utils/joinLogConfigStore');
+
+test.after(() => {
+  resetDataDirCache();
+  delete process.env.DUSSCORD_DATA_DIR;
+  fs.rmSync(tempDir, { recursive: true, force: true });
+});
 
 function createInteraction() {
   let reply;

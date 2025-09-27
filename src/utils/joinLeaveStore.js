@@ -2,7 +2,10 @@ const fs = require('fs');
 const { ensureFileSync, resolveDataPath, writeJsonSync } = require('./dataDir');
 
 const STORE_FILE = 'joins_leaves.json';
-const dataFile = resolveDataPath(STORE_FILE);
+
+function getDataFile() {
+  return resolveDataPath(STORE_FILE);
+}
 
 let cache = null;
 
@@ -10,8 +13,9 @@ function load() {
   if (cache) return cache;
   try {
     ensureFileSync(STORE_FILE, { guilds: {} });
-    if (fs.existsSync(dataFile)) {
-      const raw = fs.readFileSync(dataFile, 'utf8');
+    const filePath = getDataFile();
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, 'utf8');
       cache = raw ? JSON.parse(raw) : { guilds: {} };
     } else {
       cache = { guilds: {} };

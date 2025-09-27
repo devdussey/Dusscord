@@ -2,7 +2,10 @@ const fs = require('fs').promises;
 const { ensureFile, resolveDataPath, writeJson } = require('./dataDir');
 
 const STORE_FILE = 'antinuke.json';
-const dataFile = resolveDataPath(STORE_FILE);
+
+function getDataFile() {
+  return resolveDataPath(STORE_FILE);
+}
 
 let cache = null;
 
@@ -63,7 +66,7 @@ async function ensureLoaded() {
   if (cache) return;
   try {
     await ensureFile(STORE_FILE, '{}');
-    const raw = await fs.readFile(dataFile, 'utf8').catch(err => {
+    const raw = await fs.readFile(getDataFile(), 'utf8').catch(err => {
       if (err?.code === 'ENOENT') return '{}';
       throw err;
     });

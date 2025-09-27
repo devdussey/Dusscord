@@ -2,7 +2,10 @@ const fs = require('fs');
 const { ensureFileSync, resolveDataPath, writeJsonSync } = require('./dataDir');
 
 const STORE_FILE = 'autoroles.json';
-const dataFile = resolveDataPath(STORE_FILE);
+
+function getDataFile() {
+    return resolveDataPath(STORE_FILE);
+}
 
 let cache = null;
 
@@ -10,7 +13,7 @@ function ensureLoaded() {
     if (!cache) {
         try {
             ensureFileSync(STORE_FILE, '{}');
-            const raw = fs.readFileSync(dataFile, 'utf8');
+            const raw = fs.readFileSync(getDataFile(), 'utf8');
             cache = raw ? JSON.parse(raw) : {};
             if (!cache || typeof cache !== 'object') cache = {};
         } catch (e) {
