@@ -59,6 +59,7 @@ const categories = {
   'AI & Media Tools': [
     { cmd: '/chat', desc: 'Chat with GPT with selectable personas and context size', perm: null },
     { cmd: '/summarize', desc: 'Summarize recent channel messages into bullets and a paragraph', perm: null },
+    { cmd: '/analysis', desc: 'Generate a persona-driven analysis of recent messages (uses judgement tokens)', perm: null },
     { cmd: '/transcribe', desc: 'Transcribe an attached audio file using Whisper', perm: null },
     { cmd: '/removebg', desc: 'Remove an image background via remove.bg', perm: null },
   ],
@@ -72,6 +73,7 @@ const categories = {
     { cmd: '/dmdiag test/role', desc: 'DM diagnostics for a member or role', perm: 'Bot Owner' },
     { cmd: '/wraith start/stop', desc: 'Create a private spam channel and isolate a member', perm: 'Bot Owner' },
     { cmd: '/securitylog set/mode/clear/toggle/show', desc: 'Configure security log delivery and enablement', perm: 'Bot Owner' },
+    { cmd: '/analysisconfig set/show/clear', desc: 'Manage the analysis persona for guild transcripts', perm: 'Bot Owner' },
   ],
 };
 
