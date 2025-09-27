@@ -1,14 +1,18 @@
 const fs = require('fs');
 const { ensureFileSync, resolveDataPath, writeJson } = require('./dataDir');
 
-const STORE_FILE = resolveDataPath('message_tokens.json');
+const STORE_FILE_NAME = 'message_tokens.json';
 const AWARD_THRESHOLD = 200;
 
 let cache = null;
 
+function getStoreFilePath() {
+  return resolveDataPath(STORE_FILE_NAME);
+}
+
 function ensureStoreFile() {
   try {
-    ensureFileSync('message_tokens.json', { guilds: {} });
+    ensureFileSync(STORE_FILE_NAME, { guilds: {} });
   } catch (err) {
     console.error('Failed to initialise message token store', err);
   }
@@ -18,7 +22,7 @@ function loadStore() {
   if (cache) return cache;
   ensureStoreFile();
   try {
-    const raw = fs.readFileSync(STORE_FILE, 'utf8');
+    const raw = fs.readFileSync(getStoreFilePath(), 'utf8');
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') {
       cache = { guilds: {} };

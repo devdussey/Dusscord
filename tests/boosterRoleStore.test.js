@@ -6,6 +6,8 @@ const assert = require('node:assert/strict');
 
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dusscord-booster-store-'));
 process.env.DUSSCORD_DATA_DIR = tempDir;
+const { resetDataDirCache } = require('../src/utils/dataDir');
+resetDataDirCache();
 const dataFile = path.join(tempDir, 'boosterRoles.json');
 
 const modulePath = require.resolve('../src/utils/boosterRoleStore');
@@ -19,6 +21,12 @@ function loadStore() {
   delete require.cache[modulePath];
   return require(modulePath);
 }
+
+test.after(() => {
+  resetDataDirCache();
+  delete process.env.DUSSCORD_DATA_DIR;
+  fs.rmSync(tempDir, { recursive: true, force: true });
+});
 
 test('getRoleId converts legacy string entries and preserves colour data', async () => {
   await resetStoreFile({

@@ -2,7 +2,10 @@ const fs = require('fs').promises;
 const { ensureFile, resolveDataPath, writeJson } = require('./dataDir');
 
 const STORE_FILE = 'securityevents.json';
-const dataFile = resolveDataPath(STORE_FILE);
+
+function getDataFile() {
+  return resolveDataPath(STORE_FILE);
+}
 const DEFAULT_STORE = { events: [] };
 
 let cache = null;
@@ -11,7 +14,7 @@ async function load() {
   if (cache) return cache;
   try {
     await ensureFile(STORE_FILE, DEFAULT_STORE);
-    const raw = await fs.readFile(dataFile, 'utf8').catch(err => {
+    const raw = await fs.readFile(getDataFile(), 'utf8').catch(err => {
       if (err?.code === 'ENOENT') return '';
       throw err;
     });

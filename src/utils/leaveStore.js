@@ -2,7 +2,10 @@ const fs = require('fs');
 const { ensureFileSync, resolveDataPath, writeJsonSync } = require('./dataDir');
 
 const STORE_FILE = 'leave.json';
-const file = resolveDataPath(STORE_FILE);
+
+function getFilePath() {
+  return resolveDataPath(STORE_FILE);
+}
 
 let cache = null;
 
@@ -16,7 +19,7 @@ function load() {
   if (cache) return cache;
   ensure();
   try {
-    cache = JSON.parse(fs.readFileSync(file, 'utf8')) || {};
+    cache = JSON.parse(fs.readFileSync(getFilePath(), 'utf8')) || {};
   } catch {
     cache = {};
   }

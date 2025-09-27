@@ -6,6 +6,8 @@ const assert = require('node:assert/strict');
 
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dusscord-guild-colour-'));
 process.env.DUSSCORD_DATA_DIR = tempDir;
+const { resetDataDirCache } = require('../src/utils/dataDir');
+resetDataDirCache();
 
 const modulePath = require.resolve('../src/utils/guildColourStore');
 delete require.cache[modulePath];
@@ -14,6 +16,12 @@ const {
   getDefaultColour,
   parseColour,
 } = require(modulePath);
+
+test.after(() => {
+  resetDataDirCache();
+  delete process.env.DUSSCORD_DATA_DIR;
+  fs.rmSync(tempDir, { recursive: true, force: true });
+});
 
 test('setDefaultColour accepts hex string input', async () => {
   const saved = await setDefaultColour('guild-hex', '#1a2b3c');

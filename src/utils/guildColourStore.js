@@ -5,7 +5,10 @@ const { ensureFileSync, resolveDataPath, writeJson } = require('./dataDir');
 const DEFAULT_EMBED_COLOUR = 0xf10909;
 
 const STORE_FILE_NAME = 'embed_colours.json';
-const STORE_FILE = resolveDataPath(STORE_FILE_NAME);
+
+function getStoreFilePath() {
+  return resolveDataPath(STORE_FILE_NAME);
+}
 
 function ensureStore() {
   try {
@@ -19,7 +22,7 @@ function ensureStore() {
 function readStore() {
   ensureStore();
   try {
-    const raw = fs.readFileSync(STORE_FILE, 'utf8');
+    const raw = fs.readFileSync(getStoreFilePath(), 'utf8');
     const json = JSON.parse(raw);
     return json && typeof json === 'object' && json.guilds ? json : { guilds: {} };
   } catch {

@@ -2,7 +2,10 @@ const fs = require('fs/promises');
 const { ensureFile, resolveDataPath, writeJson } = require('./dataDir');
 
 const STORE_FILE = 'blacklist.json';
-const FILE = resolveDataPath(STORE_FILE);
+
+function getFilePath() {
+  return resolveDataPath(STORE_FILE);
+}
 
 let cache = null;
 let saveTimeout = null;
@@ -19,7 +22,7 @@ async function load() {
   if (cache) return cache;
   await ensureStoreFile();
   try {
-    const raw = await fs.readFile(FILE, 'utf8');
+    const raw = await fs.readFile(getFilePath(), 'utf8');
     const parsed = JSON.parse(raw || '{}');
     if (!parsed.guilds || typeof parsed.guilds !== 'object') parsed.guilds = {};
     cache = parsed;

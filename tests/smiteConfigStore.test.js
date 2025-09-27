@@ -5,21 +5,20 @@ const path = require('path');
 const os = require('os');
 
 const modulePath = require.resolve('../src/utils/smiteConfigStore');
-const dataDirPath = require.resolve('../src/utils/dataDir');
+const { resetDataDirCache } = require('../src/utils/dataDir');
 
 async function withTempStore(fn) {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'smite-config-'));
   delete require.cache[modulePath];
-  delete require.cache[dataDirPath];
   process.env.DUSSCORD_DATA_DIR = tmpDir;
+  resetDataDirCache();
   const store = require(modulePath);
   try {
     await fn(store, tmpDir);
   } finally {
     delete require.cache[modulePath];
-    delete require.cache[dataDirPath];
     if (store?.clearCache) store.clearCache();
-    delete require.cache[modulePath];
+    resetDataDirCache();
     delete process.env.DUSSCORD_DATA_DIR;
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }

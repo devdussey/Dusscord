@@ -2,7 +2,10 @@ const fs = require('fs');
 const { ensureFileSync, resolveDataPath, writeJsonSync } = require('./dataDir');
 
 const STORE_FILE = 'joinlog_config.json';
-const dataFile = resolveDataPath(STORE_FILE);
+
+function getDataFile() {
+  return resolveDataPath(STORE_FILE);
+}
 
 let cache = null;
 
@@ -10,7 +13,8 @@ function load() {
   if (cache) return cache;
   try {
     ensureFileSync(STORE_FILE, {});
-    cache = fs.existsSync(dataFile) ? JSON.parse(fs.readFileSync(dataFile, 'utf8') || '{}') : {};
+    const filePath = getDataFile();
+    cache = fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, 'utf8') || '{}') : {};
   } catch (err) {
     console.error('Failed to load join log config store:', err);
     cache = {};

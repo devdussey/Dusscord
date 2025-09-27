@@ -3,7 +3,10 @@ const { ensureFileSync, resolveDataPath, writeJsonSync } = require('./dataDir');
 
 const STORE_FILE = 'horserace.json';
 const DEFAULT_STORE = { guilds: {} };
-const dataFile = resolveDataPath(STORE_FILE);
+
+function getDataFile() {
+  return resolveDataPath(STORE_FILE);
+}
 
 let cache = null;
 
@@ -11,7 +14,7 @@ function ensureLoaded() {
   if (cache) return;
   try {
     ensureFileSync(STORE_FILE, JSON.stringify(DEFAULT_STORE, null, 2));
-    const raw = fs.readFileSync(dataFile, 'utf8');
+    const raw = fs.readFileSync(getDataFile(), 'utf8');
     const parsed = raw ? JSON.parse(raw) : null;
     if (!parsed || typeof parsed !== 'object') {
       cache = { ...DEFAULT_STORE };
