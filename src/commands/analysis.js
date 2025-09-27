@@ -134,6 +134,10 @@ module.exports = {
         { name: PERSONAS.default.label, value: PERSONAS.default.id },
         { name: PERSONAS.psychological.label, value: PERSONAS.psychological.id },
       )
+      .setRequired(false))
+    .addBooleanOption((option) => option
+      .setName('public')
+      .setDescription('Share the analysis in the channel instead of privately')
       .setRequired(false)),
 
   async execute(interaction) {
@@ -141,7 +145,10 @@ module.exports = {
       return interaction.reply({ content: 'Use this command inside a server.', ephemeral: true });
     }
 
-    try { await interaction.deferReply({ ephemeral: true }); } catch (_) {}
+    const wantsPublicReply = interaction.options.getBoolean('public');
+    const ephemeral = wantsPublicReply !== true;
+
+    try { await interaction.deferReply({ ephemeral }); } catch (_) {}
 
     if (!OPENAI_API_KEY) {
       return interaction.editReply({ content: 'OpenAI API key not configured. Set OPENAI_API_KEY to enable /analysis.' });
