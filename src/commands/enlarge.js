@@ -208,8 +208,8 @@ module.exports = {
         if (!res.ok) throw new Error('Download failed');
         const buf = await res.buffer();
         const attachment = new AttachmentBuilder(buf, { name: fileName });
-        if (acknowledged) return interaction.editReply({ content: url, files: [attachment] });
-        if (channelMsg) return channelMsg.edit({ content: url, files: [attachment] });
+        if (acknowledged) return interaction.editReply({ content: 'Here is the enlarged emoji.', files: [attachment] });
+        if (channelMsg) return channelMsg.edit({ content: 'Here is the enlarged emoji.', files: [attachment] });
         return;
       } catch (err) {
         const msg = `Failed to fetch emoji image. URL: ${url}`;
@@ -252,8 +252,9 @@ module.exports = {
       // Guess extension from URL if possible
       const guessedExt = (urlUsed && (urlUsed.match(/\.([a-z0-9]+)(?:\?.*)?$/i)?.[1] || 'png')) || 'png';
       const attachment = new AttachmentBuilder(buffer, { name: `sticker.${guessedExt}` });
-      if (acknowledged) return interaction.editReply({ content: urlUsed || 'Here is the sticker file:', files: [attachment] });
-      if (channelMsg) return channelMsg.edit({ content: urlUsed || 'Here is the sticker file:', files: [attachment] });
+      const responseContent = 'Here is the enlarged sticker.';
+      if (acknowledged) return interaction.editReply({ content: responseContent, files: [attachment] });
+      if (channelMsg) return channelMsg.edit({ content: responseContent, files: [attachment] });
       return;
     }
 

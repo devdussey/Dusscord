@@ -447,24 +447,38 @@ module.exports = {
                 return;
             }
             if (interaction.customId === 'embedBuilderModal') {
-                await interaction.deferReply();
-                
+                await interaction.deferReply({ ephemeral: true });
+
                 const title = interaction.fields.getTextInputValue('embedTitle');
                 const description = interaction.fields.getTextInputValue('embedDescription');
-                const color = interaction.fields.getTextInputValue('embedColor') || '#0000ff';
+                const color = interaction.fields.getTextInputValue('embedColor');
                 const image = interaction.fields.getTextInputValue('embedImage');
-
+                const footer = interaction.fields.getTextInputValue('embedFooter');
 
                 try {
-                    const embed = new EmbedBuilder()
-                        .setColor(color)
-                        ;
+                    const { parseColorInput } = require('../utils/colorParser');
+                    const sanitiseUrl = (value) => {
+                        if (!value) return null;
+                        try {
+                            const url = new URL(value.trim());
+                            if (!['http:', 'https:'].includes(url.protocol)) return null;
+                            return url.toString();
+                        } catch (_) {
+                            return null;
+                        }
+                    };
 
-                    if (title) embed.setTitle(title);
-                    if (description) embed.setDescription(description);
-                    if (image) embed.setImage(image);             
+                    const embed = new EmbedBuilder()
+                        .setColor(parseColorInput(color, 0x5865f2));
+
+                    if (title) embed.setTitle(title.slice(0, 256));
+                    if (description) embed.setDescription(description.slice(0, 4096));
+                    const safeImage = sanitiseUrl(image);
+                    if (safeImage) embed.setImage(safeImage);
+                    if (footer) embed.setFooter({ text: footer.slice(0, 2048) });
 
                     await interaction.editReply({
+                        content: '✅ Embed preview generated. Use /embed quick to post it to another channel if needed.',
                         embeds: [embed]
                     });
                 } catch (error) {
