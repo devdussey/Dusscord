@@ -1,6 +1,7 @@
 const { Events, MessageFlags } = require('discord.js');
 const { transcribeAttachment, MAX_BYTES } = require('../utils/whisper');
 const voiceAutoStore = require('../utils/voiceAutoStore');
+const { createFieldEmbeds } = require('../utils/embedFields');
 
 const HAS_OPENAI_KEY = Boolean(process.env.OPENAI_API_KEY || process.env.OPENAI_API);
 
@@ -27,16 +28,27 @@ module.exports = {
       }
 
       const text = await transcribeAttachment(attachment);
-      const MAX_DISCORD = 2000;
-      if (text.length <= MAX_DISCORD) {
-        try { await message.reply(`Transcript:\n${text}`); } catch (_) {}
+      const embeds = createFieldEmbeds({
+        title: 'Voice Transcript',
+        user: message.author,
+        sections: [
+          { name: 'Content', value: text }
+        ]
+      });
+
+      if (!embeds.length) {
+        try { await message.reply('Transcript was empty.'); } catch (_) {}
         return;
       }
 
-      try { await message.reply('Transcript is long; sending in parts below:'); } catch (_) {}
-      for (let i = 0; i < text.length; i += MAX_DISCORD) {
-        const chunk = text.slice(i, i + MAX_DISCORD);
-        try { await message.channel.send(chunk); } catch (_) {}
+      try {
+        await message.reply({ embeds: [embeds[0]] });
+      } catch (_) {}
+
+      if (embeds.length > 1) {
+        for (let i = 1; i < embeds.length; i += 1) {
+          try { await message.channel.send({ embeds: [embeds[i]] }); } catch (_) {}
+        }
       }
     } catch (err) {
       try {

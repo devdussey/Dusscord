@@ -1,11 +1,48 @@
 const { SlashCommandBuilder, ChannelType } = require('discord.js');
 // node-fetch v3 is ESM-only; dynamic import for CommonJS
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const { createFieldEmbeds } = require('../utils/embedFields');
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || process.env.OPENAI_API;
 const OPENAI_SUMMARY_MODEL = process.env.SUMMARIZE_MODEL || 'gpt-4o-mini';
 
 const MAX_INPUT_CHARS = 16000; // practical cap before sending to API
+
+function buildSummarySections(text) {
+  if (!text) return [];
+
+  const sections = [];
+  const lines = String(text).split(/\r?\n/);
+  let currentName = null;
+  let buffer = [];
+
+  const flush = () => {
+    if (!currentName) return;
+    const value = buffer.join('\n').trim();
+    if (value) {
+      sections.push({ name: currentName, value });
+    }
+    buffer = [];
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine ?? '';
+    const headingMatch = line.match(/^\s*([^:]{2,}):\s*$/);
+    if (headingMatch) {
+      flush();
+      currentName = headingMatch[1].trim();
+      continue;
+    }
+
+    if (!currentName) {
+      currentName = 'Summary';
+    }
+    buffer.push(line);
+  }
+
+  flush();
+  return sections.length ? sections : [{ name: 'Summary', value: String(text) }];
+}
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -160,21 +197,22 @@ module.exports = {
       const out = data?.choices?.[0]?.message?.content?.trim();
       if (!out) throw new Error('No summary returned.');
 
-      const finalMsg = `${out}${truncatedNote}`;
+      const sections = buildSummarySections(out);
+      const embeds = createFieldEmbeds({
+        title: 'Channel Summary',
+        user: interaction.user,
+        description: truncatedNote ? truncatedNote.trim() : undefined,
+        sections,
+      }).map(embed => embed.toJSON());
 
-      if (finalMsg.length <= 2000) {
-        return interaction.editReply(finalMsg);
+      if (!embeds.length) {
+        return interaction.editReply('Summary was empty.');
       }
 
-      const chunks = [];
-      for (let i = 0; i < finalMsg.length; i += 2000) {
-        chunks.push(finalMsg.slice(i, i + 2000));
-      }
-
-      const [first, ...rest] = chunks;
-      await interaction.editReply(first);
-      for (const chunk of rest) {
-        try { await interaction.followUp({ content: chunk }); } catch (_) {}
+      const [first, ...rest] = embeds;
+      await interaction.editReply({ embeds: [first] });
+      for (const embed of rest) {
+        try { await interaction.followUp({ embeds: [embed] }); } catch (_) {}
       }
     } catch (err) {
       const msg = err?.message || String(err);
