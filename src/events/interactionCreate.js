@@ -1,4 +1,4 @@
-const { Events, PermissionsBitField, EmbedBuilder, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+const { Events, PermissionsBitField, EmbedBuilder, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle, ButtonBuilder, ButtonStyle } = require('discord.js');
 const verifyStore = require('../utils/verificationStore');
 const securityLogger = require('../utils/securityLogger');
 const verifySession = require('../utils/verificationSession');
@@ -284,8 +284,14 @@ module.exports = {
                     applyDefaultColour(embed, interaction.guildId);
                 } catch (_) {}
 
+                const button = new ButtonBuilder()
+                    .setCustomId(`confess:open:${channel.id}`)
+                    .setLabel('Confess Anonymously')
+                    .setStyle(ButtonStyle.Success);
+                const buttonRow = new ActionRowBuilder().addComponents(button);
+
                 try {
-                    await channel.send({ embeds: [embed] });
+                    await channel.send({ embeds: [embed], components: [buttonRow] });
                 } catch (_) {
                     try { await interaction.reply({ content: 'Failed to send your confession. Please try again later.', ephemeral: true }); } catch (_) {}
                     return;
