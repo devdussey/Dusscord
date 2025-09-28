@@ -9,6 +9,8 @@ const { isOwner } = require('../utils/ownerIds');
 
 const categories = {
   'Moderation & Enforcement': [
+    { cmd: '/showbans', desc: 'Fetch and cache the server ban list for cross-server checks', perm: 'Ban Members' },
+    { cmd: '/bannedfrom', desc: 'See which synced servers have banned a specific user', perm: 'Manage Server' },
     { cmd: '/mute', desc: 'Timeout a member for a set duration (reason required)', perm: 'Moderate Members' },
     { cmd: '/kick', desc: 'Remove a member from the server with a required reason', perm: 'Kick Members' },
     { cmd: '/ban', desc: 'Ban a member with optional message pruning (reason required)', perm: 'Ban Members' },
@@ -43,12 +45,18 @@ const categories = {
     { cmd: '/welcome setup/status/disable/test', desc: 'Build and manage welcome messages for new members', perm: 'Manage Server' },
     { cmd: '/leave setup/status/disable/test', desc: 'Send customised farewells when members depart', perm: 'Manage Server' },
     { cmd: '/confessconfig', desc: 'Post the anonymous confession button to a channel', perm: 'Manage Server' },
+    { cmd: '/autobump add/remove/enable/disable/list', desc: 'Schedule automatic bumps for server listing sites', perm: 'Manage Server' },
     { cmd: '/createchannel', desc: 'Quickly create text, voice, or stage channels with optional category', perm: 'Manage Channels' },
     { cmd: '/channelsync', desc: 'Sync child channels with their category permissions', perm: 'Manage Channels' },
     { cmd: '/autorespond toggle/add/remove/list', desc: 'Automate keyword replies with optional channel filters', perm: 'Administrator' },
     { cmd: '/repeat start/stop/list', desc: 'Schedule repeating messages every N seconds (≥ 60)', perm: 'Administrator' },
     { cmd: '/say', desc: 'Send a custom message as the bot in any channel you specify', perm: 'Administrator' },
     { cmd: '/servertag set/show/clear', desc: 'Store a server tag for quick reference across commands', perm: 'Manage Server' },
+    { cmd: '/ticketconfig', desc: 'Define support roles, logging, and limits for tickets', perm: 'Manage Server' },
+    { cmd: '/panelsetup', desc: 'Create ticket panels with buttons or select menus', perm: 'Manage Server' },
+    { cmd: '/panellist', desc: 'Review configured ticket panels and their settings', perm: 'Manage Server' },
+    { cmd: '/panelremove', desc: 'Delete a ticket panel template by name or ID', perm: 'Manage Server' },
+    { cmd: '/ticketsend', desc: 'Post a ticket panel embed and controls to a channel', perm: 'Manage Server' },
   ],
   'Media & Personalisation': [
     { cmd: '/chat', desc: 'Chat with GPT using selectable personas and context sizes', perm: null },
@@ -61,6 +69,7 @@ const categories = {
     { cmd: '/enlarge emoji/sticker', desc: 'Post a large version of any emoji or sticker', perm: null },
     { cmd: '/clone emoji/sticker', desc: 'Clone emojis or stickers by mention, ID, URL, or upload', perm: 'Manage Emojis and Stickers' },
     { cmd: '/cloneall', desc: 'Bulk clone emojis from another server with filters', perm: 'Manage Emojis and Stickers · Premium' },
+    { cmd: '/font', desc: 'Transform your message with decorative Unicode fonts', perm: null },
   ],
   'Embeds & Branding': [
     { cmd: '/embed create/quick', desc: 'Use a guided builder or quick form to craft embeds', perm: null },
