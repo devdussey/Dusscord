@@ -20,6 +20,8 @@ module.exports = {
         .setRequired(false)
     )
 
+    ,
+  
   async execute(interaction) {
     if (!interaction.inGuild()) {
       return interaction.reply({ content: 'Use this command inside a server.', ephemeral: true });
