@@ -35,5 +35,13 @@ module.exports = {
     } catch (e) {
       console.warn('Failed to start auto-post scheduler:', e?.message || e);
     }
+
+    // Start autobump scheduler for listing site bumps
+    try {
+      const bumpScheduler = require('../utils/autoBumpScheduler');
+      await bumpScheduler.startAll(client);
+    } catch (e) {
+      console.warn('Failed to start autobump scheduler:', e?.message || e);
+    }
   },
 };
