@@ -1,6 +1,7 @@
-const { SlashCommandBuilder, ChannelType, PermissionsBitField } = require('discord.js');
+const { SlashCommandBuilder, ChannelType, PermissionsBitField, EmbedBuilder } = require('discord.js');
 const logger = require('../utils/securityLogger');
 const { isOwner } = require('../utils/ownerIds');
+const premiumManager = require('../utils/premiumManager');
 
 // In-memory store for active isolations per guild+user
 // Key: `${guildId}:${userId}` -> { channelId, intervalId, stopAt }
@@ -44,6 +45,8 @@ module.exports = {
     if (!interaction.inGuild()) {
       return interaction.reply({ content: 'Use this command in a server.', ephemeral: true });
     }
+
+    if (!(await premiumManager.ensurePremium(interaction, 'Wraith isolation'))) return;
 
     // Bot owner-only check
     if (!isOwner(interaction.user.id)) {
@@ -136,16 +139,23 @@ module.exports = {
 
       const stopAt = durationMs ? Date.now() + durationMs : null;
       let sent = 0;
-      const text = customMsg || `Hello <@${member.id}>`;
+      const text = customMsg || 'Your isolation has begun.';
 
-      const sendOne = async () => {
+      const createEmbed = (count) => new EmbedBuilder()
+        .setTitle('👻 The Wraith Draws Near')
+        .setDescription('You have been isolated. Stay put and cooperate to end the haunting.')
+        .setColor(0x4b0082)
+        .setFooter({ text: `Pulse ${count}${maxMessages ? ` · Max ${maxMessages}` : ''}` })
+        .setTimestamp();
+
+      const sendOne = async (count) => {
         try {
-          await channel.send({ content: text });
+          await channel.send({ content: `<@${member.id}> ${text}`, embeds: [createEmbed(count)] });
         } catch (_) { /* ignore send errors during loop */ }
       };
 
       // Immediately send first message
-      await sendOne();
+      await sendOne(sent + 1);
       sent++;
 
       const intervalId = setInterval(async () => {
@@ -162,7 +172,7 @@ module.exports = {
           return;
         }
         sent++;
-        await sendOne();
+        await sendOne(sent);
       }, intervalMs);
 
       activeIsolations.set(k, { channelId: channel.id, intervalId, stopAt, hiddenOverwrites });

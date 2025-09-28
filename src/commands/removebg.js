@@ -2,6 +2,10 @@ const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
 // node-fetch v3 is ESM-only; use dynamic import in CommonJS
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY;
+const premiumManager = require('../utils/premiumManager');
+const removeBgUsageStore = require('../utils/removeBgUsageStore');
+
+const DAILY_FREE_LIMIT = 2;
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -19,6 +23,22 @@ module.exports = {
         ),
 
     async execute(interaction) {
+        const hasPremium = premiumManager.hasPremiumAccess(interaction.guild, interaction.member, interaction.user);
+        let usageInfo = null;
+
+        if (!hasPremium) {
+            usageInfo = removeBgUsageStore.tryConsume(interaction.user?.id, DAILY_FREE_LIMIT);
+            if (!usageInfo.allowed) {
+                const message = premiumManager.buildUpsellMessage('Remove Background', {
+                    freebiesRemaining: usageInfo.remaining,
+                    freebiesTotal: DAILY_FREE_LIMIT,
+                    extraNote: 'You have used all of your free remove background uses for today.',
+                });
+                await interaction.reply({ content: message, ephemeral: true });
+                return;
+            }
+        }
+
         await interaction.deferReply();
 
         try { console.log(`[removebg] invoked by ${interaction.user?.id} in ${interaction.guild?.id}`); } catch (_) {}
@@ -83,6 +103,11 @@ module.exports = {
                 await interaction.editReply({ content: 'Background removed:', files: [attachment] });
             } catch (e) {
                 try { await interaction.followUp({ content: 'Background removed:', files: [attachment] }); } catch (_) {}
+            }
+
+            if (!hasPremium && usageInfo) {
+                const note = `Free remove background uses remaining today: ${usageInfo.remaining} of ${DAILY_FREE_LIMIT}.`;
+                try { await interaction.followUp({ content: note, ephemeral: true }); } catch (_) {}
             }
         } catch (error) {
             try {

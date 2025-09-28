@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
 const logger = require('../utils/securityLogger');
+const premiumManager = require('../utils/premiumManager');
 
 function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
 
@@ -57,6 +58,8 @@ module.exports = {
     if (!interaction.inGuild()) {
       return interaction.reply({ content: 'Use this command in a server.', ephemeral: true });
     }
+
+    if (!(await premiumManager.ensurePremium(interaction, 'Clone All'))) return;
 
     const me = interaction.guild.members.me;
     if (!me.permissions.has(PermissionsBitField.Flags.ManageGuildExpressions)) {

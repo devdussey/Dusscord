@@ -32,7 +32,7 @@ const categories = {
     { cmd: '/modlog set/mode/toggle/show', desc: 'Configure where moderation actions are recorded', perm: 'Manage Server' },
     { cmd: '/securitylog set/mode/clear/toggle/show', desc: 'Decide how permission and hierarchy violations are delivered', perm: 'Manage Server' },
     { cmd: '/logstream setchannel/toggle/show', desc: 'Stream high-volume server events to a live log channel', perm: 'Manage Server' },
-    { cmd: '/tamperproof add/remove/list', desc: 'Watch channels for admin deletions and DM bot owners', perm: 'Manage Channels' },
+    { cmd: '/tamperproof add/remove/list', desc: 'Watch channels for admin deletions and DM bot owners', perm: 'Manage Channels · Premium' },
     { cmd: '/logconfig', desc: 'Review the status of moderation, security, and channel logging', perm: 'Manage Server' },
     { cmd: '/antinuke config', desc: 'Configure anti-nuke safeguards and view their current status', perm: 'Manage Server' },
     { cmd: '/joins leaderboard/user/setlog/backfill', desc: 'Track join/leave stats and import historical logs', perm: 'Manage Server' },
@@ -55,12 +55,12 @@ const categories = {
     { cmd: '/analysis', desc: 'Spend a Judgement to analyse your recent messages for insights', perm: null },
     { cmd: '/summarize', desc: 'Summarise recent channel messages into bullets and a paragraph', perm: null },
     { cmd: '/transcribe', desc: 'Transcribe an attached audio file using Whisper', perm: null },
-    { cmd: '/removebg', desc: 'Remove the background from an image via remove.bg', perm: null },
+    { cmd: '/removebg', desc: 'Remove the background from an image via remove.bg (2 free uses/day without Premium)', perm: 'Premium for unlimited access' },
     { cmd: '/highdef', desc: 'Upscale and enhance an image using AI', perm: null },
     { cmd: '/imageresize', desc: 'Resize an image and convert it to PNG', perm: null },
     { cmd: '/enlarge emoji/sticker', desc: 'Post a large version of any emoji or sticker', perm: null },
     { cmd: '/clone emoji/sticker', desc: 'Clone emojis or stickers by mention, ID, URL, or upload', perm: 'Manage Emojis and Stickers' },
-    { cmd: '/cloneall', desc: 'Bulk clone emojis from another server with filters', perm: 'Manage Emojis and Stickers' },
+    { cmd: '/cloneall', desc: 'Bulk clone emojis from another server with filters', perm: 'Manage Emojis and Stickers · Premium' },
   ],
   'Embeds & Branding': [
     { cmd: '/embed create/quick', desc: 'Use a guided builder or quick form to craft embeds', perm: null },
@@ -89,13 +89,21 @@ const categories = {
     { cmd: '/botinfo', desc: 'See which bot instance responded, uptime, and loaded commands', perm: null },
     { cmd: '/webhooks', desc: 'List every webhook in the server and its creator', perm: 'Manage Webhooks' },
   ],
+  Premium: [
+    { cmd: '/adminlist', desc: 'Owner audit: list mutual guilds where a user has Administrator', perm: 'Bot Owner · Premium' },
+    { cmd: '/wraith start/stop', desc: 'Isolate a member with relentless pings and Wraith embeds', perm: 'Bot Owner · Premium' },
+    { cmd: '/tamperproof add/remove/list', desc: 'Monitor channels for deletion tampering alerts', perm: 'Manage Channels · Premium' },
+    { cmd: '/givejudgement', desc: 'Grant Judgements directly with a Premium token', perm: 'Bot Owner or Guild Owner · Premium' },
+    { cmd: '/cloneall', desc: 'Bulk import emojis from another server', perm: 'Manage Emojis and Stickers · Premium' },
+    { cmd: '/removebg', desc: 'Unlimited background removals (2 free/day without Premium)', perm: 'Premium for unlimited access' },
+  ],
   'Bot Owner': [
-    { cmd: '/adminlist', desc: 'List mutual guilds where a user has Administrator', perm: 'Bot Owner' },
+    { cmd: '/adminlist', desc: 'List mutual guilds where a user has Administrator', perm: 'Bot Owner · Premium' },
     { cmd: '/botlook', desc: 'Update the bot avatar, nickname, or bio', perm: 'Bot Owner' },
     { cmd: '/fetchmessage', desc: 'Backfill user messages from a channel for analysis tools', perm: 'Bot Owner' },
     { cmd: '/dmdiag test/role', desc: 'Run DM diagnostics for a member or role', perm: 'Bot Owner' },
-    { cmd: '/givejudgement', desc: 'Grant Judgements directly to a user', perm: 'Bot Owner or Guild Owner' },
-    { cmd: '/wraith start/stop', desc: 'Create a private spam channel and isolate a member', perm: 'Bot Owner' },
+    { cmd: '/givejudgement', desc: 'Grant Judgements directly to a user', perm: 'Bot Owner or Guild Owner · Premium' },
+    { cmd: '/wraith start/stop', desc: 'Create a private spam channel and isolate a member', perm: 'Bot Owner · Premium' },
   ],
 };
 
@@ -131,6 +139,10 @@ const categoryMeta = {
   'Utilities & Insights': {
     emoji: '🧭',
     blurb: 'Handy diagnostics and quick lookups for everyday needs.',
+  },
+  Premium: {
+    emoji: '💎',
+    blurb: 'Unlock with $4.99 or an active Server Boost. Votes grant 12 hours of access.',
   },
   'Bot Owner': {
     emoji: '👑',

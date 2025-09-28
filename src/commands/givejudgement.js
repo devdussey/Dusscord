@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { isOwner } = require('../utils/ownerIds');
 const judgementStore = require('../utils/judgementStore');
+const premiumManager = require('../utils/premiumManager');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -29,6 +30,8 @@ module.exports = {
     if (!interaction.inGuild()) {
       return interaction.reply({ content: 'Use this command in a server.', ephemeral: true });
     }
+
+    if (!(await premiumManager.ensurePremium(interaction, 'Give Judgement'))) return;
 
     const isBotOwner = isOwner(interaction.user.id);
     let isGuildOwner = false;
