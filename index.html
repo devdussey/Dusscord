@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smite Bot Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="public/500pixel.png" type="image/png">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <img src="public/500pixel.png" alt="Smite Bot" class="bot-avatar">
+                <h2>Smite Bot</h2>
+                <span class="status-indicator online"></span>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item active">
+                    <a href="#overview" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        Overview
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#moderation" class="nav-link">
+                        <span class="nav-icon">🛡️</span>
+                        Moderation
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#economy" class="nav-link">
+                        <span class="nav-icon">🪙</span>
+                        Economy
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#logging" class="nav-link">
+                        <span class="nav-icon">📝</span>
+                        Logging
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#settings" class="nav-link">
+                        <span class="nav-icon">⚙️</span>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1>Dashboard Overview</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary">Refresh Data</button>
+                    <button class="btn btn-primary">Deploy Commands</button>
+                </div>
+            </header>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🏰</div>
+                    <div class="stat-content">
+                        <h3>Servers</h3>
+                        <p class="stat-number">1,247</p>
+                        <span class="stat-change positive">+12 this week</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-content">
+                        <h3>Total Users</h3>
+                        <p class="stat-number">89,432</p>
+                        <span class="stat-change positive">+2.3% growth</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-content">
+                        <h3>Commands Used</h3>
+                        <p class="stat-number">156,789</p>
+                        <span class="stat-change neutral">Today</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-content">
+                        <h3>Smites Cast</h3>
+                        <p class="stat-number">3,421</p>
+                        <span class="stat-change positive">+89 today</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature Cards -->
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <h3>🛡️ Moderation Tools</h3>
+                        <span class="feature-status active">Active</span>
+                    </div>
+                    <p>Advanced moderation with anti-nuke protection, auto-roles, and comprehensive logging.</p>
+                    <div class="feature-actions">
+                        <button class="btn btn-outline">Configure</button>
+                        <button class="btn btn-text">View Logs</button>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <h3>🎲 Economy System</h3>
+                        <span class="feature-status active">Active</span>
+                    </div>
+                    <p>Coin rewards, Smite tokens, horse racing, and trivia games to keep your community engaged.</p>
+                    <div class="feature-actions">
+                        <button class="btn btn-outline">Manage</button>
+                        <button class="btn btn-text">Leaderboard</button>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <h3>🤖 AI Features</h3>
+                        <span class="feature-status premium">Premium</span>
+                    </div>
+                    <p>Chat with GPT, analyze user behavior, transcribe voice messages, and enhance images.</p>
+                    <div class="feature-actions">
+                        <button class="btn btn-outline">Setup</button>
+                        <button class="btn btn-text">Usage Stats</button>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <h3>🎨 Customization</h3>
+                        <span class="feature-status active">Active</span>
+                    </div>
+                    <p>Custom embeds, booster roles, reaction roles, and server branding options.</p>
+                    <div class="feature-actions">
+                        <button class="btn btn-outline">Customize</button>
+                        <button class="btn btn-text">Templates</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="activity-section">
+                <h2>Recent Activity</h2>
+                <div class="activity-feed">
+                    <div class="activity-item">
+                        <div class="activity-icon">🔨</div>
+                        <div class="activity-content">
+                            <p><strong>User banned</strong> in Gaming Paradise</p>
+                            <span class="activity-time">2 minutes ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon">⚡</div>
+                        <div class="activity-content">
+                            <p><strong>Smite cast</strong> by ModeratorX</p>
+                            <span class="activity-time">5 minutes ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon">🎯</div>
+                        <div class="activity-content">
+                            <p><strong>Trivia game</strong> completed in Quiz Central</p>
+                            <span class="activity-time">12 minutes ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon">🏇</div>
+                        <div class="activity-content">
+                            <p><strong>Horse race</strong> won by SpeedyGamer</p>
+                            <span class="activity-time">18 minutes ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
