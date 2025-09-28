@@ -12,9 +12,8 @@ const EMBLEM_DIR = 'booster-emblems';
 const MAX_EMBLEM_SIZE = 256 * 1024; // 256 KB Discord role icon limit
 const EMBLEM_CONTENT_TYPES = new Map([
   ['image/png', '.png'],
-  ['image/jpeg', '.jpg'],
-  ['image/jpg', '.jpg'],
 ]);
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 function normalizeHexColor(input) {
   if (!input) return null;
   const match = String(input).trim().match(/^#?([0-9a-fA-F]{6})$/);
@@ -117,10 +116,10 @@ function getEmblemExtension(attachment) {
     return { extension: EMBLEM_CONTENT_TYPES.get(contentType), contentType };
   }
   const name = (attachment.name || '').toLowerCase();
-  const match = name.match(/\.(png|jpe?g)$/);
+  const match = name.match(/\.(png)$/);
   if (!match) return null;
   const ext = match[0];
-  const type = ext === '.png' ? 'image/png' : 'image/jpeg';
+  const type = 'image/png';
   return { extension: ext, contentType: type };
 }
 
@@ -138,6 +137,46 @@ async function saveEmblemAsset(guildId, userId, buffer, { extension, contentType
     size: buffer.length,
     uploadedAt: new Date().toISOString(),
   };
+}
+
+function isPng(buffer) {
+  return Buffer.isBuffer(buffer) && buffer.length >= 8 && buffer.subarray(0, 8).equals(PNG_SIGNATURE);
+}
+
+function readPngColorType(buffer) {
+  if (!isPng(buffer) || buffer.length < 26) return null;
+  const chunkType = buffer.toString('ascii', 12, 16);
+  if (chunkType !== 'IHDR') return null;
+  return buffer.readUInt8(25);
+}
+
+function pngHasTrnsChunk(buffer) {
+  if (!isPng(buffer)) return false;
+  let offset = 8; // Skip signature
+  while (offset + 8 <= buffer.length) {
+    const length = buffer.readUInt32BE(offset);
+    const type = buffer.toString('ascii', offset + 4, offset + 8);
+    offset += 8;
+    if (offset + length + 4 > buffer.length) {
+      return false;
+    }
+    if (type === 'tRNS') {
+      return true;
+    }
+    offset += length + 4; // Skip data and CRC
+    if (type === 'IEND') break;
+  }
+  return false;
+}
+
+function pngSupportsTransparency(buffer) {
+  const colorType = readPngColorType(buffer);
+  if (colorType === null) return false;
+  if (colorType === 4 || colorType === 6) return true;
+  if ((colorType === 0 || colorType === 2 || colorType === 3) && pngHasTrnsChunk(buffer)) {
+    return true;
+  }
+  return false;
 }
 
 async function loadEmblemBuffer(emblem) {
@@ -365,6 +404,7 @@ module.exports = {
   sanitizeCustomName,
   ensureRole,
   normalizeColorConfig,
+  pngSupportsTransparency,
   async renameRole(member, desiredName) {
     const name = sanitizeCustomName(desiredName);
     if (!name) throw new Error('Please provide a non-empty name.');
@@ -485,7 +525,7 @@ module.exports = {
     }
 
     if (!attachment) {
-      throw new Error('Please attach a PNG or JPEG image to use as your booster emblem.');
+      throw new Error('Please attach a PNG image with a transparent background to use as your booster emblem.');
     }
 
     if (attachment.size && attachment.size > MAX_EMBLEM_SIZE) {
@@ -494,7 +534,7 @@ module.exports = {
 
     const extInfo = getEmblemExtension(attachment);
     if (!extInfo) {
-      throw new Error('Please provide a PNG or JPEG image to use as your booster emblem.');
+      throw new Error('Please provide a PNG image with a transparent background to use as your booster emblem.');
     }
 
     let response;
@@ -523,14 +563,17 @@ module.exports = {
       throw new Error('Please choose an image that is 256 KB or smaller.');
     }
 
+    if (!pngSupportsTransparency(buffer)) {
+      throw new Error('Please provide a PNG image with a transparent background to use as your booster emblem.');
+    }
+
     const metadata = await saveEmblemAsset(guild.id, targetMember.id, buffer, {
-      extension: extInfo.extension,
-      contentType: extInfo.contentType,
+      extension: '.png',
+      contentType: 'image/png',
       name: attachment.name || null,
     });
 
-    const uploadContentType = (extInfo.contentType || 'image/png').toLowerCase();
-    const dataUri = `data:${uploadContentType};base64,${buffer.toString('base64')}`;
+    const dataUri = `data:image/png;base64,${buffer.toString('base64')}`;
 
     try {
       await role.setIcon(dataUri, `Booster emblem updated by ${actor}`);
