@@ -88,6 +88,15 @@ async function setEnabled(guildId, category, enabled) {
   await persist();
 }
 
+async function setAllEnabled(guildId, enabled) {
+  const g = await ensureGuild(guildId);
+  const value = !!enabled;
+  for (const key of Object.keys(g.categories)) {
+    g.categories[key] = value;
+  }
+  await persist();
+}
+
 async function getEnabled(guildId, category) {
   const g = await ensureGuild(guildId);
   if (!Object.prototype.hasOwnProperty.call(g.categories, category)) return false;
@@ -110,6 +119,7 @@ module.exports = {
   getChannel,
   getChannelForCategory,
   setEnabled,
+  setAllEnabled,
   getEnabled,
   listStatuses,
 };
