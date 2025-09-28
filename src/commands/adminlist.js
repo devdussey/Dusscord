@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, PermissionsBitField, EmbedBuilder } = require('discord.js');
 const { isOwner } = require('../utils/ownerIds');
 const { resolveEmbedColour } = require('../utils/guildColourStore');
+const premiumManager = require('../utils/premiumManager');
 
 function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
 
@@ -21,6 +22,8 @@ module.exports = {
 
   async execute(interaction) {
     if (!interaction.inGuild()) return interaction.reply({ content: 'Use this in a server.', ephemeral: true });
+
+    if (!(await premiumManager.ensurePremium(interaction, 'Admin List'))) return;
     if (!isOwner(interaction.user.id)) {
       return interaction.reply({ content: 'This command is restricted to bot owners.', ephemeral: true });
     }

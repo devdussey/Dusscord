@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionsBitField, ChannelType } = require('discord.js');
 const store = require('../utils/logChannelsStore');
+const premiumManager = require('../utils/premiumManager');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -35,6 +36,8 @@ module.exports = {
 
   async execute(interaction) {
     if (!interaction.inGuild()) return interaction.reply({ content: 'Use this in a server.', ephemeral: true });
+
+    if (!(await premiumManager.ensurePremium(interaction, 'Tamperproof monitoring'))) return;
 
     await interaction.deferReply({ ephemeral: true });
 
