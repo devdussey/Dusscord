@@ -32,7 +32,7 @@ const categories = {
     { cmd: '/modlog set/mode/toggle/show', desc: 'Configure where moderation actions are recorded', perm: 'Manage Server' },
     { cmd: '/securitylog set/mode/clear/toggle/show', desc: 'Decide how permission and hierarchy violations are delivered', perm: 'Manage Server' },
     { cmd: '/logstream setchannel/toggle/show', desc: 'Stream high-volume server events to a live log channel', perm: 'Manage Server' },
-    { cmd: '/logchannels add/remove/list', desc: 'Watch channels for admin deletions and DM bot owners', perm: 'Manage Channels' },
+    { cmd: '/tamperproof add/remove/list', desc: 'Watch channels for admin deletions and DM bot owners', perm: 'Manage Channels' },
     { cmd: '/logconfig', desc: 'Review the status of moderation, security, and channel logging', perm: 'Manage Server' },
     { cmd: '/antinuke config', desc: 'Configure anti-nuke safeguards and view their current status', perm: 'Manage Server' },
     { cmd: '/joins leaderboard/user/setlog/backfill', desc: 'Track join/leave stats and import historical logs', perm: 'Manage Server' },

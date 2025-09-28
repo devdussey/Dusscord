@@ -3,7 +3,7 @@ const store = require('../utils/logChannelsStore');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('logchannels')
+    .setName('tamperproof')
     .setDescription('Configure channels monitored for admin deletions (DM alert to owners)')
     .addSubcommand(sub =>
       sub
@@ -47,18 +47,18 @@ module.exports = {
     if (sub === 'add') {
       const ch = interaction.options.getChannel('channel', true);
       await store.add(interaction.guildId, ch.id);
-      return interaction.editReply({ content: `Added ${ch} to monitored log channels.` });
+      return interaction.editReply({ content: `Added ${ch} to the tamper-proof watch list.` });
     }
     if (sub === 'remove') {
       const ch = interaction.options.getChannel('channel', true);
       const removed = await store.remove(interaction.guildId, ch.id);
-      return interaction.editReply({ content: removed ? `Removed ${ch} from monitored log channels.` : `${ch} was not monitored.` });
+      return interaction.editReply({ content: removed ? `Removed ${ch} from the tamper-proof watch list.` : `${ch} was not monitored.` });
     }
     if (sub === 'list') {
       const ids = await store.list(interaction.guildId);
-      if (!ids.length) return interaction.editReply({ content: 'No monitored log channels set.' });
+      if (!ids.length) return interaction.editReply({ content: 'No tamper-proof channels configured.' });
       const names = ids.map(id => interaction.guild.channels.cache.get(id) ? `<#${id}>` : `Unknown(${id})`);
-      return interaction.editReply({ content: `Monitored channels: ${names.join(', ')}` });
+      return interaction.editReply({ content: `Tamper-proof channels: ${names.join(', ')}` });
     }
 
     return interaction.editReply({ content: 'Unknown subcommand.' });
