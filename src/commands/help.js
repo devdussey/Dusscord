@@ -84,7 +84,6 @@ const categories = {
   ],
   'Utilities & Insights': [
     { cmd: '/avatar', desc: 'View any user’s avatar with quick download links', perm: null },
-    { cmd: '/avatarhistory', desc: 'Browse a user’s historical avatars via Discord Lookup', perm: null },
     { cmd: '/serverbanner', desc: 'Display and download the server banner', perm: null },
     { cmd: '/serverlogo', desc: 'Display and download the server icon', perm: null },
     { cmd: '/botinfo', desc: 'See which bot instance responded, uptime, and loaded commands', perm: null },
