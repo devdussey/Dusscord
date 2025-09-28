@@ -36,7 +36,7 @@ const categories = {
     { cmd: '/logconfig', desc: 'Review the status of moderation, security, and channel logging', perm: 'Manage Server' },
     { cmd: '/antinuke config', desc: 'Configure anti-nuke safeguards and view their current status', perm: 'Manage Server' },
     { cmd: '/joins leaderboard/user/setlog/backfill', desc: 'Track join/leave stats and import historical logs', perm: 'Manage Server' },
-    { cmd: '/voiceauto enable/disable/status', desc: 'Enable automatic voice transcription in chosen channels', perm: 'Manage Server' },
+    { cmd: '/transriptconfig enable/disable/status', desc: 'Enable automatic voice transcription in chosen channels', perm: 'Manage Server' },
     { cmd: '/securityreport', desc: 'Report members frequently triggering permission or hierarchy issues', perm: 'Manage Server' },
   ],
   'Server Setup & Messaging': [

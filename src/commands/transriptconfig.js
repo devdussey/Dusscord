@@ -13,7 +13,7 @@ function isTextLike(channel) {
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('voiceauto')
+    .setName('transriptconfig')
     .setDescription('Configure automatic voice-message transcription')
     .addSubcommand(sub =>
       sub.setName('enable')
