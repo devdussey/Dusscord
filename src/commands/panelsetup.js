@@ -95,6 +95,7 @@ module.exports = {
         .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement, ChannelType.GuildForum, ChannelType.GuildCategory)
         .setRequired(false)
     )
+  ,
 
   async execute(interaction) {
     if (!interaction.inGuild()) {
