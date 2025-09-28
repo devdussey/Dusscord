@@ -9,7 +9,7 @@ module.exports = {
     .addAttachmentOption(option =>
       option
         .setName('image')
-        .setDescription('PNG or JPEG image under 256 KB to use as your emblem')
+        .setDescription('PNG image with a transparent background under 256 KB to use as your emblem')
         .setRequired(false)
     )
     .addBooleanOption(option =>
@@ -43,7 +43,7 @@ module.exports = {
 
     if (!shouldClear && !attachment) {
       return interaction.reply({
-        content: 'Please upload an image or enable the clear option to remove your emblem.',
+        content: 'Please upload a PNG image with a transparent background or enable the clear option to remove your emblem.',
         ephemeral: true,
       });
     }
