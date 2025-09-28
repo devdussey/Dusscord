@@ -24,6 +24,7 @@ const PERSONAS = {
     label: 'Standard',
     systemPrompt: DEFAULT_PERSONA,
     messageLimit: 1000,
+    responseInstructions: 'Respond with a natural paragraph that stays in-character for your configured persona.',
   },
   psychological: {
     id: 'psychological',
@@ -56,6 +57,7 @@ const PERSONAS = {
       'Use professional but approachable language, ensuring the feedback feels constructive and human-centred, and avoid JSON or bullet lists.',
     ].join('\n'),
     messageLimit: 500,
+    responseInstructions: 'Deliver the response as flowing paragraphs that reflect your professional persona.',
   },
   toxicity: {
     id: 'toxicity',
@@ -89,6 +91,7 @@ const PERSONAS = {
       'Structure the response into sections (Mental Weaknesses, Hidden Pathetic Issues, Future Downfall, Evidence of Failure).',
     ].join('\n'),
     messageLimit: 500,
+    responseInstructions: 'Structure the response into clear sections with headings: Mental Weaknesses, Hidden Pathetic Issues, Future Downfall, Evidence of Failure.',
   },
 };
 
@@ -295,7 +298,7 @@ module.exports = {
       `Analyse the following ${usedCount} messages written by ${subjectLabel}.`,
       'Identify behavioural patterns, moderation concerns, sentiment, and notable habits.',
       'Focus strictly on the content and avoid speculation beyond the evidence provided.',
-      'Respond with a natural paragraph that stays in-character for your configured persona.',
+      persona.responseInstructions || 'Respond with a natural paragraph that stays in-character for your configured persona.',
       '',
       formatted,
     ].join('\n');
