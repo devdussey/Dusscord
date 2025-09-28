@@ -3,6 +3,9 @@ const verifyStore = require('../utils/verificationStore');
 const securityLogger = require('../utils/securityLogger');
 const verifySession = require('../utils/verificationSession');
 const antiNukeManager = require('../utils/antiNukeManager');
+const ticketStore = require('../utils/ticketStore');
+const panelSessions = require('../utils/ticketPanelSessionStore');
+const ticketManager = require('../utils/ticketManager');
 
 module.exports = {
     name: Events.InteractionCreate,
@@ -53,6 +56,24 @@ module.exports = {
 
         // Handle role selection menus (reaction role)
         if (interaction.isStringSelectMenu()) {
+            if (typeof interaction.customId === 'string' && interaction.customId.startsWith('ticket:menu:')) {
+                if (!interaction.inGuild()) {
+                    try { await interaction.reply({ content: 'Tickets can only be opened in a server.', ephemeral: true }); } catch (_) {}
+                    return;
+                }
+                await interaction.deferReply({ ephemeral: true });
+                const panelId = interaction.customId.split(':')[2];
+                const panel = ticketStore.getPanel(interaction.guildId, panelId);
+                if (!panel) {
+                    await interaction.editReply({ content: 'This ticket panel is no longer available.' });
+                    return;
+                }
+                const value = interaction.values?.[0];
+                const option = panel.component?.options?.find(opt => opt.value === value);
+                const reason = option ? option.label : (value || 'Support request');
+                await ticketManager.openTicket(interaction, panel, reason);
+                return;
+            }
             if (interaction.customId === 'rr:select') {
                 if (!interaction.inGuild()) return;
                 const me = interaction.guild.members.me;
@@ -131,6 +152,40 @@ module.exports = {
 
         // Handle Verify button
         if (interaction.isButton()) {
+            if (typeof interaction.customId === 'string' && interaction.customId.startsWith('ticket:create:')) {
+                if (!interaction.inGuild()) {
+                    try { await interaction.reply({ content: 'Tickets can only be opened in a server.', ephemeral: true }); } catch (_) {}
+                    return;
+                }
+                await interaction.deferReply({ ephemeral: true });
+                const panelId = interaction.customId.split(':')[2];
+                const panel = ticketStore.getPanel(interaction.guildId, panelId);
+                if (!panel) {
+                    await interaction.editReply({ content: 'This ticket panel is no longer available.' });
+                    return;
+                }
+                const reason = panel.component?.label || 'Support request';
+                await ticketManager.openTicket(interaction, panel, reason);
+                return;
+            }
+            if (typeof interaction.customId === 'string' && interaction.customId.startsWith('ticket:claim:')) {
+                if (!interaction.inGuild()) {
+                    try { await interaction.reply({ content: 'Tickets can only be managed in a server.', ephemeral: true }); } catch (_) {}
+                    return;
+                }
+                const ticketId = interaction.customId.split(':')[2];
+                await ticketManager.claimTicket(interaction, ticketId);
+                return;
+            }
+            if (typeof interaction.customId === 'string' && interaction.customId.startsWith('ticket:close:')) {
+                if (!interaction.inGuild()) {
+                    try { await interaction.reply({ content: 'Tickets can only be managed in a server.', ephemeral: true }); } catch (_) {}
+                    return;
+                }
+                const ticketId = interaction.customId.split(':')[2];
+                await ticketManager.closeTicket(interaction, ticketId);
+                return;
+            }
             if (interaction.customId === 'verify:go') {
                 if (!interaction.inGuild()) return;
 
@@ -444,6 +499,92 @@ module.exports = {
                 } catch (err) {
                     try { await interaction.reply({ content: `Failed to assign role: ${err.message}`, ephemeral: true }); } catch (_) {}
                 }
+                return;
+            }
+            if (interaction.customId === 'ticketPanel:embed') {
+                await interaction.deferReply({ ephemeral: true });
+
+                if (!interaction.inGuild()) {
+                    await interaction.editReply({ content: 'Ticket panels can only be created from inside a server.' });
+                    return;
+                }
+
+                const session = panelSessions.consumeSession(interaction.guildId, interaction.user.id);
+                if (!session) {
+                    await interaction.editReply({ content: 'Panel setup expired. Please run /panelsetup again.' });
+                    return;
+                }
+
+                const title = (interaction.fields.getTextInputValue('embedTitle') || '').trim();
+                const description = (interaction.fields.getTextInputValue('embedDescription') || '').trim();
+                const colorInput = (interaction.fields.getTextInputValue('embedColor') || '').trim();
+                const imageInput = (interaction.fields.getTextInputValue('embedImage') || '').trim();
+                const footerInput = (interaction.fields.getTextInputValue('embedFooter') || '').trim();
+
+                const { parseColorInput } = require('../utils/colorParser');
+                const sanitiseUrl = (value) => {
+                    if (!value) return null;
+                    try {
+                        const url = new URL(value.trim());
+                        if (!['http:', 'https:'].includes(url.protocol)) return null;
+                        return url.toString();
+                    } catch (_) {
+                        return null;
+                    }
+                };
+
+                const embedData = {
+                    color: parseColorInput(colorInput, 0x5865f2),
+                };
+                if (title) embedData.title = title.slice(0, 256);
+                if (description) embedData.description = description.slice(0, 4000);
+                const safeImage = sanitiseUrl(imageInput);
+                if (safeImage) embedData.image = safeImage;
+                if (footerInput) embedData.footer = footerInput.slice(0, 2048);
+
+                const component = session.componentType === 'menu'
+                    ? {
+                        type: 'menu',
+                        placeholder: session.menuPlaceholder,
+                        options: session.menuOptions,
+                    }
+                    : {
+                        type: 'button',
+                        label: session.buttonLabel,
+                        style: 'primary',
+                    };
+
+                let storedPanel;
+                try {
+                    storedPanel = ticketStore.addPanel(interaction.guildId, {
+                        name: session.name,
+                        ticketType: session.ticketType,
+                        component,
+                        embed: embedData,
+                        logChannelId: session.logChannelId,
+                        archiveChannelId: session.archiveChannelId,
+                        ticketParentId: session.ticketParentId,
+                    });
+                } catch (err) {
+                    console.error('Failed to store ticket panel:', err);
+                    await interaction.editReply({ content: 'Failed to save the panel. Please try again.' });
+                    return;
+                }
+
+                const preview = ticketManager.buildEmbed(embedData);
+                const summaryLines = [
+                    `Ticket type: **${storedPanel.ticketType === 'thread' ? 'Thread' : 'Channel'}**`,
+                    storedPanel.component?.type === 'menu'
+                        ? `Component: Select menu with ${storedPanel.component.options.length} option(s)`
+                        : `Component: Button labelled **${storedPanel.component.label}**`,
+                    `Panel ID: ${storedPanel.id}`,
+                    'Use `/ticketsend` to post this panel into a channel.',
+                ];
+
+                await interaction.editReply({
+                    content: `✅ Panel **${storedPanel.name}** created.\n${summaryLines.join('\n')}`,
+                    embeds: [preview],
+                });
                 return;
             }
             if (interaction.customId === 'embedBuilderModal') {
