@@ -1,19 +1,18 @@
 const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
 const ticketStore = require('../utils/ticketStore');
 
-module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('panelremove')
-    .setDescription('Delete a ticket panel template')
-    .addStringOption(option =>
-      option
-        .setName('panel')
-        .setDescription('Panel name or ID to remove')
-        .setRequired(true)
-    )
+data: new SlashCommandBuilder()
+  .setName('panelremove')
+  .setDescription('Delete a ticket panel template')
+  .addStringOption(option =>
+    option
+      .setName('panel')
+      .setDescription('Panel name or ID to remove')
+      .setRequired(true)
+  )
 
-  async execute(interaction) {
-    if (!interaction.inGuild()) {
+async execute(interaction) {
+  if (!interaction.inGuild()) {
       return interaction.reply({ content: 'Use this command inside a server.', ephemeral: true });
     }
 
