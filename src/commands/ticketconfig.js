@@ -11,18 +11,6 @@ module.exports = {
         .setDescription('Primary support role allowed to manage tickets')
         .setRequired(true)
     )
-    .addRoleOption(option =>
-      option
-        .setName('support_role_2')
-        .setDescription('Secondary support role (optional)')
-        .setRequired(false)
-    )
-    .addRoleOption(option =>
-      option
-        .setName('support_role_3')
-        .setDescription('Tertiary support role (optional)')
-        .setRequired(false)
-    )
     .addChannelOption(option =>
       option
         .setName('archive_channel')
@@ -34,6 +22,18 @@ module.exports = {
           ChannelType.GuildCategory,
         )
         .setRequired(true)
+    )
+    .addRoleOption(option =>
+      option
+        .setName('support_role_2')
+        .setDescription('Secondary support role (optional)')
+        .setRequired(false)
+    )
+    .addRoleOption(option =>
+      option
+        .setName('support_role_3')
+        .setDescription('Tertiary support role (optional)')
+        .setRequired(false)
     )
     .addChannelOption(option =>
       option
